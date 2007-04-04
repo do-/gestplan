@@ -36,6 +36,10 @@ sub do_update_prestation_types {
 		half_1_m
 		half_2_h
 		half_2_m
+		half_1_to_h
+		half_1_to_m
+		half_2_to_h
+		half_2_to_m
 	)]);
 	
 	sql_do ('DELETE FROM prestation_types_ext_fields WHERE id_prestation_type = ?', $_REQUEST {id});
@@ -70,8 +74,14 @@ sub validate_update_prestation_types {
 		$_REQUEST {_time_step} > 0 or return "#_time_step#:Vous avez oublié d'indiquer l'horaire";
 	}
 	elsif ($_REQUEST {_is_half_hour} == -1) {
+	
+		60 * $_REQUEST {_half_1_h}    + $_REQUEST {_half_1_m}    <  60 * $_REQUEST {_half_1_to_h} + $_REQUEST {_half_1_to_m} or return "#_half_1_to_h#:La fin du matin doît succéder au début";
+		60 * $_REQUEST {_half_1_to_h} + $_REQUEST {_half_1_to_m} <= 60 * $_REQUEST {_half_2_h}    + $_REQUEST {_half_2_m}    or return "#_half_1_to_h#:Le début de l'après-midi doît succéder à la fin du matin";
+		60 * $_REQUEST {_half_2_h}    + $_REQUEST {_half_2_m}    <  60 * $_REQUEST {_half_2_to_h} + $_REQUEST {_half_2_to_m} or return "#_half_2_to_h#:La fin de l'après-midi doît succéder au début";
+	
 		$_REQUEST {_length} == 0     or return "#_length#:Le nombre d'inscrits doit être zéro pour des numéros libres";
 		$_REQUEST {_length_ext} == 0 or return "#_length_ext#:Le nombre d'inscrits doit être zéro pour des numéros libres";
+
 	}
 	
 #	$_REQUEST {_length} or return "#_length#:Vous avez oublié d'indiquer le nombre de lignes";
@@ -113,13 +123,17 @@ sub get_item_of_prestation_types {
 
 	my $item = sql_select_hash ('prestation_types');
 
-    $item -> {time_step} ||= 30 if $item -> {is_half_hour} == 1;
-    $item -> {half_1_h} ||= 9;
-    $item -> {half_1_m} ||= 0;
-    $item -> {half_2_h} ||= 13;
-    $item -> {half_2_m}   = 30 unless defined $item -> {half_2_m};
-    $item -> {half_1_m} = sprintf ('%02d', $item -> {half_1_m});
-    $item -> {half_2_m} = sprintf ('%02d', $item -> {half_2_m});
+    $item -> {time_step}   ||= 30 if $item -> {is_half_hour} == 1;
+    $item -> {half_1_h}    ||= 9;
+    $item -> {half_1_m}    ||= 0;
+    $item -> {half_1_to_h} ||= 13;
+    $item -> {half_1_to_m}   = 30 unless defined $item -> {half_1_to_m};
+    $item -> {half_2_h}    ||= 13;
+    $item -> {half_2_to_h} ||= 18;
+    $item -> {half_2_m}      = 30 unless defined $item -> {half_2_m};
+    $item -> {half_1_m}      = sprintf ('%02d', $item -> {half_1_m});
+    $item -> {half_2_m}      = sprintf ('%02d', $item -> {half_2_m});
+    $item -> {half_2_to_m}   = sprintf ('%02d', $item -> {half_2_to_m});
 
 	$_REQUEST {__read_only} ||= !($_REQUEST {__edit} || $item -> {fake} > 0);
 

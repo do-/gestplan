@@ -292,8 +292,12 @@ our $DB_MODEL = {
 				time_step                  => {TYPE_NAME => 'tinyint'},
 				half_1_h                   => {TYPE_NAME => 'tinyint'},
 				half_1_m                   => {TYPE_NAME => 'tinyint'},
+				half_1_to_h                => {TYPE_NAME => 'tinyint'},
+				half_1_to_m                => {TYPE_NAME => 'tinyint'},
 				half_2_h                   => {TYPE_NAME => 'tinyint'},
 				half_2_m                   => {TYPE_NAME => 'tinyint'},
+				half_2_to_h                => {TYPE_NAME => 'tinyint'},
+				half_2_to_m                => {TYPE_NAME => 'tinyint'},
 			},
 			
 			data => [

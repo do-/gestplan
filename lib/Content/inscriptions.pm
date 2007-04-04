@@ -153,7 +153,22 @@ sub validate_update_inscriptions {
 		my $start  = 60 * $_REQUEST {_hour_start}  + $_REQUEST {_minute_start};
 		my $finish = 60 * $_REQUEST {_hour_finish} + $_REQUEST {_minute_finish};
 		
-		$start < $finish or return "#_hour_finish#:Le début ne peut pas succéder la fin";
+		$start < $finish or return "#_hour_finish#:Le début ne peut pas succéder à la fin";
+		
+		my $type       = $item -> {prestation} -> {type};
+		my $half_start = $item -> {prestation} -> {half_start};
+		
+		my $h = $type -> {"half_${half_start}_h"};
+		my $m = $type -> {"half_${half_start}_m"};
+		
+		$start >= 60 * $h + $m or return "#_hour_start#:Cette inscription ne peut débuter plus tôt que " . sprintf ('%02d:%02d', $h, $m);
+
+		my $half_finish = $item -> {prestation} -> {half_finish};
+
+		my $h = $type -> {"half_${half_finish}_to_h"};
+		my $m = $type -> {"half_${half_finish}_to_m"};
+
+		$finish <= 60 * $h + $m or return "#_hour_finish#:Cette inscription ne peut se terminer plus tard que " . sprintf ('%02d:%02d', $h, $m);
 
 		$_REQUEST {_label} = sprintf ('%02d:%02d - %02d:%02d', $_REQUEST {_hour_start}, $_REQUEST {_minute_start}, $_REQUEST {_hour_finish}, $_REQUEST {_minute_finish});
 
@@ -312,7 +327,8 @@ EOS
 			$_USER -> {role} ne 'admin' &&
 			$prestation_1 -> {type} -> {is_private} &&
 			$prestation_1 -> {id_user} != $_USER -> {id} &&
-			$prestation_1 -> {id_users} !~ /,$$_USER{id},/
+			$prestation_1 -> {id_users} !~ /,$$_USER{id},/ &&
+			$prestation_1 -> {type} -> {ids_roles} !~ /,$$_USER{id_role},/
 			;
 			
 		my $id_users = join ',', grep {$_} ($prestation_1 -> {id_users}, $prestation_1 -> {id_user});						
@@ -389,7 +405,8 @@ EOS
 			$_USER -> {role} ne 'admin' &&
 			$prestation_2 -> {type} -> {is_private} &&
 			$prestation_2 -> {id_user} != $_USER -> {id} &&
-			$prestation_2 -> {id_users} !~ /,$$_USER{id},/
+			$prestation_2 -> {id_users} !~ /,$$_USER{id},/ &&
+			$prestation_2 -> {type} -> {ids_roles} !~ /,$$_USER{id_role},/
 			;
 
 		my $id_users = join ',', grep {$_} ($prestation_2 -> {id_users}, $prestation_2 -> {id_user});						

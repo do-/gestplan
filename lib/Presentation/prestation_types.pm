@@ -73,6 +73,37 @@ sub draw_item_of_prestation_types {
 	
 	my ($data) = @_;
 
+	my $numeros = [
+		{
+			id    => 0,
+			label => '1, 2, 3...',
+		},
+		{
+			id    => 1,
+			type  => 'hgroup',
+			label => 'horaire',
+			items => [
+				{
+					label => 'en ',
+					name  => 'time_step',
+					no_colon => 1,
+					size  => 2
+				},
+				{
+					label => 'minutes',
+					type  => 'static',
+					no_colon => 1,
+				},
+			],
+		},
+		{
+			id    => -1,
+			label => 'libre',
+		},
+	];
+	
+	my $no_tos = $_REQUEST {__read_only} && $data -> {is_half_hour} != -1;
+
 	draw_form ({
 
 		right_buttons => [ del ($data) ],
@@ -96,48 +127,142 @@ sub draw_item_of_prestation_types {
 				label => 'Nom',
 				size  => 80,
 			},
-			{
-				name   => 'id_day_period',
-				label  => 'Quand',
-				type   => 'checkboxes',
-#				values => $data -> {day_periods},
-				values => [
-					{
-						id    => 1,
-						label => 'matin',
-						type  => 'hgroup',
-						items => [
-							{
-								name => 'half_1_h',
-								size => 2,
-							},
-							{
-								name  => 'half_1_m',
-								size  => 2,
-								label => 'h ',
-								no_colon => 1,
-							},
-						],
-					},
-					{
-						id    => 2,
-						type  => 'hgroup',
-						label => 'après-midi',
-						items => [
-							{
-								name => 'half_2_h',
-								size => 2,
-							},
-							{
-								name  => 'half_2_m',
-								size  => 2,
-								label => 'h ',
-								no_colon => 1,
-							},
-						],
-					},
-				],
-			},
+			[
+    				{
+					name   => 'is_half_hour',
+					label  => 'Numéros',
+					type   => 'radio',
+					values => $numeros,
+				},
+				{
+					name   => 'id_day_period',
+					label  => 'Quand',
+					type   => 'checkboxes',
+	#				values => $data -> {day_periods},
+					values => [
+						{
+							id    => 1,
+							label => 'matin',
+							type  => 'hgroup',
+							items => [
+								{
+									name => 'half_1_h',
+									size => 2,
+								},
+								{
+									name  => 'half_1_m',
+									size  => 2,
+									label => 'h ',
+									no_colon => 1,
+								},
+								
+								
+								
+								
+								{
+									type => 'static',
+									value => qq{<span style="visibility:expression(getElementById('$numeros->[-1]').checked ? 'visible' : 'hidden')">à},
+									off   => $no_tos,
+								},
+								
+								{
+									name => 'half_1_to_h',
+									size => 2,
+									off   => $no_tos,
+								},
+								{
+									name  => 'half_1_to_m',
+									size  => 2,
+									label => 'h ',
+									no_colon => 1,
+									off   => $no_tos,
+								},
+								
+								{
+									type => 'static',
+									value => qq{</span>},
+									off   => $no_tos,
+								},
+								
+								
+								
+							],
+						},
+						{
+							id    => 2,
+							type  => 'hgroup',
+							label => 'après-midi',
+							items => [
+								{
+									name => 'half_2_h',
+									size => 2,
+								},
+								{
+									name  => 'half_2_m',
+									size  => 2,
+									label => 'h ',
+									no_colon => 1,
+								},
+								
+								
+								
+								
+								{
+									type => 'static',
+									value => qq{<span style="visibility:expression(getElementById('$numeros->[-1]').checked ? 'visible' : 'hidden')">à},
+									off   => $no_tos,
+								},
+								
+								{
+									name => 'half_2_to_h',
+									size => 2,
+									off   => $no_tos,
+								},
+								{
+									name  => 'half_2_to_m',
+									size  => 2,
+									label => 'h ',
+									no_colon => 1,
+									off   => $no_tos,
+								},
+								
+								{
+									type => 'static',
+									value => qq{</span>},
+									off   => $no_tos,
+								},
+								
+								
+								
+								
+								
+								
+							],
+						},
+					],
+				},
+			],	
+			[			
+				{
+				
+					type => 'hgroup',
+					label => "Nb d'inscrits",
+					
+					items => [
+						{
+							name  => 'length',
+							size  => 2,
+						},
+						{
+							name  => 'length_ext',
+							label => 'supplémentaires',
+							size  => 2,
+						},
+					],
+				
+				},
+    				
+			],
 			[
 				{
 					name  => 'is_placeable_by_conseiller',
@@ -162,63 +287,7 @@ sub draw_item_of_prestation_types {
 					label => 'Inscription privée',
 					type  => 'checkbox',
 				},
-			],
-			[			
-				{
-				
-					type => 'hgroup',
-					label => "Nb d'inscrits",
-					
-					items => [
-						{
-							name  => 'length',
-							size  => 2,
-						},
-						{
-							name  => 'length_ext',
-							label => 'supplémentaires',
-							size  => 2,
-						},
-					],
-				
-				},
-    			
-    			{
-					name   => 'is_half_hour',
-					label  => 'Numéros',
-					type   => 'radio',
-					values => [
-						{
-							id    => 0,
-							label => '1, 2, 3...',
-						},
-						{
-							id    => 1,
-							type  => 'hgroup',
-							label => 'horaire',
-							items => [
-								{
-									label => 'en ',
-									name  => 'time_step',
-									no_colon => 1,
-									size  => 2
-								},
-								{
-									label => 'minutes',
-									type  => 'static',
-									no_colon => 1,
-								},
-							],
-						},
-						{
-							id    => -1,
-							label => 'libre',
-						},
-					],
-				},
-	
-			],
-						
+			],						
 			[			
 				{
 					name  => 'is_multiday',
