@@ -848,14 +848,18 @@ EOS
 		my @id_users = grep {$_ > 0} split /\,/, $prestation -> {id_users};
 		push @id_users, $prestation -> {id_user};
 		
-#		($prestation -> {cnt_inscriptions_total}, $prestation -> {cnt_inscriptions}) = sql_select_array ("SELECT SUM(1), SUM(IF(fake = 0, 1, 0)) FROM inscriptions WHERE id_prestation = ? AND label NOT LIKE '+%'", $prestation -> {id});
-#		if ($prestation -> {cnt_inscriptions_total} && $prestation -> {cnt_inscriptions_total} <= $prestation -> {cnt_inscriptions}) {
-#			$prestation -> {color} = $busy_color;
-#		}
-		
-#		elsif ($prestation -> {is_half_hour}) {
-#			$bgcolor = sql_select_scalar ('SELECT COUNT(*) FROM inscriptions WHERE fake <> 0 AND id_prestation = ?', $prestation -> {id}) ? '#ddffdd' : '#ffdddd',
-#		}
+		if ($prestation -> {is_half_hour} != -1) {
+
+			($prestation -> {cnt_inscriptions_total}, $prestation -> {cnt_inscriptions}) = sql_select_array ("SELECT SUM(1), SUM(IF(fake = 0, 1, 0)) FROM inscriptions WHERE id_prestation = ? AND label NOT LIKE '+%'", $prestation -> {id});
+
+			if ($prestation -> {cnt_inscriptions_total} && $prestation -> {cnt_inscriptions_total} <= $prestation -> {cnt_inscriptions}) {
+				$prestation -> {color} = $busy_color;
+			}		
+			elsif ($prestation -> {is_half_hour}) {
+				$bgcolor = sql_select_scalar ('SELECT COUNT(*) FROM inscriptions WHERE fake <> 0 AND id_prestation = ?', $prestation -> {id}) ? '#ddffdd' : '#ffdddd',
+			}
+
+		}		
 
 		$prestation -> {color} ||= $default_color;
 		
