@@ -580,7 +580,7 @@ sub select_prestations {
 	$_REQUEST {__meta_refresh} = $_USER -> {refresh_period} || 300;
 	
 	my $default_color = sql_select_scalar ('SELECT color FROM prestation_type_groups WHERE id = -1');
-#	my $busy_color    = sql_select_scalar ('SELECT color FROM prestation_type_groups WHERE id = -2');
+	my $busy_color    = sql_select_scalar ('SELECT color FROM prestation_type_groups WHERE id = -2');
 
 	$_REQUEST {week} = 1 if $_REQUEST {week} eq '0';
 	
