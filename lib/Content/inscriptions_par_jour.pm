@@ -53,6 +53,66 @@ sub select_inscriptions_par_jour {
 EOS
 
 	 my $inscriptions_par_conseiller = sql_select_all (<<EOS);
+	 	SELECT DISTINCT
+	 		prestation_types.ids_ext_fields
+	 	FROM
+	 		inscriptions
+	 		INNER JOIN prestations ON inscriptions.id_prestation = prestations.id
+	 		INNER JOIN users ON prestations.id_user = users.id
+	 		INNER JOIN prestation_types ON prestations.id_prestation_type = prestation_types.id
+	 	WHERE
+	 		inscriptions.fake = 0
+	 		AND prestations.id IN ($id_prestations)
+	 		$site_filter
+EOS
+	
+	my %ids_ext_fields = (-1 => 1);
+	
+	foreach my $inscription (@$inscriptions_par_conseiller) {
+		
+		foreach my $id_ext_field (split /\,/, $inscription -> {ids_ext_fields}) {
+		
+			$ids_ext_fields {$id_ext_field} = 1;
+		
+		}
+		
+	}
+		
+	my $ids_ext_fields = join ',', keys %ids_ext_fields;
+
+	my $ext_fields = sql_select_all (<<EOS);
+		SELECT
+			ext_fields.*
+		FROM
+			ext_fields
+		WHERE
+			ext_fields.id IN ($ids_ext_fields)
+		ORDER BY
+			ext_fields.ord
+EOS
+		
+	my $filter = '';
+	my @params = ();	
+		
+	foreach my $field (@$ext_fields) {
+		
+		$field -> {name} = 'field_' . $field -> {id};
+		
+		$_REQUEST {$field -> {name}} or next;
+		
+		if ($field -> {id_field_type} != 3) {
+			$filter .= " AND $field->{name} = ?";
+			push @params, $_REQUEST {$field -> {name}};
+               	}
+		else {
+			$filter .= " AND $field->{name} LIKE ?";
+			push @params, '%' . $_REQUEST {$field -> {name}} . '%';
+		}
+		
+
+	}
+	
+	 my $inscriptions_par_conseiller = sql_select_all (<<EOS, @params);
 	 	SELECT
 	 		inscriptions.*
 	 		, prestations.dt_start
@@ -68,11 +128,51 @@ EOS
 	 		inscriptions.fake = 0
 	 		AND prestations.id IN ($id_prestations)
 	 		$site_filter
+	 		$filter
 	 	ORDER BY
 	 		inscriptions.nom
 	 		, inscriptions.prenom
 EOS
 
+		
+	foreach my $field (@$ext_fields) {
+		
+		if ($field -> {id_field_type} == 1) {
+		
+			$field -> {type} = 'input_select';
+			
+			$field -> {empty} = '[Tout ' . lc $field -> {label} . ']';
+			
+			if ($field -> {id_voc}) {
+				$field -> {values} = sql_select_vocabulary ('voc_' . $field -> {id_voc});
+			}
+			else {
+				$field -> {values} = sql_select_vocabulary ('users', {filter => "id_organisation = $_USER->{id_organisation}"});
+			}			
+			
+			my %v = map {$_ -> {id} => $_ -> {label}} @{$field -> {values}};
+							
+			foreach my $i (@$inscriptions_par_conseiller) {
+				$i -> {$field -> {name}} = $v {$i -> {$field -> {name}}}
+			}
+
+		}			
+		elsif ($field -> {id_field_type} == 4) {
+			
+			$field -> {type} = 'input_checkbox';
+
+			foreach my $i (@$inscriptions_par_conseiller) {
+				$i -> {$field -> {name}} = $i -> {$field -> {name}} ? 'Oui' : 'Non';
+			}
+			
+		}
+		else {
+			$field -> {type} = 'input_text';
+			$field -> {keep_params} = [];
+		}
+			
+	}
+		
 	return {
 		inscriptions_par_conseiller => $inscriptions_par_conseiller,
 		prev  => $prev,		
@@ -80,6 +180,7 @@ EOS
 		users => $users,
 		prestation_types => $prestation_types,
 		menu  => $menu,
+		ext_fields => $ext_fields,
 	};
 
 }

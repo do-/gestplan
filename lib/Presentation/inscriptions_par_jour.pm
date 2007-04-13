@@ -15,6 +15,8 @@ sub draw_inscriptions_par_jour {
 				bottom_toolbar => ' ',
 
 				max_len => 255,
+				
+				off => $_REQUEST {xls},
 
 			},
 			
@@ -40,6 +42,7 @@ sub draw_inscriptions_par_jour {
 				'No / temps',
 				'Arrivé',
 				'Reçu par',
+				map {$_ -> {label}} @{$data -> {ext_fields}},
 			],			
 
 			sub {
@@ -70,6 +73,7 @@ sub draw_inscriptions_par_jour {
 						label => map {$_ -> {label}} grep {$_ -> {id} == $i -> {id_user}} @{$data -> {users}},
 #						off   => !$i -> {hour},
 					},
+					map {$i -> {'field_' . $_ -> {id}}} @{$data -> {ext_fields}},
 				])
 
 			},
@@ -126,6 +130,14 @@ sub draw_inscriptions_par_jour {
 						hotkey       => {code => Esc},
 						href         => "/?type=prestations&week=$_REQUEST{week}&year=$_REQUEST{year}&id_site=$_REQUEST{id_site}",
 					},
+					
+					{
+						type => 'break',
+						break_table => 1,
+						off  => 0 == @{$data -> {ext_fields}},
+					},
+					
+						@{$data -> {ext_fields}},
 					
 				],
 
