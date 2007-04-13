@@ -102,6 +102,7 @@ sub draw_item_of_users {
 				type   => 'select',
 				empty  => ' ',
 				values => $data -> {sites},
+				off    => 0 == @{$data -> {sites}},
 			},
 			
 			{

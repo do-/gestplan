@@ -114,7 +114,50 @@ sub draw_item_of_inscriptions {
 				empty  => '[personne pour le moment]',
 			},
 		],
-	);
+	)
+	
+	.
+	
+	draw_table (
+	
+		[
+#			'Heure',
+		],
+		
+		sub {
+		
+			draw_cells ({
+				href => "/?type=inscriptions&id=$$i{id}",
+			}, [
+			
+				$i -> {user_label},
+			
+			]);
+		
+		},
+		
+		$data -> {inscriptions},
+		
+		{
+		
+			title => {label => 'Co-animateurs'},
+			
+			off => !$_REQUEST {__read_only} || $data -> {prestation} -> {type} -> {is_half_hour} != -1,
+			
+			top_toolbar => [ {}, {
+			
+				label    => 'Ajouter...',
+				icon     => 'create',
+				keep_esc => 0,
+				href     => {type => inscriptions_select},
+			
+			}]
+		
+		},
+	
+	)	
+	
+	;
 
 }
 

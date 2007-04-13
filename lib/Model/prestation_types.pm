@@ -1,0 +1,40 @@
+columns => {				
+	label                      => {TYPE_NAME => 'varchar', COLUMN_SIZE  => 255},
+	label_short                => {TYPE_NAME => 'varchar', COLUMN_SIZE  => 255},
+	id_prestation_type_group   => {TYPE_NAME => 'int'},
+	length                     => {TYPE_NAME => 'int'},
+	length_ext                 => {TYPE_NAME => 'int'},
+	id_day_period              => {TYPE_NAME => 'int', NULLABLE => 0, COLUMN_DEFAULT => 3},
+	is_half_hour               => {TYPE_NAME => 'tinyint'},
+	is_multiday                => {TYPE_NAME => 'tinyint'},
+	is_placeable_by_conseiller => {TYPE_NAME => 'tinyint'},
+	is_private                 => {TYPE_NAME => 'tinyint'},
+	ids_ext_fields             => {TYPE_NAME => 'varchar', COLUMN_SIZE  => 255},
+	ids_roles                  => {TYPE_NAME => 'varchar', COLUMN_SIZE  => 255},
+	ids_rooms                  => {TYPE_NAME => 'varchar', COLUMN_SIZE  => 255},
+	ids_users                  => {TYPE_NAME => 'varchar', COLUMN_SIZE  => 255},
+	id_people_number           => {TYPE_NAME => 'int'},
+	is_to_edit                 => {TYPE_NAME => 'tinyint'},
+	id_organisation            => {TYPE_NAME => 'int'},
+	is_open                    => {TYPE_NAME => 'tinyint'},
+	no_stats                   => {TYPE_NAME => 'tinyint'},
+	time_step                  => {TYPE_NAME => 'tinyint'},
+	half_1_h                   => {TYPE_NAME => 'tinyint'},
+	half_1_m                   => {TYPE_NAME => 'tinyint'},
+	half_1_to_h                => {TYPE_NAME => 'tinyint'},
+	half_1_to_m                => {TYPE_NAME => 'tinyint'},
+	half_2_h                   => {TYPE_NAME => 'tinyint'},
+	half_2_m                   => {TYPE_NAME => 'tinyint'},
+	half_2_to_h                => {TYPE_NAME => 'tinyint'},
+	half_2_to_m                => {TYPE_NAME => 'tinyint'},
+},
+
+data => [
+	{
+		id          => -1,
+		fake        => -2,
+		label       => 'Retraîte',
+		label_short => 'RET',
+		is_multiday => 1
+	}
+]

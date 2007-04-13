@@ -123,7 +123,14 @@ sub do_delete_inscriptions {
 	sql_do ("UPDATE inscriptions SET $fields WHERE id = ?", $_REQUEST {id});
 	
 	if ($item -> {prestation} -> {type} -> {is_half_hour} == -1) {
+				
+		my $new_parent = sql_select_scalar ('SELECT MIN(id) FROM inscriptions WHERE parent = ?', $item -> {id});
 		
+		if ($new_parent) {
+			sql_do ('UPDATE inscriptions SET parent = 0 WHERE     id = ?', $new_parent);
+			sql_do ('UPDATE inscriptions SET parent = ? WHERE parent = ?', $new_parent, $item -> {id});
+		}
+
 		sql_do_delete ('inscriptions');
 		
 	}
@@ -268,8 +275,39 @@ sub get_item_of_inscriptions {
 		},
 		{type => 'inscriptions', name => $item -> {label}, id => $item -> {id}},
 	];
+	
+	if ($item -> {prestation} -> {type} -> {is_half_hour} == -1) {
+	
+		$parent = {%$item};
+		
+		while ($parent -> {parent}) {
+		
+			$parent = sql_select_hash ('inscriptions', $parent -> {parent});
+		
+		}
+		
+		$item -> {inscriptions} = sql_select_all (<<EOS, $item -> {id}, $parent -> {id}, $parent -> {id});
+			SELECT
+				inscriptions.*
+				, users.label AS user_label
+			FROM
+				inscriptions
+				LEFT JOIN prestations ON inscriptions.id_prestation = prestations.id
+				LEFT JOIN users ON prestations.id_user = users.id
+			WHERE
+				inscriptions.id <> ?
+				AND (inscriptions.id = ? OR inscriptions.parent = ?)
+EOS
+	
+	}
+	else {
+		
+		$item -> {inscriptions} = [];
+		
+	}
 
 	return $item;
+
 }
 
 ################################################################################
