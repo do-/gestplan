@@ -51,8 +51,8 @@ sub select_inscriptions_par_jour {
 			AND id_prestation_type IN ($id_prestation_types)
 			$filter
 EOS
-
-	 my $inscriptions_par_conseiller = sql_select_all (<<EOS);
+	
+	my $inscriptions_par_conseiller = sql_select_all (<<EOS);
 	 	SELECT DISTINCT
 	 		prestation_types.ids_ext_fields
 	 	FROM
@@ -172,9 +172,11 @@ EOS
 		}
 			
 	}
+	
+	my ($ids, $idx) = ids ($inscriptions_par_conseiller);
 		
 	return {
-		inscriptions_par_conseiller => $inscriptions_par_conseiller,
+		inscriptions_par_conseiller => [grep {!$idx -> {$_ -> {parent}}} @$inscriptions_par_conseiller],
 		prev  => $prev,		
 		next  => $next,		
 		users => $users,

@@ -127,14 +127,14 @@ EOS
 			LEFT JOIN prestation_types ON prestations.id_prestation_type = prestation_types.id
 			LEFT JOIN inscriptions ON (
 				inscriptions.id_prestation = prestations.id
-				AND 60 * inscriptions.hour_start  + inscriptions.minute_start  <= ?
-				AND 60 * inscriptions.hour_finish + inscriptions.minute_finish >= ?
+				AND 60 * inscriptions.hour_start  + inscriptions.minute_start  < ?
+				AND 60 * inscriptions.hour_finish + inscriptions.minute_finish > ?
 			)
 		WHERE
 			prestations.id_user IN ($ids)
 			AND prestations.fake = 0
-			AND CONCAT(prestations.dt_start,  prestations.half_start)  <= ?
-			AND CONCAT(prestations.dt_finish, prestations.half_finish) >= ?
+			AND CONCAT(prestations.dt_start,  prestations.half_start)  < ?
+			AND CONCAT(prestations.dt_finish, prestations.half_finish) > ?
 EOS
 
 

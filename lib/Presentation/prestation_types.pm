@@ -161,7 +161,7 @@ sub draw_item_of_prestation_types {
 								
 								{
 									type => 'static',
-									value => qq{<span style="visibility:expression(getElementById('$numeros->[-1]').checked ? 'visible' : 'hidden')">à},
+									value => qq{<span style="visibility:expression(getElementById('$numeros->[-1]') && getElementById('$numeros->[-1]').checked ? 'visible' : 'hidden')">à},
 									off   => $no_tos,
 								},
 								
@@ -209,7 +209,7 @@ sub draw_item_of_prestation_types {
 								
 								{
 									type => 'static',
-									value => qq{<span style="visibility:expression(getElementById('$numeros->[-1]').checked ? 'visible' : 'hidden')">à},
+									value => qq{<span style="visibility:expression(getElementById('$numeros->[-1]') && getElementById('$numeros->[-1]').checked ? 'visible' : 'hidden')">à},
 									off   => $no_tos,
 								},
 								

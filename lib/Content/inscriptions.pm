@@ -91,10 +91,24 @@ sub do_mark_inscriptions {
 	$hour += $preconf -> {tz_shift};
 	
 	my $item = sql_select_hash ('inscriptions');
-
-	my $prestation = sql_select_hash ('prestations', $item -> {id_prestation});
 	
-	sql_do ('UPDATE inscriptions SET hour = ?, minute = ?, id_user = ? WHERE id = ?', $hour, $min, $prestation -> {id_user}, $_REQUEST {id});
+	if ($item -> {parent}) {
+		$_REQUEST {id} = $item -> {parent};
+		$item = sql_select_hash ('inscriptions');
+	}
+	
+	my $id_inscriptions = sql_select_ids ('SELECT id FROM inscriptions WHERE parent = ?', $item -> {id});
+
+	sql_select_loop (<<EOS, sub {sql_do ("UPDATE inscriptions SET hour = ?, minute = ?, id_user = ? WHERE id = ?", $hour, $min, $i -> {id_user}, $i -> {id})});
+		SELECT
+			inscriptions.id
+			, prestations.id_user
+		FROM
+			inscriptions
+			LEFT JOIN prestations ON inscriptions.id_prestation = prestations.id
+		WHERE
+			inscriptions.id IN ($_REQUEST{id},$id_inscriptions)
+EOS
 	
 	_refresh_alerts ();
 	
@@ -244,7 +258,7 @@ sub get_item_of_inscriptions {
 
 	$item -> {ext_fields} = sql_select_all ("SELECT * FROM ext_fields WHERE fake = 0 AND id IN (" . $item -> {prestation} -> {type} -> {ids_ext_fields} . ") ORDER BY ord");
 	
-	my @vocs = ('users', {filter => 'id_role < 3 AND id_organisation = ' . $item -> {prestation} -> {type} -> {id_organisation}});
+	my @vocs = ('users', {filter => 'id_organisation = ' . $item -> {prestation} -> {type} -> {id_organisation}});
 	
 	foreach my $field (@{$item -> {ext_fields}}) {
 		
