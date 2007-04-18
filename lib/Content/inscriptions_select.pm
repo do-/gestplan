@@ -133,8 +133,8 @@ EOS
 		WHERE
 			prestations.id_user IN ($ids)
 			AND prestations.fake = 0
-			AND CONCAT(prestations.dt_start,  prestations.half_start)  < ?
-			AND CONCAT(prestations.dt_finish, prestations.half_finish) > ?
+			AND CONCAT(prestations.dt_start,  prestations.half_start)  <= ?
+			AND CONCAT(prestations.dt_finish, prestations.half_finish) >= ?
 EOS
 
 

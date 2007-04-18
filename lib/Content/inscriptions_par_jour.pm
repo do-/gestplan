@@ -18,7 +18,7 @@ sub select_inscriptions_par_jour {
 		($_REQUEST {week}, $_REQUEST {year}) = Week_of_Year (Today ());	
 	}
 	
-	my $users = sql_select_vocabulary ('users', {filter => "id_role = 2 AND id_organisation = $_USER->{id_organisation}"});
+	my $users = sql_select_vocabulary ('users', {filter => "id_organisation = $_USER->{id_organisation}"});
 	my $prestation_types = sql_select_vocabulary ('prestation_types', {filter => "id_organisation = $_USER->{id_organisation}"}),
 	
 	my $id_prestation_types = -1;

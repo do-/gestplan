@@ -270,10 +270,7 @@ sub get_item_of_inscriptions {
 	
 	$item -> {prestation} -> {id_users} ||= -1;
 
-	add_vocabularies ($item, @vocs,
-		users => {filter => "id_organisation = $$_USER{id_organisation} AND id_role > 1"}
-#		users => {filter => "id IN ($item->{prestation}->{id_user},$item->{prestation}->{id_users})"}
-	);
+	add_vocabularies ($item, @vocs);
 
 	$item -> {path} = [
 		{
