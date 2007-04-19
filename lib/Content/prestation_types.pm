@@ -75,6 +75,8 @@ sub validate_update_prestation_types {
 	}
 	elsif ($_REQUEST {_is_half_hour} == -1) {
 	
+		!$_REQUEST {_is_multiday} or return "#_is_multiday#:Avec la numérorisation libre, la prestation ne peut pat durer plusieurs jours";
+	
 		60 * $_REQUEST {_half_1_h}    + $_REQUEST {_half_1_m}    <  60 * $_REQUEST {_half_1_to_h} + $_REQUEST {_half_1_to_m} or return "#_half_1_to_h#:La fin du matin doît succéder au début";
 		60 * $_REQUEST {_half_1_to_h} + $_REQUEST {_half_1_to_m} <= 60 * $_REQUEST {_half_2_h}    + $_REQUEST {_half_2_m}    or return "#_half_1_to_h#:Le début de l'après-midi doît succéder à la fin du matin";
 		60 * $_REQUEST {_half_2_h}    + $_REQUEST {_half_2_m}    <  60 * $_REQUEST {_half_2_to_h} + $_REQUEST {_half_2_to_m} or return "#_half_2_to_h#:La fin de l'après-midi doît succéder au début";
