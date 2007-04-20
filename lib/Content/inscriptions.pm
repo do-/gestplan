@@ -316,6 +316,10 @@ EOS
 		$item -> {inscriptions} = [];
 		
 	}
+	
+	if ($item -> {is_unseen}) {
+		sql_do ('UPDATE inscriptions SET is_unseen = 0 WHERE id = ?', $item -> {id});
+	}
 
 	return $item;
 

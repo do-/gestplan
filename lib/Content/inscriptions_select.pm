@@ -6,9 +6,10 @@ sub do_add_inscriptions_select {
 
 	my $item = sql_select_hash ('inscriptions');
 
-	$item -> {parent} = $item -> {id};
-	delete $item -> {id};
-	$item -> {fake} = 0;
+	$item -> {parent}    = $item -> {id};
+	delete                 $item -> {id};
+	$item -> {fake}      = 0;
+	$item -> {is_unseen} = 1;
 
 	my $prestation = sql_select_hash ('prestations', $item -> {id_prestation});
 	delete $prestation -> {id};
@@ -26,6 +27,21 @@ sub do_add_inscriptions_select {
 		sql_do_insert ('inscriptions', $item);
 	}
 	
+	my $id_inscriptions = sql_select_ids ('SELECT id FROM inscriptions WHERE parent = ?', $item -> {parent});
+	
+	$id_inscriptions = sql_select_ids (<<EOS, $item -> {parent}, $item -> {parent}, $_USER -> {id});
+		SELECT
+			inscriptions.id
+		FROM
+			inscriptions
+			LEFT JOIN prestations ON inscriptions.id_prestation = prestations.id
+		WHERE
+			(inscriptions.id = ? OR inscriptions.parent = ?)
+			AND prestations.id_user = ?
+EOS
+	
+	sql_do ("UPDATE inscriptions SET is_unseen = 0 WHERE id IN ($id_inscriptions)");
+
 	esc ();
 
 }

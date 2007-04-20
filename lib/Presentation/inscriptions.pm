@@ -281,6 +281,7 @@ sub draw_inscriptions {
 				}, [
 					$i -> {label},
 					{
+						status => $i -> {is_unseen} ? {icon => 100} : undef,
 						label => $i -> {fake} ? '[libre]' : join ' ', ($i -> {nom}, $i -> {prenom}),
 					},
 					{
@@ -389,6 +390,7 @@ sub draw_inscriptions {
 				}, [
 					$i -> {label},
 					{
+						status => $i -> {is_unseen} ? {icon => 100} : undef,
 						label => $i -> {fake} ? '[libre]' : join ' ', ($i -> {nom}, $i -> {prenom}),
 					},
 					{

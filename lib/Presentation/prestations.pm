@@ -348,7 +348,9 @@ EOH
 					
 						hidden => $_ -> {by_user} -> {$i -> {id}} -> {is_hidden},
 						
-						label => $_ -> {by_user} -> {$i -> {id}} -> {label},
+						label  => $_ -> {by_user} -> {$i -> {id}} -> {label},
+						
+						status => $_ -> {by_user} -> {$i -> {id}} -> {status},
 						
 						title =>
 							$_ -> {by_user} -> {$i -> {id}} -> {note} ?	$_ -> {by_user} -> {$i -> {id}} -> {note} :

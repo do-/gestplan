@@ -901,6 +901,17 @@ EOS
 				}
 				
 			}
+			
+			if (
+				$prestation -> {is_half_hour} == -1
+				&& $id_user == $_USER -> {id}
+				&& sql_select_scalar ('SELECT id FROM inscriptions WHERE id_prestation = ? AND is_unseen = 1 LIMIT 1', $prestation -> {id})
+			) {
+				
+				$day -> {by_user} -> {$id_user} -> {status} = {icon => 100};
+				$day -> {by_user} -> {$id_user} -> {label}  .= ' !!!';
+				
+			}
 		
 		}	
 		

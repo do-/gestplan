@@ -19,6 +19,8 @@ columns => {
 	minute_finish  => {TYPE_NAME => 'tinyint'},
 
 	id_user        => {TYPE_NAME => 'int'},
+
+	is_unseen      => {TYPE_NAME => 'tinyint', NULLABLE => 0, COLUMN_DEFAULT => 0},
 	
 },
 
