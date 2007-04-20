@@ -258,7 +258,7 @@ sub get_item_of_inscriptions {
 
 	$item -> {ext_fields} = sql_select_all ("SELECT * FROM ext_fields WHERE fake = 0 AND id IN (" . $item -> {prestation} -> {type} -> {ids_ext_fields} . ") ORDER BY ord");
 	
-	my @vocs = ('users', {filter => 'id_organisation = ' . $item -> {prestation} -> {type} -> {id_organisation}});
+	my @vocs = ('users', {filter => 'id_group > 0 AND id_organisation = ' . $item -> {prestation} -> {type} -> {id_organisation}});
 	
 	foreach my $field (@{$item -> {ext_fields}}) {
 		
