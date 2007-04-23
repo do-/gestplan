@@ -348,7 +348,7 @@ sub select_inscriptions {
 			prestation_1 => {},
 			prestation_2 => {},
 			week_status_type => $week_status_type,
-			users => sql_select_vocabulary ('users'),
+			users => sql_select_vocabulary ('users', {filter => 'id_group > 0 AND id_organisation = ' . $_USER -> {id_organisation}}),
 		};
 	}
 	
@@ -521,7 +521,7 @@ EOS
 		prestation_1 => $prestation_1,
 		prestation_2 => $prestation_2,
 		week_status_type => $week_status_type,
-		users => sql_select_vocabulary ('users', {filter => 'id_role IN (2,3) AND id_organisation = ' . $_USER -> {id_organisation}}),
+		users => sql_select_vocabulary ('users', {filter => 'id_group > 0 AND id_organisation = ' . $_USER -> {id_organisation}}),
 		day_periods => sql_select_vocabulary ('day_periods'),
 		user => $user,
 	};
