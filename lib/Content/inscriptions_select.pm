@@ -23,6 +23,7 @@ sub do_add_inscriptions_select {
 	}
 
 	foreach my $id_prestation (@ids_prestations) {
+		delete $item -> {id};
         	$item -> {id_prestation} = $id_prestation;
 		sql_do_insert ('inscriptions', $item);
 	}
