@@ -318,7 +318,7 @@ sub draw_item_of_prestation_types {
 					name   => 'id_people_number',
 					label  => 'Nb de collaborateurs',
 					type   => 'radio',
-					values => $people_numbers,
+					values => [@$people_numbers],
 				},
 			],
 			{
