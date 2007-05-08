@@ -28,7 +28,12 @@ sub select_alerts {
 			inscriptions.nom
 			, inscriptions.prenom
 EOS
-
+	
+	if (@$alerts) {
+		my $ids = ids ($alerts);	
+		sql_do ("DELETE FROM alerts WHERE id IN ($ids)");
+	}
+	
 	return {
 		alerts => $alerts,
 	};

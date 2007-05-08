@@ -217,8 +217,6 @@ sub del {
 ################################################################################
 
 sub iframe_alerts {
-
-	$_USER -> {role} eq 'conseiller' or return '';
 	
 	my $salt = rand * time;
 
@@ -278,11 +276,11 @@ sub stat_menu {
 			},
 			{
 				href  => "/?type=stats_prestations&month=$month",
-				label => 'Conseillers mensuel',
+				label => 'Utilisateurs mensuel',
 			},
 			{
 				href  => "/?type=stats_prestations&month=-1",
-				label => 'Conseillers annuel',
+				label => 'Utilisateur annuel',
 			},
 
 		);
@@ -297,15 +295,15 @@ sub stat_menu {
 
 			{
 				name  => 'stats_inscriptions',
-				label => 'Jeunes par prestation',
+				label => 'RDV par prestation',
 			},
 			{
 				href  => "/?type=stats_inscriptions&month=$month",
-				label => 'Jeunes mensuel',
+				label => 'RDV mensuel',
 			},
 			{
 				href  => "/?type=stats_inscriptions&month=-1",
-				label => 'Jeunes annuel',
+				label => 'RDV annuel',
 			},
 			{
 				href  => "/?type=stats_inscriptions&id_user=-1",

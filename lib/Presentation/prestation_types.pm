@@ -270,7 +270,7 @@ sub draw_item_of_prestation_types {
 					type  => 'radio',
 					values => [
 						{id => 0, label => 'Administrateurs seulement'},
-						{id => 1, label => 'Administrateurs et conseillers'},
+						{id => 1, label => 'Administrateurs et utilisateurs'},
 						{
 							id     => 2,
 							name   => 'ids_users',

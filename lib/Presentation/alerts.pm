@@ -26,8 +26,8 @@ sub draw_alerts {
 	return <<EOH;
 		<script>
 			alert ("$text");
-			nope ("/?sid=$_REQUEST{sid}&type=alerts&action=purge&_ids=$ids", '_self');
-			window.parent.document.location = window.parent.document.location + '&_salt=' + $salt;
+//			nope ("/?sid=$_REQUEST{sid}&type=alerts&action=purge&_ids=$ids", '_self');
+//			window.parent.document.location = window.parent.document.location + '&_salt=' + $salt;
 		</script>
 EOH
 

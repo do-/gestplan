@@ -36,7 +36,7 @@ sub draw_inscriptions_par_jour {
 		
 			[
 				'Nom, prénom',
-				'Conseiller',
+				'Utilisateur',
 				'Date',
 				'Type',
 				'No / temps',
@@ -115,7 +115,7 @@ sub draw_inscriptions_par_jour {
 						type   => 'input_select',
 						name   => 'id_user',
 						values => $data -> {users},
-						empty  => '[Tout conseiller]',
+						empty  => '[Tout utilisateur]',
 					},
 					{
 						type   => 'input_select',

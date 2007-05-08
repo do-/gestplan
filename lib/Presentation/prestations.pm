@@ -345,10 +345,11 @@ EOH
 					},
 
 					(map {{
-					
+										
 						hidden => $_ -> {by_user} -> {$i -> {id}} -> {is_hidden},
 						
 						label  => $_ -> {by_user} -> {$i -> {id}} -> {label},
+						max_len => 1000000,
 						
 						status => $_ -> {by_user} -> {$i -> {id}} -> {status},
 						
@@ -363,8 +364,21 @@ EOH
 							"/?type=inscriptions&id_user=$$i{id}&dt=$$_{fr_dt}&id_site=$_REQUEST{id_site}&id_day_period=" . $_ -> {by_user} -> {$i -> {id}} -> {half_start},
 						
 						attributes => {
-							bgcolor => $_ -> {by_user} -> {$i -> {id}} -> {bgcolor},
+						
+							bgcolor => ($_ -> {by_user} -> {$i -> {id}} -> {bgcolor} ||= 'white'),
+						
 							align => 'center',
+							
+#							style => !($_ -> {id} % 2) ?
+#								"background:$_->{by_user}->{$i->{id}}->{bgcolor};border-left:solid #D6D3CE 1px;" :
+#								(
+#									!$_ -> {by_user} -> {$i -> {id}} -> {id}
+#									|| !$_ -> {by_user} -> {$i -> {id}} -> {rowspan}
+#									|| ($_ -> {by_user} -> {$i -> {id}} -> {rowspan} % 2)
+#								) ? "background:$_->{by_user}->{$i->{id}}->{bgcolor};border-right:solid #D6D3CE 1px;" :
+##								$_ -> {by_user} -> {$i -> {id}} -> {id} ? "background:$_->{by_user}->{$i->{id}}->{bgcolor};border-right:solid #D6D3CE 1px;" :
+#								undef,
+								
 							colspan => $_ -> {by_user} -> {$i -> {id}} -> {rowspan},							
 							(
 								($_USER -> {role} eq 'admin' && !$i -> {is_alien}) || (

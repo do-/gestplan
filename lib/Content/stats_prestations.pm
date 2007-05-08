@@ -110,10 +110,10 @@ EOS
 		years => [map {{id => $_, label => $_}} (2005 .. $year)],
 		months => [
 			{id =>  0, label => "Toute l'année par mois"},
-			{id => -1, label => "Toute l'année par conseiller"},
+			{id => -1, label => "Toute l'année par utilisateur"},
 			map {{
 				id => $_,
-				label => ucfirst $month_names [$_ - 1] . ' par conseiller',
+				label => ucfirst $month_names [$_ - 1] . ' par utilisateur',
 			}} (1 .. 12)
 		],
 	};
