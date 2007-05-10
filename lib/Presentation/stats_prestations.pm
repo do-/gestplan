@@ -9,7 +9,7 @@ sub draw_stats_prestations {
 		draw_table (
 
 			[
-				$_REQUEST {month} ? 'Conseiller' : 'Mois',
+				$_REQUEST {month} ? 'Utilisateur' : 'Mois',
 				(map {
 					$_ -> {label},
 				} @{$data -> {prestation_types}}),
