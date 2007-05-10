@@ -178,31 +178,69 @@ sub draw_prestations {
 	
 	my ($data) = @_;
 	
+	my $shift = $data -> {menu} ? 128 : 111;
+
 	my $off_period_divs = <<EOJS;
 		<script>
+			
 			function coord (row, col, what) {
 				var tbody = document.getElementById ('scrollable_table').tBodies(0);
 				var _row = tbody.rows [row];
-				
-				if (!_row) {
-//					alert ('coord: row ' + row + ' not found');
-					return 0;
-				}
-
 				var _cell = _row.cells [col];
-
-				if (!_cell) {
-//					alert ('coord: col ' +  col + ' in row ' + row + ' not found');
-					return 0;
-				}
-				
-				return _cell ['offset' + what];
-				
+				return _cell ['offset' + what];			
 			}
+
+			function coord_h (row, col, what) {
+				var thead = document.getElementById ('scrollable_table').tHead;
+				var _row = thead.rows [row];
+				var _cell = _row.cells [col];
+				return _cell ['offset' + what];			
+			}
+			
 		</script>
 EOJS
+
+
+	my $from = -1;
+
+	for (my $j = 0; $j < @{$data -> {users}}; $j++) {
 	
-	my $shift = $data -> {menu} ? 128 : 111;
+		my $user = $data -> {users} -> [$j];
+		
+		next if $user -> {id};
+		
+		if ($from > -1) {
+						
+			my $top    = $shift + 44 + 22 * $from;
+			my $height = 22 * ($j - $from);
+
+			foreach my $i (1 .. 5) {
+				
+				$off_period_divs .= <<EOH;
+					<div
+						style="
+							border:0px;
+							position:absolute;
+							background-color: #000000;
+							left:expression(
+								coord_h (0, $i, 'Left')
+								- document.getElementById ('scrollable_table').offsetParent.scrollLeft
+								- 1
+							);
+							z-index:1;
+							height:$height;
+							top:$top;
+							width:1;
+					"
+					><img src="/i/0.gif" width=1 height=1></div>
+EOH
+			}
+
+		}
+			
+		$from = $j + 1;
+		
+	}
 	
 	foreach my $off_period (@{$data -> {off_periods}}) {
 	
@@ -214,7 +252,7 @@ EOJS
 				border:solid black 1px;
 				position:absolute;
 				background-image: url(/i/stripes.gif);
-				z-index:1;
+				z-index:-1;
 				display:expression(document.getElementById ('scrollable_table').offsetParent.scrollTop > 45 ? 'none' : 'block');
 				top:expression($shift + 	coord ($$off_period{row}, $$off_period{col_start}, 'Top') - document.getElementById ('scrollable_table').offsetParent.scrollTop);
 				left:expression( 	coord ($$off_period{row}, $$off_period{col_start}, 'Left') - document.getElementById ('scrollable_table').offsetParent.scrollLeft);				
@@ -451,6 +489,8 @@ EOH
 #				},
 				
 				lpt => 1,
+				
+				no_scroll => 1,
 
 				top_toolbar => [{
 					keep_params => ['type', 'year', 'id_site'],
