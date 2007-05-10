@@ -377,11 +377,11 @@ EOS
 		$prestation_1 -> {type} = sql_select_hash ('prestation_types', $prestation_1 -> {id_prestation_type});
 		
 		$prestation_1 -> {read_only} =
-			$_USER -> {role} ne 'admin' &&
-			$prestation_1 -> {type} -> {is_private} &&
-			$prestation_1 -> {id_user} != $_USER -> {id} &&
-			$prestation_1 -> {id_users} !~ /,$$_USER{id},/ &&
-			$prestation_1 -> {type} -> {ids_roles} !~ /,$$_USER{id_role},/
+			$_USER -> {role} ne 'admin'
+			&& $prestation_1 -> {type} -> {is_private}
+			&& $prestation_1 -> {id_user} != $_USER -> {id}
+			&& $prestation_1 -> {id_users} !~ /,$$_USER{id},/
+#			&& $prestation_1 -> {type} -> {ids_roles} !~ /,$$_USER{id_role},/
 			;
 			
 		my $id_users = join ',', grep {$_} ($prestation_1 -> {id_users}, $prestation_1 -> {id_user});						
@@ -455,11 +455,11 @@ EOS
 		$prestation_2 -> {type} = sql_select_hash ('prestation_types', $prestation_2 -> {id_prestation_type});	
    	
 		$prestation_2 -> {read_only} =
-			$_USER -> {role} ne 'admin' &&
-			$prestation_2 -> {type} -> {is_private} &&
-			$prestation_2 -> {id_user} != $_USER -> {id} &&
-			$prestation_2 -> {id_users} !~ /,$$_USER{id},/ &&
-			$prestation_2 -> {type} -> {ids_roles} !~ /,$$_USER{id_role},/
+			$_USER -> {role} ne 'admin'
+			&& $prestation_2 -> {type} -> {is_private}
+			&& $prestation_2 -> {id_user} != $_USER -> {id}
+			&& $prestation_2 -> {id_users} !~ /,$$_USER{id},/
+#			&& $prestation_2 -> {type} -> {ids_roles} !~ /,$$_USER{id_role},/
 			;
 
 		my $id_users = join ',', grep {$_} ($prestation_2 -> {id_users}, $prestation_2 -> {id_user});						

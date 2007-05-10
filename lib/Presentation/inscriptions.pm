@@ -324,7 +324,7 @@ sub draw_inscriptions {
 								$_USER -> {role} ne 'admin'
 								&& $data -> {prestation_1} -> {id_user}  != $_USER -> {id}
 								&& $data -> {prestation_1} -> {id_users} !~ /,$_USER->{id},/
-								&& $data -> {prestation_1} -> {type} -> {ids_roles} !~ /,$_USER->{id_role},/
+#								&& $data -> {prestation_1} -> {type} -> {ids_roles} !~ /,$_USER->{id_role},/
 							)
 							,
 					},
@@ -431,7 +431,7 @@ sub draw_inscriptions {
 								$_USER -> {role} ne 'admin'
 								&& $data -> {prestation_2} -> {id_user}  != $_USER -> {id}
 								&& $data -> {prestation_2} -> {id_users} !~ /,$_USER->{id},/
-								&& $data -> {prestation_2} -> {type} -> {ids_roles} !~ /,$_USER->{id_role},/
+#								&& $data -> {prestation_2} -> {type} -> {ids_roles} !~ /,$_USER->{id_role},/
 							)
 							,
 					},
