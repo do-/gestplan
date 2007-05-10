@@ -12,7 +12,7 @@ sub draw_item_of_prestations {
 		[
 			{
 				name   => 'id_user',
-				label  => 'Conseiller',
+				label  => 'Utilisateur',
 				type   => 'select',
 				values => $data -> {users},
 				read_only => $_USER -> {role} ne 'admin',
