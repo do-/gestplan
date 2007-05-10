@@ -909,7 +909,7 @@ EOS
 			) {
 				
 				$day -> {by_user} -> {$id_user} -> {status} = {icon => 100};
-				$day -> {by_user} -> {$id_user} -> {label}  .= ' !!!';
+#				$day -> {by_user} -> {$id_user} -> {label}  .= ' !!!';
 				
 			}
 		

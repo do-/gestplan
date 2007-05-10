@@ -30,6 +30,7 @@ sub do_create_inscriptions {
 	
 	$_REQUEST {id} = sql_do_insert ('inscriptions', {
 		id_prestation  => $_REQUEST {id_prestation},
+		id_author      => $_USER -> {id},
 		hour_start     => $h,
 		minute_start   => $m,		
 	});
@@ -137,15 +138,24 @@ sub do_delete_inscriptions {
 	sql_do ("UPDATE inscriptions SET $fields WHERE id = ?", $_REQUEST {id});
 	
 	if ($item -> {prestation} -> {type} -> {is_half_hour} == -1) {
-				
-		my $new_parent = sql_select_scalar ('SELECT MIN(id) FROM inscriptions WHERE parent = ?', $item -> {id});
+	
+		if (!$item -> {parent} && $item -> {id_author} == $_USER -> {id}) {
 		
-		if ($new_parent) {
-			sql_do ('UPDATE inscriptions SET parent = 0 WHERE     id = ?', $new_parent);
-			sql_do ('UPDATE inscriptions SET parent = ? WHERE parent = ?', $new_parent, $item -> {id});
+			sql_do ('DELETE FROM inscriptions WHERE id = ? OR parent = ?', $item -> {id}, $item -> {id});
+		
 		}
+		else {
+		
+			my $new_parent = sql_select_scalar ('SELECT MIN(id) FROM inscriptions WHERE parent = ?', $item -> {id});
+			
+			if ($new_parent) {
+				sql_do ('UPDATE inscriptions SET parent = 0 WHERE     id = ?', $new_parent);
+				sql_do ('UPDATE inscriptions SET parent = ? WHERE parent = ?', $new_parent, $item -> {id});
+			}
+	
+			sql_do_delete ('inscriptions');
 
-		sql_do_delete ('inscriptions');
+		}
 		
 	}
 		

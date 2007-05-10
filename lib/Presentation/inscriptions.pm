@@ -322,6 +322,7 @@ sub draw_inscriptions {
 							$data -> {prestation_1} -> {type} -> {is_half_hour} != -1 ||
 							(
 								$_USER -> {role} ne 'admin'
+								&& $data -> {prestation_1} -> {type} -> {is_private}
 								&& $data -> {prestation_1} -> {id_user}  != $_USER -> {id}
 								&& $data -> {prestation_1} -> {id_users} !~ /,$_USER->{id},/
 #								&& $data -> {prestation_1} -> {type} -> {ids_roles} !~ /,$_USER->{id_role},/
@@ -429,6 +430,7 @@ sub draw_inscriptions {
 							$data -> {prestation_2} -> {type} -> {is_half_hour} != -1
 							|| (
 								$_USER -> {role} ne 'admin'
+								&& $data -> {prestation_2} -> {type} -> {is_private}
 								&& $data -> {prestation_2} -> {id_user}  != $_USER -> {id}
 								&& $data -> {prestation_2} -> {id_users} !~ /,$_USER->{id},/
 #								&& $data -> {prestation_2} -> {type} -> {ids_roles} !~ /,$_USER->{id_role},/
