@@ -203,6 +203,28 @@ EOJS
 
 	my $from = -1;
 
+	foreach my $i (1 .. 5) {
+				
+				$off_period_divs .= <<EOH;
+					<div
+						style="
+							border:0px;
+							position:absolute;
+							background-color: #000000;
+							left:expression(
+								coord_h (0, $i, 'Left')
+								- document.getElementById ('scrollable_table').offsetParent.scrollLeft
+								- 1
+							);
+							height:44;
+							top:expression(document.getElementById ('scrollable_table').offsetParent.scrollTop);
+							width:1;
+					"
+					><img src="/i/0.gif" width=1 height=1></div>
+EOH
+	}
+
+
 	for (my $j = 0; $j < @{$data -> {users}}; $j++) {
 	
 		my $user = $data -> {users} -> [$j];
@@ -211,7 +233,7 @@ EOJS
 		
 		if ($from > -1) {
 						
-			my $top    = $shift + 44 + 22 * $from;
+			my $top    = 44 + 22 * $from;
 			my $height = 22 * ($j - $from);
 
 			foreach my $i (1 .. 5) {
@@ -227,7 +249,6 @@ EOJS
 								- document.getElementById ('scrollable_table').offsetParent.scrollLeft
 								- 1
 							);
-							z-index:1;
 							height:$height;
 							top:$top;
 							width:1;
@@ -252,9 +273,8 @@ EOH
 				border:solid black 1px;
 				position:absolute;
 				background-image: url(/i/stripes.gif);
-				z-index:-1;
-				display:expression(document.getElementById ('scrollable_table').offsetParent.scrollTop > 45 ? 'none' : 'block');
-				top:expression($shift + 	coord ($$off_period{row}, $$off_period{col_start}, 'Top') - document.getElementById ('scrollable_table').offsetParent.scrollTop);
+				display:expression(document.getElementById ('scrollable_table').offsetParent.scrollTop > coord ($$off_period{row}, $$off_period{col_start}, 'Top') - 45 ? 'none' : 'block');
+				top:expression(coord ($$off_period{row}, $$off_period{col_start}, 'Top'));
 				left:expression( 	coord ($$off_period{row}, $$off_period{col_start}, 'Left') - document.getElementById ('scrollable_table').offsetParent.scrollLeft);				
 				height:expression(	coord ($$off_period{row}, $$off_period{col_start}, 'Height'));
 				width:expression(
@@ -490,7 +510,9 @@ EOH
 				
 				lpt => 1,
 				
-				no_scroll => 1,
+				dotdot => $off_period_divs,
+				
+#				no_scroll => 1,
 
 				top_toolbar => [{
 					keep_params => ['type', 'year', 'id_site'],
@@ -558,9 +580,9 @@ EOH
 			
 		)
 		
-		.
+#		.
 		
-		$off_period_divs
+#		$off_period_divs
 
 		.
 		
