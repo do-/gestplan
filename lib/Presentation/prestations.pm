@@ -224,6 +224,7 @@ EOJS
 EOH
 	}
 
+	push @{$data -> {users}}, {};
 
 	for (my $j = 0; $j < @{$data -> {users}}; $j++) {
 	
@@ -263,6 +264,8 @@ EOH
 		
 	}
 	
+	pop @{$data -> {users}};
+
 	foreach my $off_period (@{$data -> {off_periods}}) {
 	
 		$off_period_divs .= <<EOH;
