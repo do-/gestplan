@@ -35,6 +35,7 @@ data => [
 		fake        => -2,
 		label       => 'Retraîte',
 		label_short => 'RET',
-		is_multiday => 1
-	}
-]
+		is_multiday => 1,
+	},
+],
+

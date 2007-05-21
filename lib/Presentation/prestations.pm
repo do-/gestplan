@@ -210,7 +210,7 @@ EOJS
 						style="
 							border:0px;
 							position:absolute;
-							background-color: #000000;
+							background: #485F70;
 							left:expression(
 								coord_h (0, $i, 'Left')
 								- document.getElementById ('scrollable_table').offsetParent.scrollLeft
@@ -218,7 +218,7 @@ EOJS
 							);
 							height:44;
 							top:expression(document.getElementById ('scrollable_table').offsetParent.scrollTop);
-							width:1;
+							width:2;
 					"
 					><img src="/i/0.gif" width=1 height=1></div>
 EOH
@@ -234,8 +234,11 @@ EOH
 		
 		if ($from > -1) {
 						
-			my $top    = 44 + 22 * $from;
-			my $height = 22 * ($j - $from);
+			my $top     = 44 + 22 * $from;
+			my $height  = 22 * ($j - $from);
+			my $height1 = $height + 1;
+			
+			$data -> {users} -> [$from] -> {span} = $j - $from;
 
 			foreach my $i (1 .. 5) {
 				
@@ -244,7 +247,7 @@ EOH
 						style="
 							border:0px;
 							position:absolute;
-							background-color: #000000;
+							background-color: #485F70;
 							left:expression(
 								coord_h (0, $i, 'Left')
 								- document.getElementById ('scrollable_table').offsetParent.scrollLeft
@@ -252,10 +255,37 @@ EOH
 							);
 							height:$height;
 							top:$top;
-							width:1;
+							width:2;
 					"
 					><img src="/i/0.gif" width=1 height=1></div>
 EOH
+
+				my $day = $data -> {days} -> [2 * $i - 1];
+
+#				if ($data -> {holydays} -> {$data -> {days} -> [2 * $i - 1] -> {iso_dt}}) {
+#					$off_period_divs .= <<EOH;
+#						<div
+#							style="
+#								border:0px;
+#								position:absolute;
+#								background:url('/i/reptile007.jpg');
+#								left:expression(
+#									coord_h (0, $i, 'Left')
+#									- document.getElementById ('scrollable_table').offsetParent.scrollLeft
+#									+ 1
+#								);
+#								height:$height1;
+#								top:$top;
+#								z-index:0;
+#								width:expression(
+#									coord_h (0, $i, 'Width')
+#								);
+#						"
+#						><img src="/i/0.gif" width=1 height=1></div>
+#EOH
+#
+#				}
+
 			}
 
 		}
@@ -293,6 +323,43 @@ EOH
 		
 	}
 
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+		my @h2 = ();
+		
+		foreach my $day (@{$data -> {days}}) {
+		
+			my $holyday = $data -> {holydays} -> {$day -> {iso_dt}};
+			
+			if ($holyday) {
+			
+				next if $day -> {id} % 2;
+				
+				push @h2, {
+					label => $holyday -> {label},
+					colspan => 2,
+				};
+			
+			}
+			else {
+
+				push @h2, {
+					label => ($day -> {id} % 2 ? 'Après-midi' : 'Matin'),
+				};
+
+			}
+							
+		}
+	
+	
 	return
 	
 	
@@ -308,9 +375,7 @@ EOH
 	
 	
 	
-	
-	
-	    draw_form (
+		draw_form (
 		
 			{
 				
@@ -344,42 +409,28 @@ EOH
 			[],
 		)
 		
-		.
-	
-			
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+		.	
 
 		draw_table (
 		
-		    [
+			[
 		    
-		    	[
+			    	[
 					{label => 'Nom', rowspan => 2},
-		    		map {{
+		    	
+			    		map {{
 						label => $_ -> {label},
 						colspan => 2,
 						hidden => ($_ -> {id} % 2),
 						href => $_REQUEST {xls} ? undef : {type => 'inscriptions_par_jour', dt_from => $_ -> {fr_dt}, dt_to => $_ -> {fr_dt}},
 					}} @{$data -> {days}},
-				],
-		    	[
-		    		map {{
-						label => ($_ -> {id} % 2 ? 'Après-midi' : 'Matin'),
-#						href => {type => 'inscriptions_par_jour', dt_from => $_ -> {fr_dt}, dt_to => $i -> {fr_dt}},
-					}} @{$data -> {days}},
-				],
-		
-			],
 			
+				],
+				
+				\@h2,
+		    		
+			],
+
 			sub {
 				
 				$i -> {id} or return draw_cells ({}, [
@@ -391,10 +442,7 @@ EOH
 					},
 				]);
 				
-
-				draw_cells ({
-				}, [
-
+				my @cells = (
 					{
 						label      => $i -> {label},
 						href       => $i -> {id} < 0 ? undef : {
@@ -404,89 +452,114 @@ EOH
 							id_user => $i -> {id}
 						},
 					},
-
-					(map {{
-										
-						hidden => $_ -> {by_user} -> {$i -> {id}} -> {is_hidden},
-						
-						label  => $_ -> {by_user} -> {$i -> {id}} -> {label},
-						max_len => 1000000,
-						
-						status => $_ -> {by_user} -> {$i -> {id}} -> {status},
-						
-						title =>
-							$_ -> {by_user} -> {$i -> {id}} -> {note} ?	$_ -> {by_user} -> {$i -> {id}} -> {note} :
-							$_ -> {by_user} -> {$i -> {id}} -> {inscriptions} ?	$_ -> {by_user} -> {$i -> {id}} -> {inscriptions} :
-							"$$_{label} " . $data -> {day_periods} -> [$_ -> {id} % 2] -> {label} . " pour $$i{label}",
-						
-						href =>
-							!$_ -> {by_user} -> {$i -> {id}} -> {label} ? undef :
-							$i -> {id} < 0 ? undef :
-							"/?type=inscriptions&id_user=$$i{id}&dt=$$_{fr_dt}&id_site=$_REQUEST{id_site}&id_day_period=" . $_ -> {by_user} -> {$i -> {id}} -> {half_start},
-						
-						attributes => {
-						
-							bgcolor => ($_ -> {by_user} -> {$i -> {id}} -> {bgcolor} ||= 'white'),
-						
-							align => 'center',
-							
-#							style => !($_ -> {id} % 2) ?
-#								"background:$_->{by_user}->{$i->{id}}->{bgcolor};border-left:solid #D6D3CE 1px;" :
-#								(
-#									!$_ -> {by_user} -> {$i -> {id}} -> {id}
-#									|| !$_ -> {by_user} -> {$i -> {id}} -> {rowspan}
-#									|| ($_ -> {by_user} -> {$i -> {id}} -> {rowspan} % 2)
-#								) ? "background:$_->{by_user}->{$i->{id}}->{bgcolor};border-right:solid #D6D3CE 1px;" :
-##								$_ -> {by_user} -> {$i -> {id}} -> {id} ? "background:$_->{by_user}->{$i->{id}}->{bgcolor};border-right:solid #D6D3CE 1px;" :
-#								undef,
+				);
 								
-							colspan => $_ -> {by_user} -> {$i -> {id}} -> {rowspan},							
-							(
-								($_USER -> {role} eq 'admin' && !$i -> {is_alien}) || (
-									$_USER -> {role} eq 'conseiller' &&
-									
-									(
-										
-										$_ -> {by_user} -> {$i -> {id}} -> {ids_users} =~ m{\,$$_USER{id}\,} ||
-									
+				foreach my $day (@{$data -> {days}}) {
 
-                                    	(
-
-											!$_ -> {by_user} -> {$i -> {id}} -> {label} &&
-											
-											(
-												$_USER -> {can_dblclick_others_empty} || $_USER -> {id} == $i -> {id}
-											)
-										
-										)
-										
-										
-										
-										||
-
-									
-									($i -> {id} == $_USER -> {id} &&
-									(
-										$_ -> {by_user} -> {$i -> {id}} -> {is_placeable_by_conseiller} == 1 ||
-										!$_ -> {by_user} -> {$i -> {id}} -> {label}
-									)))
-								) || (
-									$_USER -> {role} eq 'accueil' &&
-									$i -> {id} == $_USER -> {id}
-								)
-								
-							) ? (onDblClick =>
-#								$i -> {id} < 0 ? '' :
-								($data -> {week_status_type} -> {id} != 2 && ($data -> {week_status_type} -> {id} != 1 || $_USER -> {role} ne 'admin')) ? '' :
-								$_ -> {by_user} -> {$i -> {id}} -> {id} < 0 ? '' :
-								"nope(\"$$_{create_href}&id_user=$$i{id}\", \"invisible\")"
-							) : (),
-						},
-						
-					}} @{$data -> {days}}),
-
+					my $p = $day -> {by_user} -> {$i -> {id}};
 					
-				])
+					if ($data -> {holydays} -> {$day -> {iso_dt}}) {
+	
+						next if !$i -> {span} || $day -> {id} % 2;
+						
+						push @cells, {
+							colspan => 2,
+							rowspan => $i -> {span},
+							attributes => {
+								background => '/i/reptile007.jpg',
+							},
+						};
+						
+						next;
+	
+					}
+					
+					my $cell = {
+						hidden  => $p -> {is_hidden},
+						label   => $p -> {label},
+						max_len => 1000000,
+						status  => $p -> {status},
+						title   => $p -> {note} || $p -> {inscriptions} || "$$day{label} " . $data -> {day_periods} -> [$day -> {id} % 2] -> {label} . " pour $$i{label}",
+					};
+					
+					$cell -> {href} = "/?type=inscriptions&id_user=$$i{id}&dt=$$day{fr_dt}&id_site=$_REQUEST{id_site}&id_day_period=" . $p -> {half_start} if $p -> {label} && $i -> {id} >= 0 && !$p -> {no_href};
+					
+					$cell -> {attributes} = {
+						bgcolor => ($p -> {bgcolor} ||= 'white'),
+						align   => 'center',
+						colspan => $p -> {rowspan},							
+					};
+					
+					if (
+						(
+							
+							(
+								$_USER -> {role} eq 'admin'
+								&& !$i -> {is_alien}
+							)
+							
+							|| (
+								
+								$_USER -> {role} eq 'conseiller'
+								
+								&& (
+									
+									$p -> {ids_users} =~ m{\,$$_USER{id}\,}
+
+                            						|| (
+
+										!$p -> {label}
+										
+										&& (
+											$_USER -> {can_dblclick_others_empty}
+											|| $_USER -> {id} == $i -> {id}
+										)
+									
+									)
+									
+									|| (
+										
+										$i -> {id} == $_USER -> {id}
+										
+										&& (
+											$p -> {is_placeable_by_conseiller} == 1
+											|| !$p -> {label}
+										)
+									)
+								)
+							)
+							
+							|| (
+								$_USER -> {role} eq 'accueil' &&
+								$i -> {id} == $_USER -> {id}
+							)
+							
+						)
+						
+						&& !(
+						
+							$data -> {week_status_type} -> {id} != 2
+							
+							&& (
+								$data -> {week_status_type} -> {id} != 1
+								|| $_USER -> {role} ne 'admin'
+							)
+							
+						)
+						
+						&& !(
+							$i -> {id} < 0
+						)
+					
+					) {
+						$cell -> {attributes} -> {onDblClick} = "nope(\"$$day{create_href}&id_user=$$i{id}\", \"invisible\")";
+					}
+					
+					push @cells, $cell;	
+				
+				}
+				
+				return draw_cells ({}, \@cells);
 
 			},
 

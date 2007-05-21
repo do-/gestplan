@@ -215,6 +215,7 @@ EOS
 		prestation_types => $prestation_types,
 		cnt => $cnt,
 		portion => $$conf{portion},
+		vars => sql_select_all ('show variables'),
 	};
 	
 }

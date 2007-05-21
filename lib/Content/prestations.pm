@@ -647,6 +647,25 @@ sub select_prestations {
 	
 	}
 	
+	my $holydays = {};
+		
+	sql_select_loop ("SELECT *, dt + INTERVAL 1 YEAR AS dt FROM holydays WHERE fake = 0 AND id_organisation = ? AND is_every_year = 1 AND dt BETWEEN ? - INTERVAL 1 YEAR AND ? - INTERVAL 1 YEAR"
+		, sub {
+			sql_select_id ('holydays', {
+				-fake           => 0,
+				dt              => $i -> {dt},
+				is_every_year   => 1,
+				label           => $i -> {label},
+				id_organisation => $_USER -> {id_organisation},
+			}, ['dt', 'id_organisation'])
+		}
+		, $_USER -> {id_organisation}
+		, $days [0] -> {iso_dt}
+		, $days [-1] -> {iso_dt}
+	);
+	
+	sql_select_loop ("SELECT * FROM holydays WHERE fake = 0 AND id_organisation = ? AND dt BETWEEN ? AND ?", sub {$holydays -> {$i -> {dt}} = $i}, $_USER -> {id_organisation}, $days [0] -> {iso_dt}, $days [-1] -> {iso_dt});
+	
 	my $week_status_type = sql_select_hash ('week_status_types', week_status ($days [0] -> {fr_dt}));
 	
 	if (is_past ($days [0] -> {fr_dt})) {		
@@ -678,6 +697,7 @@ sub select_prestations {
 				, prestation_types.is_half_hour
 				, prestation_types.is_placeable_by_conseiller
 				, prestation_types.ids_users
+				, prestation_types.length + prestation_types.length_ext AS length
 				, IF(prestations.dt_start < '$dt_start', '$dt_start', prestations.dt_start) AS dt_start
 				, IF(prestations.dt_start < '$dt_start', 1, prestations.half_start) AS half_start
 				, IF(prestations.dt_finish > '$dt_finish', '$dt_finish', prestations.dt_finish) AS dt_finish
@@ -771,6 +791,7 @@ EOS
 				, prestation_types.is_half_hour
 				, prestation_types.is_placeable_by_conseiller
 				, prestation_types.ids_users
+				, prestation_types.length + prestation_types.length_ext AS length
 				, IF(prestations.dt_start < '$dt_start', '$dt_start', prestations.dt_start) AS dt_start
 				, IF(prestations.dt_start < '$dt_start', 1, prestations.half_start) AS half_start
 				, IF(prestations.dt_finish > '$dt_finish', '$dt_finish', prestations.dt_finish) AS dt_finish
@@ -801,6 +822,7 @@ EOS
 				, prestation_types.is_half_hour
 				, prestation_types.is_placeable_by_conseiller
 				, prestation_types.ids_users
+				, prestation_types.length + prestation_types.length_ext AS length
 				, IF(prestations_rooms.dt_start  < '$dt_start',  '$dt_start', prestations_rooms.dt_start) AS dt_start
 				, IF(prestations_rooms.dt_start  < '$dt_start',  1, prestations_rooms.half_start) AS half_start
 				, IF(prestations_rooms.dt_finish > '$dt_finish', '$dt_finish', prestations_rooms.dt_finish) AS dt_finish
@@ -821,28 +843,84 @@ EOS
 	}
 	
 	my $have_models = 0;
-
-	foreach my $prestation (@$prestations, @$prestations_rooms) {
-			
-		if ($prestation -> {id_user} > 0) {
-			
-			sql_select_loop (
-			
-				'SELECT * FROM inscriptions WHERE id_prestation = ? AND fake = 0 ORDER BY id',
-				
-				sub {
-					$prestation -> {inscriptions} .= ', ' if $prestation -> {inscriptions};
-					$prestation -> {inscriptions} .= $i -> {prenom};
-					$prestation -> {inscriptions} .= ' ';
-					$prestation -> {inscriptions} .= $i -> {nom};
-				},
-				
-				$prestation -> {id},
-				
-			);
-			
-		}
 	
+	my ($ids, $idx) = ids ($prestations);
+	
+	sql_select_loop (
+			
+		"SELECT id_prestation, COUNT(*) AS cnt, SUM(IF(fake = 0, 0, 1)) AS cnt_fake FROM inscriptions WHERE id_prestation IN ($ids) AND label NOT LIKE '+%' GROUP BY 1",
+				
+		sub {
+			
+			my $prestation = $idx -> {$i -> {id_prestation}};
+			
+			if ($prestation -> {is_half_hour} != -1) {
+				$prestation -> {cnt_inscriptions_total} += $i -> {cnt};
+				$prestation -> {cnt_fake} = $i -> {cnt_fake};
+			}
+			
+		},
+							
+	);
+	
+	sql_select_loop (
+			
+		"SELECT * FROM inscriptions WHERE id_prestation IN ($ids) AND fake = 0 ORDER BY id",
+				
+		sub {
+			
+			my $prestation = $idx -> {$i -> {id_prestation}};
+			
+			$prestation -> {inscriptions} .= ', ' if $prestation -> {inscriptions};
+			$prestation -> {inscriptions} .= $i -> {prenom};
+			$prestation -> {inscriptions} .= ' ';
+			$prestation -> {inscriptions} .= $i -> {nom};
+			
+			if ($prestation -> {is_half_hour} != -1 && $i -> {label} !~ /^\+/) {
+				$prestation -> {cnt_inscriptions} ++;
+			}
+			
+		},
+							
+	);
+	
+	my @prestations = ();	
+	my @holydays = sort keys %$holydays;
+	
+	PRESTATION: foreach my $prestation (@$prestations, @$prestations_rooms) {
+	
+	        foreach my $holyday (@holydays) {
+	
+	        	next if $holyday lt $prestation -> {dt_start};
+	        	next if $holyday gt $prestation -> {dt_finish};
+	        	
+	        	next PRESTATION if $prestation -> {dt_start} eq $prestation -> {dt_finish};
+	        	
+	        	if ($holyday gt $prestation -> {dt_start}) {
+	        					
+				my $slice = {%$prestation};	
+		        	$slice -> {dt_finish} = sprintf ('%04d-%02d-%02d', Add_Delta_Days ((split /-/, $holyday), -1));
+		        	$slice -> {half_finish} = 2;
+			
+				push @prestations, $slice;
+
+			}
+						
+	        	$prestation -> {dt_start} = sprintf ('%04d-%02d-%02d', Add_Delta_Days ((split /-/, $holyday), 1));
+	        	$prestation -> {half_start} = 1;
+
+			next PRESTATION if $prestation -> {dt_start} . $prestation -> {half_start} gt $prestation -> {dt_finish} . $prestation -> {half_finish};
+	
+		}
+		
+		push @prestations, $prestation;
+	
+	}	
+
+	foreach my $prestation (@prestations) {
+	
+		$prestation -> {no_href} = 1 if !$prestation -> {length} && $prestation -> {is_half_hour} != -1;
+				
 		$have_models ||= $prestation -> {id_prestation_model};
 	
 		my @id_users = grep {$_ > 0} split /\,/, $prestation -> {id_users};
@@ -850,13 +928,15 @@ EOS
 		
 		if ($prestation -> {is_half_hour} != -1) {
 
-			($prestation -> {cnt_inscriptions_total}, $prestation -> {cnt_inscriptions}) = sql_select_array ("SELECT SUM(1), SUM(IF(fake = 0, 1, 0)) FROM inscriptions WHERE id_prestation = ? AND label NOT LIKE '+%'", $prestation -> {id});
-
-			if ($prestation -> {cnt_inscriptions_total} && $prestation -> {cnt_inscriptions_total} <= $prestation -> {cnt_inscriptions}) {
+			if (
+				$prestation -> {cnt_inscriptions_total}
+				&& $prestation -> {cnt_inscriptions_total} <= $prestation -> {cnt_inscriptions})
+			{
 				$prestation -> {color} = $busy_color;
 			}		
 			elsif ($prestation -> {is_half_hour}) {
-				$bgcolor = sql_select_scalar ('SELECT COUNT(*) FROM inscriptions WHERE fake <> 0 AND id_prestation = ?', $prestation -> {id}) ? '#ddffdd' : '#ffdddd',
+#				$bgcolor = sql_select_scalar ('SELECT COUNT(*) FROM inscriptions WHERE fake <> 0 AND id_prestation = ?', $prestation -> {id}) ? '#ddffdd' : '#ffdddd',
+				$bgcolor = $prestation -> {cnt_fake} ? '#ddffdd' : '#ffdddd',
 			}
 
 		}		
@@ -885,6 +965,7 @@ EOS
 				cnt_inscriptions              => $prestation -> {cnt_inscriptions},
 				cnt_inscriptions_total        => $prestation -> {cnt_inscriptions_total},
 				note                          => $prestation -> {note},
+				no_href                       => $prestation -> {no_href},
 				half_start                    => $prestation -> {half_start},
 				inscriptions                  => $prestation -> {inscriptions},
 			};				
@@ -1056,6 +1137,8 @@ EOS
 		have_models => $have_models,
 
 		menu => $menu,		
+		
+		holydays => $holydays,
 			
 	};
 	
