@@ -469,6 +469,39 @@ sub validate_update_prestations {
 EOS
 
 	}
+	
+	my @id_prestations_rooms = sql_select_col ('SELECT id_room FROM prestations_rooms WHERE id_prestation = ?', $_REQUEST {id});
+	
+	if (@id_prestations_rooms) {
+	
+		my $ids = join ',', @id_prestations_rooms;
+		
+		my $conflict = sql_select_hash (<<EOS, $_REQUEST {_dt_finish} . $_REQUEST {_half_finish}, $_REQUEST {_dt_start} . $_REQUEST {_half_start});
+			SELECT
+				prestations_rooms.id
+				, rooms.label
+				, prestations_rooms.dt_start
+				, prestations_rooms.dt_finish
+			FROM
+				prestations_rooms
+				LEFT JOIN prestations ON prestations_rooms.id_prestation = prestations.id
+				LEFT JOIN rooms ON prestations_rooms.id_room = rooms.id
+			WHERE
+				prestations_rooms.fake = 0
+				AND prestations.fake = 0
+				AND prestations_rooms.id_room IN ($ids)
+				AND CONCAT(prestations_rooms.dt_start, prestations_rooms.half_start) <= ?
+				AND CONCAT(prestations_rooms.dt_finish, prestations_rooms.half_finish) >= ?
+			LIMIT
+				1
+EOS
+	
+		if ($conflict -> {id}) {
+			__d ($conflict, 'dt_start', 'dt_finish');
+			return "Conflit de réservation pour $conflict->{label}";
+		}
+	
+	}
 
 	return undef;
 	
