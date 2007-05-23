@@ -424,9 +424,12 @@ sub validate_update_prestations {
 	
 	my $prestation_type = sql_select_hash ('prestation_types', $_REQUEST {_id_prestation_type});
 	
+	my $item = sql_select_hash ('prestations');
+
 	unless ($prestation_type -> {is_multiday}) {
-		$_REQUEST {_dt_start}   eq $_REQUEST {_dt_finish} or return "#_id_prestation_type#:Ce type de prestation ne peut pas durer plusieurs jours";
-		$_REQUEST {_half_start} == $_REQUEST {_half_finish} or return "#_id_prestation_type#:Ce type de prestation ne peut pas durer plusieurs demi-jours";
+		my $field = $item -> {id_prestation_type} ? '' : '#_id_prestation_type#:';
+		$_REQUEST {_dt_start}   eq $_REQUEST {_dt_finish} or return "${field}Ce type de prestation ne peut pas durer plusieurs jours";
+		$_REQUEST {_half_start} == $_REQUEST {_half_finish} or return "${field}Ce type de prestation ne peut pas durer plusieurs demi-jours";
 	}
 	
 	if ($prestation_type -> {id_day_period} == 1) {
@@ -503,8 +506,6 @@ EOS
 EOS
 	
 		if ($conflict -> {id}) {
-		
-warn Dumper ($conflict);
 			__d ($conflict, 'dt_start', 'dt_finish');
 			return "Conflit de réservation pour $conflict->{label}";
 		}
