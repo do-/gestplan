@@ -17,6 +17,7 @@ sub draw_item_of_prestations {
 				values => $data -> {users},
 				read_only => $_USER -> {role} ne 'admin',
 				add_hidden => 1,
+				off    => $data -> {id_user} <= 0,
 			},
 			{
 				name   => 'id_users',
@@ -33,7 +34,10 @@ sub draw_item_of_prestations {
 						&& $data -> {prestation_type} -> {ids_users} =~ /\,$$_USER{id}\,/
 					)
 					,
-				off    => $data -> {prestation_type} -> {id_people_number} == 1,
+				off    =>
+					$data -> {prestation_type} -> {id_people_number} == 1
+					|| $data -> {id_user} <= 0
+					,
 			},
 			[
 				{
@@ -556,6 +560,8 @@ EOH
 							!$p -> {label}
 										
 							&& $i -> {id} < 0
+							
+							&& $_USER -> {role} ne 'admin'
 							
 						)
 					
