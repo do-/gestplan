@@ -855,6 +855,7 @@ EOS
 		$prestations_rooms = sql_select_all (<<EOS, $_USER -> {id_organisation});
 			SELECT
 				prestations.id
+				, prestations.note
 				, - prestations_rooms.id_room AS id_user
 				, prestation_types.label_short AS label
 				, prestation_types.is_half_hour
@@ -924,7 +925,7 @@ EOS
 	
 	my @prestations = ();	
 	my @holydays = sort keys %$holydays;
-	
+		
 	PRESTATION: foreach my $prestation (@$prestations, @$prestations_rooms) {
 	
 	        foreach my $holyday (@holydays) {
