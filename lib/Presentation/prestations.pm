@@ -188,10 +188,25 @@ sub draw_prestations {
 		<script>
 			
 			function coord (row, col, what) {
+
+
 				var tbody = document.getElementById ('scrollable_table').tBodies(0);
 				var _row = tbody.rows [row];
+			
+				if (!_row) {
+//					alert ('coord ('+row+', ' + col +', '+what+') : no row');
+					return 0;
+				}
+			
 				var _cell = _row.cells [col];
+
+				if (!_cell) {
+//					alert ('coord ('+row+', ' + col +', '+what+') : no cell');
+					return 0;
+				}
+			
 				return _cell ['offset' + what];			
+
 			}
 
 			function coord_h (row, col, what) {

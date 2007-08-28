@@ -1103,7 +1103,10 @@ EOS
 			my $span = 0;
 	
 			for (my $i = 0; $i < @days; $i++) {
-				$days [$i] -> {by_user} -> {$off_period -> {id_user}} -> {rowspan} ||= 1;
+				$days [$i] -> {by_user} -> {$off_period -> {id_user}} -> {rowspan} ||= ($holydays -> {$days [$i] -> {iso_dt}} ? 2 : 1);				
+			}
+			
+			for (my $i = 0; $i < @days; $i++) {
 				$span += ($days [$i] -> {by_user} -> {$off_period -> {id_user}} -> {rowspan} - 1);
 				next if $days [$i] -> {iso_dt} lt $off_period -> {dt_start};
 				$off_period -> {col_start} =

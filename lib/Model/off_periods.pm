@@ -9,3 +9,7 @@ columns => {
 	id_user     => {TYPE_NAME => 'int'},
 
 },
+
+keys => {
+	id_user => 'id_user,dt_start,half_start',
+}
