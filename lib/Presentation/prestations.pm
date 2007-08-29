@@ -576,7 +576,7 @@ EOH
 										
 							&& $i -> {id} < 0
 							
-							&& $_USER -> {role} ne 'admin'
+							&& !$_USER -> {can_dblclick_others_empty}
 							
 						)
 					
