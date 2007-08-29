@@ -245,6 +245,8 @@ sub do_create_prestations {
 		
 	unless ($_REQUEST {id}) {
 	
+		my $prestation_type = sql_select_hash ('prestation_types', $_REQUEST {id_prestation_type});
+
 		my @ids_rooms = grep {$_ > 0} split /\,/, $prestation_type -> {ids_rooms};
 		push @ids_rooms, - $_REQUEST {id_user} if $_REQUEST {id_user} < 0;
 
@@ -256,8 +258,6 @@ sub do_create_prestations {
 			half_finish => $_REQUEST {half_finish},
 			id_prestation_type => $_REQUEST {id_prestation_type},
 		});
-		
-		my $prestation_type = sql_select_hash ('prestation_types', $_REQUEST {id_prestation_type});
 				
 		foreach my $id_room (@ids_rooms) {
 			sql_do_insert ('prestations_rooms', {
