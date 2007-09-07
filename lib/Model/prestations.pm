@@ -20,6 +20,7 @@ columns => {
 keys => {
 
 	dt_finish => 'dt_finish,half_finish',
+	dt_start  => 'dt_start,half_start',
 	id_user   => 'id_user',
 
 },

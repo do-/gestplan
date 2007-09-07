@@ -66,7 +66,9 @@ sub select_stats_prestations {
 			1, 2, 3, 4
 EOS
 
-	my $filter = $_REQUEST {id_site} ? " AND id_site = $_REQUEST{id_site} " : '';
+	my $filter =
+		$_REQUEST {id_site} ? " AND id_site = $_REQUEST{id_site} " :
+		'';
 	my $users = sql_select_all ("SELECT id, label FROM users WHERE id_organisation = ? AND fake = 0 $filter ORDER BY label", $_USER -> {id_organisation});
 	my ($ids, $idx) = ids ($users);	
 	
@@ -85,8 +87,13 @@ EOS
 		
 		foreach my $id_user (@id_users) {
 		
-			$idx -> {$id_user} > 0 or next;
-		
+			if ($_REQUEST {id_user}) {
+				$id_user == $_REQUEST {id_user} or next;
+			}
+			else {
+				$idx -> {$id_user} > 0 or next;
+			}
+				
 			my $line =
 				$_REQUEST {month} ? $id2line -> {$id_user} :
 				$id2line -> {$prestation -> {month}};
