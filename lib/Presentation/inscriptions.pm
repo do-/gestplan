@@ -11,6 +11,8 @@ sub draw_item_of_inscriptions {
 		right_buttons => [ $data -> {read_only} ? () : del ($data) ],
 		
 		no_edit => $data -> {read_only},
+		
+		keep_params => ['id_log'],
 	
 	}, $data,
 		[

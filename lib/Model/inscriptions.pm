@@ -22,6 +22,8 @@ columns => {
 	id_author      => {TYPE_NAME => 'int'},
 
 	is_unseen      => {TYPE_NAME => 'tinyint', NULLABLE => 0, COLUMN_DEFAULT => 0},
+
+	id_log         => {TYPE_NAME => 'int'},
 	
 },
 

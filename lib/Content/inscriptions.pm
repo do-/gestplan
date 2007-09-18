@@ -236,6 +236,22 @@ EOS
 		$_REQUEST {_id_user} or return "#_hour#:Ce(tte) jeune est reçu(e), donc il faut indiquer la personne";
 	}
 
+	my $item = sql_select_hash ('inscriptions');
+
+	if ($_REQUEST {id_log} != $item -> {id_log}) {
+	
+		my $log  = sql_select_hash ('log',   $item -> {id_log});
+		
+		__d ($log, 'dt');
+		
+		my $user = sql_select_hash ('users', $log -> {id_user});
+		
+		return "Désolé, mais $user->{label} vient d'éditer cette fiche (à $log->{dt}). Veuillez cliquer 'retour'.";
+	
+	};
+	
+	delete $_REQUEST {id_log};
+
 	return undef;
 	
 }
@@ -245,6 +261,8 @@ EOS
 sub get_item_of_inscriptions {
 
 	my $item = sql_select_hash ('inscriptions');
+	
+	$_REQUEST {id_log} = $item -> {id_log};
 	
 	$_REQUEST {__read_only} ||= !($_REQUEST {__edit} || $item -> {fake});
 	
