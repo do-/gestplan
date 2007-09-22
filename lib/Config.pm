@@ -101,12 +101,6 @@ our @month_names = qw(
 
 our @month_names_1 = ('', @month_names);
 
-our $people_numbers = [
-	{id => 1, label => '1'},
-	{id => 2, label => '1+'},
-	{id => 3, label => 'plusieurs'},
-];
-
 sub user_menu {
 	
 	my ($item) = @_;
