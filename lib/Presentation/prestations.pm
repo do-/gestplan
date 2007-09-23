@@ -665,6 +665,7 @@ EOH
 						icon    => 'create',
 						label   => 'Modèles',
 						href    => {action => 'add_models'},
+						target  => 'invisible',
 						off     =>
 							$data -> {have_models} ||
 							$_USER -> {role} ne 'admin' ||

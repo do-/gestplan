@@ -22,7 +22,97 @@ EOS
 	
 	sql_do ("DELETE FROM prestations  WHERE id IN ($ids)");
 	sql_do ("DELETE FROM inscriptions WHERE id_prestation IN ($ids)");
+	sql_do ("DELETE FROM prestations_rooms WHERE id_prestation IN ($ids)");
 	
+}
+
+################################################################################
+
+sub validate_add_models_prestations {
+
+	my @monday = Monday_of_Week ($_REQUEST {week}, $_REQUEST {year});
+	
+	my $prestation_models = sql_select_all (<<EOS, $_USER -> {id_organisation}, $_REQUEST {week} % 2, {fake => 'prestation_models'});
+		SELECT
+			prestation_models.*
+		FROM
+			prestation_models
+			INNER JOIN users ON prestation_models.id_user = users.id
+		WHERE
+			users.id_organisation = ?
+			AND prestation_models.is_odd = ?
+EOS
+
+	my $prestation_types = {};
+	
+	my $day_periods = sql_select_all_hash ('SELECT id, label FROM day_periods');
+			
+	foreach my $prestation_model (@$prestation_models) {
+	
+		my $dt = sprintf ('%04d-%02d-%02d', Add_Delta_Days (@monday, $prestation_model -> {day_start} - 1));
+		my $dt_fr = join '/', reverse split /-/, $dt;
+		$dt_fr .= " $day_periods->{$prestation_model->{half_start}}->{label}";
+
+		my $type = (
+			$prestation_types -> {$prestation_model -> {id_prestation_type}} ||=
+			sql_select_hash ('prestation_types', $prestation_model -> {id_prestation_type})
+		);
+	
+		my $conflict = sql_select_hash (<<EOS, $dt, $dt, "${dt}$prestation_model->{half_finish}", "${dt}$prestation_model->{half_start}", $prestation_model -> {id_user}, "\%,$prestation_model->{id_user},\%");
+			SELECT 	
+				prestations.*
+			FROM
+				prestations
+			WHERE
+				fake = 0
+				AND dt_start  <= ?
+				AND dt_finish >= ?
+				AND CONCAT(dt_start,  half_start)  <= ?
+				AND CONCAT(dt_finish, half_finish) >= ?
+				AND (id_user = ? OR IFNULL(id_users, '') LIKE ?)
+			LIMIT 1
+EOS
+
+        	if ($conflict -> {id}) {
+        		
+			my $user = sql_select_hash ('users', $prestation_model -> {id_user});
+			        	
+        		return "Désolé, mais une prestation pour $user->{label} est déjà placée le $dt_fr";
+        	
+		}
+
+		foreach my $id_room (grep {$_ > 0} split /\,/, $type -> {ids_rooms}) {
+		
+			my $conflict = sql_select_hash (<<EOS, $dt, $dt, "${dt}$prestation_model->{half_finish}", "${dt}$prestation_model->{half_start}", $id_room);
+				SELECT 	
+					prestations_rooms.*
+				FROM
+					prestations_rooms
+				WHERE
+					fake = 0
+					AND dt_start  <= ?
+					AND dt_finish >= ?
+					AND CONCAT(dt_start,  half_start)  <= ?
+					AND CONCAT(dt_finish, half_finish) >= ?
+					AND id_room = ?
+				LIMIT 1
+EOS
+	
+	        	if ($conflict -> {id}) {
+	        		
+				my $user = sql_select_hash ('users', $prestation_model -> {id_user});
+				my $room = sql_select_hash ('rooms', $id_room);
+				
+				$dt = join '/', reverse split /-/, $dt;
+	        	
+	        		return "Désolé, mais la salle nommée '$room->{label}' est occupé(e) le $dt_fr (conflit pour $user->{label})";
+	        	
+			}        		
+
+		}		
+
+	}
+		
 }
 
 ################################################################################
@@ -42,10 +132,33 @@ sub do_add_models_prestations {
 			AND prestation_models.is_odd = ?
 EOS
 
+	my $prestation_types = {};
+	
+	my $reserved_rooms = {};
+	
+	my $collective_prestations = {};
+	
 	foreach my $prestation_model (@$prestation_models) {
 	
 		my $dt = sprintf ('%04d-%02d-%02d', Add_Delta_Days (@monday, $prestation_model -> {day_start} - 1));
+
+		my $type = (
+			$prestation_types -> {$prestation_model -> {id_prestation_type}} ||=
+			sql_select_hash ('prestation_types', $prestation_model -> {id_prestation_type})
+		);		
 		
+		if ($type -> {is_collective}) {
+		
+			my $collective_prestation = $collective_prestations -> {$type -> {is_collective}, $dt, $prestation_model -> {half_start}};
+			
+			if ($collective_prestation) {
+				$collective_prestation -> {id_users} ||= "-1";
+				$collective_prestation -> {id_users}  .= ",$prestation_model->{id_user}";
+				next;
+			}
+		
+		}
+
 		my $id = sql_do_insert ('prestations', {
 			fake                => 0,
 			dt_start            => $dt,
@@ -57,30 +170,23 @@ EOS
 			id_prestation_model => $prestation_model -> {id},
 		});
 		
+		if ($type -> {is_collective}) {
+		
+			$collective_prestations -> {$type -> {is_collective}, $dt, $prestation_model -> {half_start}} = {id => $id};
+		
+		}
+
 		my $item = sql_select_hash ('prestations', $id);
-				
-		$item -> {type} = sql_select_hash ('prestation_types', $item -> {id_prestation_type});
+						
+		$type -> {time_step} ||= 30;
 		
-		$item -> {type} -> {time_step} ||= 30;
-		
-			
-			
-			
-
-
-
-
-
-
-
-
 		my ($h, $m) = ();
 			
 		if ($item -> {half_start} == 1) {
 			
-			if ($item -> {type} -> {half_1_h}) {
-				$h = $item -> {type} -> {half_1_h};
-				$m = $item -> {type} -> {half_1_m};
+			if ($type -> {half_1_h}) {
+				$h = $type -> {half_1_h};
+				$m = $type -> {half_1_m};
 			}
 			else {
 				$h = 9;
@@ -90,9 +196,9 @@ EOS
 		}
 		else {
 		
-			if ($item -> {type} -> {half_2_h}) {
-				$h = $item -> {type} -> {half_2_h};
-				$m = $item -> {type} -> {half_2_m};
+			if ($type -> {half_2_h}) {
+				$h = $type -> {half_2_h};
+				$m = $type -> {half_2_m};
 			}
 			else {
 				$h = 13;
@@ -100,18 +206,10 @@ EOS
 			}
 			
 		}	
-
-
-
-
-
 			
-			
-			
-			
-		for (my $i = 0; $i < $item -> {type} -> {length}; $i++) {			
+		for (my $i = 0; $i < $type -> {length}; $i++) {			
 		
-			my $label = $item -> {type} -> {is_half_hour} ? sprintf ('%2dh%02d', $h, $m) : ($i + 1) . '.';
+			my $label = $type -> {is_half_hour} ? sprintf ('%2dh%02d', $h, $m) : ($i + 1) . '.';
 			
 			sql_do_insert ('inscriptions', {
 				id_prestation => $id,
@@ -119,7 +217,7 @@ EOS
 				fake  => -1,
 			});
 			
-			$m += $item -> {type} -> {time_step};
+			$m += $type -> {time_step};
 			
 			if ($m >= 60) {
 				$h ++;
@@ -128,7 +226,7 @@ EOS
 		
 		}
 		
-		for (my $i = 0; $i < $item -> {type} -> {length_ext}; $i++) {			
+		for (my $i = 0; $i < $type -> {length_ext}; $i++) {			
 		
 			my $label = '+' . ($i + 1) . '.';
 			
@@ -139,7 +237,31 @@ EOS
 			});
 		
 		}
-				
+								
+		foreach my $id_room (grep {$_ > 0} split /\,/, $type -> {ids_rooms}) {
+		
+			next if $reserved_rooms -> {$id_room, $dt, $prestation_model -> {half_start}};
+
+			sql_do_insert ('prestations_rooms', {
+				fake                => 0,
+				dt_start            => $dt,
+				half_start          => $prestation_model -> {half_start},
+				dt_finish           => $dt,
+				half_finish         => $prestation_model -> {half_finish},
+				id_prestation => $id,
+				id_room => $id_room,
+			});
+
+			$reserved_rooms -> {$id_room, $dt, $prestation_model -> {half_start}} = 1;
+
+		}
+
+	}
+	
+	foreach my $collective_prestation (values %$collective_prestations) {
+
+		sql_do ("UPDATE prestations SET id_users = ? WHERE id = ?", "$collective_prestation->{id_users},-1", $collective_prestation -> {id});
+
 	}
 	
 }

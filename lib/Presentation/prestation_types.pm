@@ -7,6 +7,13 @@ sub draw_prestation_types {
 	return
 
 		draw_table (
+			
+			[
+				'Abréviation',
+				'Groupe',
+				'Demi-jour(s)',
+				'Nom',
+			],
 
 			sub {
 
@@ -342,6 +349,11 @@ sub draw_item_of_prestation_types {
 			{
 				name  => 'no_stats',
 				label => 'Sans statistique',
+				type  => 'checkbox',
+			},
+			{
+				name  => 'is_collective',
+				label => 'Prestation collective',
 				type  => 'checkbox',
 			},
 			{
