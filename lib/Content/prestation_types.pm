@@ -146,7 +146,13 @@ sub get_item_of_prestation_types {
 		prestation_type_groups => {filter => 'id > 0'},
 		'roles',               => {filter => 'id IN (1,2,3)'},
 		'rooms'                => {filter => 'id_organisation = ' . $_USER -> {id_organisation}},
-		'users'                => {filter => 'id_role = 2 AND id_organisation = ' . $_USER -> {id_organisation}},
+		'users'                => {filter => "
+			id_role = 2
+			AND id_organisation = $_USER->{id_organisation}
+			AND id_group > 0
+			AND IFNULL(dt_finish, NOW()) >= NOW()
+			AND IFNULL(dt_start,  NOW()) <= NOW()
+		" },
 	);
 
 	my $odd = $item -> {id_day_period} % 2;	
