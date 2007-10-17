@@ -1225,18 +1225,24 @@ EOS
 			my $span = 0;
 	
 			for (my $i = 0; $i < @days; $i++) {
-				$days [$i] -> {by_user} -> {$off_period -> {id_user}} -> {rowspan} ||= ($holydays -> {$days [$i] -> {iso_dt}} ? 2 : 1);				
+				$days [$i] -> {by_user} -> {$off_period -> {id_user}} -> {rowspan} ||= ($holydays -> {$days [$i] -> {iso_dt}} ? 2 : 1);
 			}
 			
 			for (my $i = 0; $i < @days; $i++) {
-				$span += ($days [$i] -> {by_user} -> {$off_period -> {id_user}} -> {rowspan} - 1);
-				next if $days [$i] -> {iso_dt} lt $off_period -> {dt_start};
+	
+				if ($days [$i] -> {iso_dt} lt $off_period -> {dt_start}) {
+					$span += ($days [$i] -> {by_user} -> {$off_period -> {id_user}} -> {rowspan} - 1);
+					next;
+				}
+	
 				$off_period -> {col_start} =
 					$i
 					+ $off_period -> {half_start}
 					- $span
 					;
+
 				last;
+
 			};
 	
 			for (my $i = @days - 1; $i >= 0; $i--) {
@@ -1245,17 +1251,28 @@ EOS
 				$off_period -> {col_finish} = $i + $off_period -> {half_finish} - 1;
 				last;
 			};
+
+			my $span = 0;
+
+			for (my $i = 0; $i < @days; $i++) {
 	
-			for (my $i = @days - 1; $i >= 0; $i--) {
-				next if $days [$i] -> {iso_dt} gt $off_period -> {dt_finish};		
-				next if $days [$i] -> {by_user} -> {$off_period -> {id_user}} -> {is_hidden};
-				next if $days [$i] -> {by_user} -> {$off_period -> {id_user}} -> {rowspan} <= 1;
-				$off_period -> {col_finish} -= $days [$i] -> {by_user} -> {$off_period -> {id_user}} -> {rowspan};
-				$off_period -> {col_finish} ++;
+				if ($days [$i] -> {iso_dt} lt $off_period -> {dt_finish}) {
+					$span += ($days [$i] -> {by_user} -> {$off_period -> {id_user}} -> {rowspan} - 1);
+					next;
+				}
+	
+				$off_period -> {col_finish} =
+					$i
+					+ $off_period -> {half_finish}
+					- $span
+					;
+
+				last;
+
 			};
 
 			$off_period -> {row}        = 0 + $user2ord -> {$off_period -> {id_user}};
-			
+						
 		};
 	
 	}
