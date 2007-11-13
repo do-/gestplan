@@ -69,7 +69,24 @@ EOS
 	my $filter =
 		$_REQUEST {id_site} ? " AND id_site = $_REQUEST{id_site} " :
 		'';
-	my $users = sql_select_all ("SELECT id, label FROM users WHERE id_organisation = ? AND fake = 0 $filter ORDER BY label", $_USER -> {id_organisation});
+	
+	my $users = sql_select_all (<<EOS, $_USER -> {id_organisation}, $from, $from, $to, $to);
+		SELECT
+			id
+			, label
+		FROM
+			users
+		WHERE
+			id_organisation = ?
+			AND users.id_group > 0
+			AND IFNULL(users.dt_start, ?) <= ?
+			AND IFNULL(users.dt_finish, ?) >= ?
+			AND fake = 0
+			$filter
+		ORDER BY
+			label
+EOS
+	
 	my ($ids, $idx) = ids ($users);	
 	
 	my $lines =
