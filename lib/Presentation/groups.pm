@@ -54,7 +54,7 @@ sub draw_groups {
 						portion => $data -> {portion},
 					},
 					
-					$fake_select,
+					fake_select (),
 					
 				],
 

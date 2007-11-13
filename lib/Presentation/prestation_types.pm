@@ -64,7 +64,7 @@ sub draw_prestation_types {
 						portion => $data -> {portion},
 					},
 					
-					$fake_select,
+					fake_select (),
 					
 				],
 

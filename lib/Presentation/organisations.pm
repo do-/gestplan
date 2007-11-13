@@ -136,7 +136,7 @@ sub draw_organisations {
 					},
 				],
 
-				$fake_select,
+				fake_select (),
 
 			},
 			

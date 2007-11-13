@@ -221,7 +221,7 @@ sub draw_users {
 				portion => $data -> {portion},
 			}),
 			
-			$fake_select,
+			fake_select (),
 			
 		)
 		

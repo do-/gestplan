@@ -80,7 +80,7 @@ sub draw_prestation_type_groups {
 						portion => $data -> {portion},
 					},
 					
-					$fake_select,
+					fake_select (),
 					
 				],
 

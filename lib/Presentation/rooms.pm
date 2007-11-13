@@ -50,7 +50,7 @@ sub draw_rooms {
 						portion => $data -> {portion},
 					},
 					
-					$fake_select,
+					fake_select (),
 					
 				],
 

@@ -148,7 +148,7 @@ sub draw_holydays {
 						portion => $data -> {portion},
 					},
 
-					$fake_select,
+					fake_select (),
 
 				],
 			}

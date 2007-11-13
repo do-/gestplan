@@ -49,7 +49,7 @@ sub draw_sites {
 						portion => $data -> {portion},
 					},
 					
-					$fake_select,
+					fake_select (),
 					
 				],
 

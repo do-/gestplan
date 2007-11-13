@@ -48,7 +48,7 @@ sub draw_vocs {
 						portion => $data -> {portion},
 					},
 					
-					$fake_select,
+					fake_select (),
 					
 				],
 
@@ -116,7 +116,7 @@ sub draw_item_of_vocs {
 						keep_esc => 0,
 					},
 					
-					$fake_select,
+					fake_select (),
 					
 				],
 

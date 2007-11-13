@@ -89,7 +89,7 @@ sub draw_ext_fields {
 						portion => $data -> {portion},
 					},
 					
-					$fake_select,
+					fake_select (),
 					
 					
 				],
