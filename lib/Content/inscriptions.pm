@@ -302,7 +302,8 @@ sub get_item_of_inscriptions {
 
 	$item -> {path} = [
 		{
-			type => 'inscriptions',
+			type => 'prestations',
+			id => $item -> {id_prestation},
 			name =>
 				$item -> {prestation} -> {type} -> {label} .
 				' par ' .
