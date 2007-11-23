@@ -99,7 +99,7 @@ our @month_names = qw(
 	juin
 	juillet
 	août
-	séptembre
+	septembre
 	octobre
 	novembre
 	décembre

@@ -43,7 +43,7 @@ sub draw_stats_inscriptions {
 			$data -> {lines},
 
 			{
-				title => {label => 'Nombre de jeunes reçus'},
+				title => {label => 'Nombre de rendez-vous réalisés'},
 				
 				lpt => 1,
 

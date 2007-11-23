@@ -71,7 +71,7 @@ EOS
 			label
 EOS
 
-	push @$users, {id => -1, label => '[pas reçu]'};
+	push @$users, {id => -1, label => '[pas réalisés]'};
 	
 	my $lines =
 		$_REQUEST {month} ? $users :
