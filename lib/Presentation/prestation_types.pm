@@ -35,7 +35,7 @@ sub draw_prestation_types {
 
 			{
 				
-				title => {label => 'Types de prestations'},
+				title => {label => 'Prestations'},
 
 				top_toolbar => [{
 				

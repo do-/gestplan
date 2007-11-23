@@ -57,7 +57,7 @@ sub select_menu_for_admin {
 		{
 			
 			name  => 'prestation_types',
-			label => 'Types de prestations',
+			label => 'Prestations',
 						
 			items => [				
 				{			

@@ -180,7 +180,7 @@ EOS
 	$item -> {ids_users}      = [grep {$_ > 0} split /,/, $item -> {ids_users}];
 
 	$item -> {path} = [
-		{type => 'prestation_types', name => 'Types de prestations'},
+		{type => 'prestation_types', name => 'Prestations'},
 		{type => 'prestation_types', name => $item -> {label}, id => $item -> {id}},
 	];
 
