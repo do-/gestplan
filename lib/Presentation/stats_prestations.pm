@@ -10,9 +10,10 @@ sub draw_stats_prestations {
 
 			[
 				$_REQUEST {month} ? 'Utilisateur' : 'Mois',
-				(map {
-					$_ -> {label},
-				} @{$data -> {prestation_types}}),
+				(map {{
+					label => $_ -> {label_short},
+					title => $_ -> {label},
+				}} @{$data -> {prestation_types}}),
 				'Total',
 			],
 
