@@ -72,8 +72,8 @@ our $conf = {
 		FRE => {
 		
 			edit   => 'éditer (F4)',
-			cancel => 'retour (Esc)',
-			ok     => 'appliquer (Ctrl-Enter)',
+			cancel => 'retour (Echap)',
+			ok     => 'enregistrer (Ctrl-Entrée)',
 			delete => 'supprimer (Ctrl-Del)',
 		
 		}
