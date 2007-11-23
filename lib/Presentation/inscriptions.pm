@@ -18,19 +18,19 @@ sub draw_item_of_inscriptions {
 		[
 			{
 				name  => '_1',
-				label => 'Jour',
+				label => 'Date',
 				type  => 'static',
-				value => "$data->{day_name} le $data->{prestation}->{dt_start}",
+				value => "$data->{day_name} $data->{prestation}->{dt_start}",
 			},
 			{
 				name  => 'label',
-				label => 'Temps',
+				label => 'Horaire',
 				off   => !$_REQUEST {__read_only} || $data -> {prestation} -> {type} -> {is_half_hour} != -1,
 			},
 			{
 				
 				type  => 'hgroup',
-				label => 'Temps',
+				label => 'Horaire',
 				off   => $_REQUEST {__read_only} || $data -> {prestation} -> {type} -> {is_half_hour} != -1,
 				
 				items => [
@@ -41,6 +41,8 @@ sub draw_item_of_inscriptions {
 					},
 					{
 						name => 'minute_start',
+						label => 'h ',
+						no_colon => 1,
 						size => 2,
 						value   => sprintf ('%02d', 0 + $data -> {minute_start}),
 					},
@@ -51,6 +53,8 @@ sub draw_item_of_inscriptions {
 						value   => $data -> {hour_finish} ? sprintf ('%02d', $data -> {hour_finish}) : undef,
 					},
 					{
+						label => 'h ',
+						no_colon => 1,
 						name => 'minute_finish',
 						size => 2,
 						value   => sprintf ('%02d', 0 + $data -> {minute_finish}),
@@ -60,12 +64,12 @@ sub draw_item_of_inscriptions {
 			},
 			{
 				name  => 'nom',
-				label => 'Nom',
+				label => 'Nom ou objet',
 				size  => 40,
 			},
 			{
 				name  => 'prenom',
-				label => 'Prénom',
+				label => 'Prénom ou complément',
 				size  => 40,
 			},
 			
@@ -142,7 +146,7 @@ sub draw_item_of_inscriptions {
 		
 		{
 		
-			title => {label => 'Co-animateurs'},
+			title => {label => 'Participants'},
 			
 			off => !$_REQUEST {__read_only} || $data -> {prestation} -> {type} -> {is_half_hour} != -1,
 			
@@ -173,7 +177,7 @@ sub draw_inscriptions {
 	
 	if ($data -> {prestation_1} -> {id} > 0 && $data -> {prestation_1} -> {id} == $data -> {prestation_2} -> {id}) {
 	
-		$title_1 .= "$_REQUEST{_day_name} le $_REQUEST{dt} la journée entière : " if $data -> {prestation_1} -> {dt_start} eq $data -> {prestation_1} -> {dt_finish};
+		$title_1 .= "$_REQUEST{_day_name} $_REQUEST{dt} la journée entière : " if $data -> {prestation_1} -> {dt_start} eq $data -> {prestation_1} -> {dt_finish};
 		$title_1 .= $data -> {prestation_1} -> {type} -> {label};
 		$title_1 .= ' du ';
 
@@ -193,7 +197,7 @@ sub draw_inscriptions {
 	}
 	else {
 		
-		$title_1 = "$_REQUEST{_day_name} le $_REQUEST{dt} matin: ";
+		$title_1 = "$_REQUEST{_day_name} $_REQUEST{dt} matin: ";
 		$title_1 .= $data -> {prestation_1} -> {type} -> {label} || 'Libre';
 	
 	}
@@ -319,7 +323,7 @@ sub draw_inscriptions {
 					{
 						icon  => 'create',
 						href  => "/?type=inscriptions&action=create&id_prestation=" . $data -> {prestation_1} -> {id},
-						label => 'Nouvelle inscription',
+						label => 'Nouveau rendez-vous',
 						off   =>
 							$data -> {prestation_1} -> {type} -> {is_half_hour} != -1 ||
 							(
@@ -416,7 +420,7 @@ sub draw_inscriptions {
 
 			{
 				
-				title => {label => "$_REQUEST{_day_name} le $_REQUEST{dt}" . ' après-midi : ' . ($data -> {prestation_2} -> {type} -> {label} || 'libre')},
+				title => {label => "$_REQUEST{_day_name} $_REQUEST{dt}" . ' après-midi : ' . ($data -> {prestation_2} -> {type} -> {label} || 'libre')},
 				
 				off => $data -> {prestation_1} -> {id} == $data -> {prestation_2} -> {id} || $_REQUEST {id_day_period} == 1,
 

@@ -121,7 +121,7 @@ sub draw_item_of_inscriptions_select {
 				[
 					{
 						icon    => 'create',
-						label   => 'ajouter les conseillers séléctionnés',
+						label   => 'ajouter les participants séléctionnés',
 						href    => "javaScript:if(confirm('Je les ajoute, OK?'))document.forms['t1'].submit()",
 					}
 				]
