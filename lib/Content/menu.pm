@@ -42,7 +42,7 @@ sub select_menu_for_admin {
 		},
 		{
 			name  => 'inscriptions',
-			label => "Liste d'inscription",
+			label => "Aujourd'hui",
 		},
 		{
 			name  => 'users',
@@ -115,7 +115,7 @@ sub select_menu_for_conseiller {
 
 		{
 			name  => 'inscriptions',
-			label => "Liste d'inscription",
+			label => "Aujourd'hui",
 		},
 		{
 			name  => 'prestations',
