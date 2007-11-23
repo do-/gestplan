@@ -38,7 +38,7 @@ sub select_menu_for_admin {
 
 		{
 			name  => 'prestations',
-			label => 'Planning général',
+			label => 'Planning activités',
 		},
 		{
 			name  => 'inscriptions',
@@ -119,7 +119,7 @@ sub select_menu_for_conseiller {
 		},
 		{
 			name  => 'prestations',
-			label => 'Planning général',
+			label => 'Planning activités',
 		},
 		{			
 			name  => 'user_options',
@@ -142,7 +142,7 @@ sub select_menu_for_accueil {
 
 		{
 			name  => 'prestations',
-			label => 'Planning général',
+			label => 'Planning activités',
 		},
 		{			
 			name  => 'user_options',

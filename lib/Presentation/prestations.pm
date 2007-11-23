@@ -409,7 +409,7 @@ EOH
 			
 			{
 				path => [{
-					name => "Planning général de la semaine $_REQUEST{week} du " .
+					name => "Planning activités de la semaine $_REQUEST{week} du " .
 					$data -> {days} -> [0] -> {date} -> [2] .
 					' ' .
 					($data -> {days} -> [0] -> {date} -> [1] == $data -> {days} -> [-1] -> {date} -> [1] ? '' : $month_names_1 [$data -> {days} -> [0] -> {date} -> [1]]) .
@@ -597,7 +597,7 @@ EOH
 			{
 				
 #				title => {
-#					label => "Planning général de la semaine $_REQUEST{week} du " .
+#					label => "Planning activités de la semaine $_REQUEST{week} du " .
 #					$data -> {days} -> [0] -> {date} -> [2] .
 #					' ' .
 #					($data -> {days} -> [0] -> {date} -> [1] == $data -> {days} -> [-1] -> {date} -> [1] ? '' : $month_names_1 [$data -> {days} -> [0] -> {date} -> [1]]) .
