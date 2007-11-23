@@ -85,20 +85,30 @@ sub select_menu_for_admin {
 			],
 			
 		},
-		{
-			name  => 'rooms',
-			label => "Salles",
-		},
-		{
-			name  => 'sites',
-			label => "Sites",
-		},
-
-		{
-			name  => 'groups',
-			label => "Regroupements",
-		},
 		
+		{
+			
+			name    => '_params',
+			label   => 'Paramètres',
+			no_page => 1,
+
+			items => [
+
+				{
+					name  => 'sites',
+					label => "Sites",
+				},
+				{
+					name  => 'groups',
+					label => "Regroupements",
+				},
+				{
+					name  => 'rooms',
+					label => "Salles",
+				},
+			],
+		},
+			
 		stat_menu (),
 		
 		extra_menu (),
