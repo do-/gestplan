@@ -298,7 +298,7 @@ sub draw_item_of_prestation_types {
 			[			
 				{
 					name  => 'is_multiday',
-					label => 'Sur plusieurs jours',
+					label => 'Demi-journée et +',
 					type  => 'checkbox',
 				},
 				{
