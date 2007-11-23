@@ -73,9 +73,9 @@ sub select_menu_for_admin {
 					label => 'Listes',
 				},
 				
-				BREAK,
-				
-				(map {{href => "/?type=vocs&id=$$_{id}", label => $_ -> {label}}} @{sql_select_all ('SELECT * FROM vocs WHERE fake = 0 AND id_organisation = ? ORDER BY label', $_USER -> {id_organisation})}),
+#				BREAK,
+#				
+#				(map {{href => "/?type=vocs&id=$$_{id}", label => $_ -> {label}}} @{sql_select_all ('SELECT * FROM vocs WHERE fake = 0 AND id_organisation = ? ORDER BY label', $_USER -> {id_organisation})}),
 				
 				{			
 					name  => 'holydays',
