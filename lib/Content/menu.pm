@@ -66,7 +66,7 @@ sub select_menu_for_admin {
 				},
 				{			
 					name  => 'ext_fields',
-					label => 'Données propres',
+					label => 'Données',
 				},
 				{			
 					name  => 'vocs',

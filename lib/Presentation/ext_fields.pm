@@ -61,7 +61,7 @@ sub draw_ext_fields {
 
 			{
 	
-				title => {label => 'Types de données propres'},
+				title => {label => 'Types de données'},
 
 				top_toolbar => [{
 					

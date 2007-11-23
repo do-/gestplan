@@ -107,7 +107,7 @@ sub get_item_of_ext_fields {
 	}
 
 	$item -> {path} = [
-		{type => 'ext_fields', name => 'Types de données propres'},
+		{type => 'ext_fields', name => 'Types de données'},
 		{type => 'ext_fields', name => $item -> {label}, id => $item -> {id}},
 	];
 

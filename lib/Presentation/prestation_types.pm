@@ -334,7 +334,7 @@ sub draw_item_of_prestation_types {
 			],
 			{
 				name   => 'ids_ext_fields',
-				label  => 'Données propres',
+				label  => 'Données',
 				type   => 'checkboxes',
 				values => $data -> {ext_fields},
 #				height => 150,
@@ -357,7 +357,7 @@ sub draw_item_of_prestation_types {
 				type  => 'checkbox',
 			},
 			{
-				label  => 'Ordre des données propres',
+				label  => 'Ordre des données',
 				type   => 'banner',
 				off    => 0 == @{$data -> {ids_ext_fields}},
 			},
