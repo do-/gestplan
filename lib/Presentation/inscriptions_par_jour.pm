@@ -35,7 +35,7 @@ sub draw_inscriptions_par_jour {
 		draw_table (
 		
 			[
-				'Nom, prénom',
+				'Nom, prénom ou Objet',
 				'Utilisateur',
 				'Date',
 				'Type',

@@ -247,7 +247,7 @@ sub draw_inscriptions {
 		
 			(0 + @{$data -> {prestation_1} -> {inscriptions}} ? [
 				{label => ' ', attributes => {width => '1%'}},
-				'Nom, Prénom',
+				'Nom, Prénom ou Objet',
 				'Arrivé',
 				'Reçu par',
 				map {$_ -> {label}} @{$data -> {prestation_1} -> {ext_fields}},
@@ -358,7 +358,7 @@ sub draw_inscriptions {
 
 			(0 + @{$data -> {prestation_2} -> {inscriptions}} ? [
 				{label => ' ', attributes => {width => '1%'}},
-				'Nom, Prénom',
+				'Nom, Prénom ou Objet',
 				'Arrivé',
 				'Reçu par',
 				map {$_ -> {label}} @{$data -> {prestation_2} -> {ext_fields}},
