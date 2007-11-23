@@ -25,63 +25,70 @@ sub draw_item_of_organisations {
 			},
 		],
 	)
+			
+		.
 
-#	.
-#
-#	draw_table (
-#
-#		sub {
-#		
-#			draw_cells ({
-#				bgcolor => $i -> {id} == $data -> {id} ? '#ffffd0' : undef,
-#			}, [
-#				{
-#					type => 'checkbox',
-#					name => "_clone_$$i{id}",
-#					off  => $i -> {id} == $data -> {id} || $i -> {id} == 1,
-#				},
-#				$i -> {label},
-#			]),
-#		
-#		},
-#		
-#		$data -> {clones},
-#		
-#		{
-#			
-#			title => {label => 'Похожие названия'},
-#			
-#			off => !$_REQUEST {__read_only} || @{$data -> {clones}} < 2,
-#			
-#			name => 't1',
-#						
-#			top_toolbar => [{
-#				keep_params => ['type', 'id'],
-#			},
-#				{
-#					name  => 'first',
-#					type  => 'input_text',
-#					label => 'По скольким буквам',
-#					size  => 2,
-#					keep_params => [],
-#				},
-#			],
-#			
-#			toolbar => draw_centered_toolbar ({},
-#				
-#				[
-#					{
-#						icon    => 'delete',
-#						label   => 'слить выделенные записи с текущей',
-#						href    => "javaScript:if(confirm('Вы уверены, что все выделенные записи совпадают по смыслу с текущей?'))document.forms['t1'].submit()",
-#					}
-#				]
-#
-#			),
-#
-#		}
-#
-#	);
+		draw_table (
+		
+			[
+				'Nom',
+				'Profil',
+				'Regroupement',
+				'Login',
+				'Site',
+			],
+
+			sub {
+
+				draw_text_cells ({
+					href => "/?type=users&id=$$i{id}",
+				}, [
+					$i -> {label},
+					$i -> {role_label},
+					$i -> {group_label},
+					$i -> {login},
+					$i -> {site_label},
+				])
+								
+			},
+			
+			$data -> {users},
+			
+			{
+
+				title => {label => 'Utilisateurs'},
+
+				top_toolbar => [
+				
+					{
+						keep_params => ['type'],
+					},
+					
+		#			draw_toolbar_button ({
+		#				icon => 'create',
+		#				label => 'Crйer',
+		#				href => "?type=users&action=create",
+		#			}),
+		
+					draw_toolbar_input_text ({
+						label   => 'Chercher',
+						name   => 'q',
+						keep_params => [],
+					}),
+					
+					draw_toolbar_pager ({
+						cnt    => 0 + @{$data -> {users}},
+						total  => $data -> {cnt},
+						portion => $data -> {portion},
+					}),
+					
+					fake_select (),
+					
+				],
+
+			},
+			
+		)
 
 }
 
@@ -109,7 +116,7 @@ sub draw_organisations {
 
 			{
 				
-				title => {label => 'Missions locales'},
+				title => {label => 'Structures'},
 
 				top_toolbar => [{
 							keep_params => ['type', 'select'],
@@ -134,9 +141,10 @@ sub draw_organisations {
 						total   => $data -> {cnt},
 						portion => $data -> {portion},
 					},
-				],
 
-				fake_select (),
+					fake_select (),
+
+				],
 
 			},
 			

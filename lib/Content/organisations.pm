@@ -36,25 +36,34 @@ sub get_item_of_organisations {
 	$_REQUEST {__read_only} ||= !($_REQUEST {__edit} || $item -> {fake} > 0);
 
 	$item -> {path} = [
-		{type => 'organisations', name => 'Organisations'},
+		{type => 'organisations', name => 'Structures'},
 		{type => 'organisations', name => $item -> {label}, id => $item -> {id}},
 	];
-
-#	unless ($_REQUEST {first}) {
-#		$_REQUEST {first} = length $item -> {label};
-#		$_REQUEST {first} = 4 if $_REQUEST {first} > 4;
-#	}
-#
-#	$item -> {clones} = sql_select_all (<<EOS, $item -> {label}, {fake => 'organisations'});
-#		SELECT
-#			organisations.*
-#		FROM
-#			organisations
-#		WHERE +
-#			LEFT(organisations.label, $_REQUEST{first}) = LEFT(?, $_REQUEST{first})
-#		ORDER BY
-#			organisations.label
-#EOS
+	
+	my $q = '%' . $_REQUEST {q} . '%';
+	
+	my $start = $_REQUEST {start} + 0;
+	$item -> {portion} = 50;
+	
+	($item -> {users}, $item -> {cnt})= sql_select_all_cnt (<<EOS, $q, $q, $item -> {id}, {fake => 'users'});
+		SELECT
+			users.*
+			, roles.label  AS role_label
+			, sites.label  AS site_label
+			, groups.label AS group_label
+		FROM
+			users
+			LEFT JOIN roles  ON users.id_role = roles.id
+			LEFT JOIN sites  ON users.id_site = sites.id
+			LEFT JOIN groups ON users.id_group = groups.id
+		WHERE
+			(users.label LIKE ? or users.login LIKE ?)
+			AND users.id_organisation = ?
+		ORDER BY
+			users.label
+		LIMIT
+			$start, $item->{portion}
+EOS
 
 	return $item;
 	

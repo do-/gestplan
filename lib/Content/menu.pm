@@ -9,7 +9,7 @@ sub select_menu_for_superadmin {
 
 		{
 			name  => 'organisations',
-			label => 'Missions locales',
+			label => 'Structures',
 		},
 		{
 			name  => 'users',
