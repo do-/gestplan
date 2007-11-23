@@ -10,7 +10,7 @@ sub draw_prestation_types {
 			
 			[
 				'Abréviation',
-				'Groupe',
+				'Couleur',
 				'Demi-jour(s)',
 				'Nom',
 			],
@@ -119,7 +119,7 @@ sub draw_item_of_prestation_types {
 		[
 			{
 				name   => 'id_prestation_type_group',
-				label  => 'Groupe',
+				label  => 'Couleur',
 				type   => 'select',
 				values => $data -> {prestation_type_groups},
 				empty  => '',

@@ -55,7 +55,7 @@ sub draw_prestation_type_groups {
 			$data -> {prestation_type_groups},
 
 			{
-				title => {label => 'Groupes de types de prestations'},
+				title => {label => 'Couleurs'},
 
 				top_toolbar => [{
 						keep_params => ['type'],

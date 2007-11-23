@@ -62,7 +62,7 @@ sub select_menu_for_admin {
 			items => [				
 				{			
 					name  => 'prestation_type_groups',
-					label => 'Groupes',
+					label => 'Couleurs',
 				},
 				{			
 					name  => 'ext_fields',

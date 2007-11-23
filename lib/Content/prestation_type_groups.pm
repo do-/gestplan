@@ -34,7 +34,7 @@ sub get_item_of_prestation_type_groups {
 	$_REQUEST {__read_only} ||= !($_REQUEST {__edit} || $item -> {fake} > 0);
 
 	$item -> {path} = [
-		{type => 'prestation_type_groups', name => 'Groupes de types de prestations'},
+		{type => 'prestation_type_groups', name => 'Couleurs'},
 		{type => 'prestation_type_groups', name => $item -> {label}, id => $item -> {id}},
 	];
 
