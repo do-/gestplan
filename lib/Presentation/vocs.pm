@@ -22,7 +22,7 @@ sub draw_vocs {
 
 			{
 				
-				title => {label => 'Listes de choix'},
+				title => {label => 'Listes'},
 
 				top_toolbar => [{
 					keep_params => ['type', 'select'],

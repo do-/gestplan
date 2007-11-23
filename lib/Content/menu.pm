@@ -70,7 +70,7 @@ sub select_menu_for_admin {
 				},
 				{			
 					name  => 'vocs',
-					label => 'Listes choix',
+					label => 'Listes',
 				},
 				
 				BREAK,

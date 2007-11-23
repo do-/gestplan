@@ -66,7 +66,7 @@ sub get_item_of_voc_items {
 	$_REQUEST {__read_only} ||= !($_REQUEST {__edit} || $item -> {fake} > 0);
 
 	$item -> {path} = [
-		{type => 'vocs', name => 'Listes choix'},
+		{type => 'vocs', name => 'Listes'},
 		{type => 'vocs', name => $voc -> {label}, id => $voc -> {ids}},
 		{type => 'voc_items', name => $item -> {label}, id => $item -> {id}},
 	];
