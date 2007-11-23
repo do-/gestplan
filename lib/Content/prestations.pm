@@ -924,9 +924,9 @@ EOS
 	
 		my $role = $user -> {role};
 		
-		unless ($user -> {is_alien}) {
-			$role =~ s{^(\S+)}{$1s};
-		}
+#		unless ($user -> {is_alien}) {
+#			$role =~ s{^(\S+)}{$1s};
+#		}
 		
 		$last_role eq $role or push @users, {id => 0, label => $role};
 		push @users, $user;
@@ -934,7 +934,7 @@ EOS
 		
 	}
 	
-	push @users, {label => 'Salles'};
+	push @users, {label => 'Salle'};
 	push @users, @{ sql_select_all ("SELECT -id AS id, label FROM rooms WHERE fake = 0 $site_filter AND id_organisation = ? ORDER BY label", $_USER -> {id_organisation})};
 	
 	$users = \@users;	
