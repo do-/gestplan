@@ -431,7 +431,7 @@ sub draw_inscriptions {
 					{
 						icon  => 'create',
 						href  => "/?type=inscriptions&action=create&id_prestation=" . $data -> {prestation_2} -> {id},
-						label => 'Nouvelle inscription',
+						label => 'Nouveau rendez-vous',
 						off   =>
 							$data -> {prestation_2} -> {type} -> {is_half_hour} != -1
 							|| (
