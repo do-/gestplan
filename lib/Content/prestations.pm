@@ -220,7 +220,7 @@ EOS
 			$m += $type -> {time_step};
 			
 			if ($m >= 60) {
-				$h ++;
+				$h += int ($m / 60);
 				$m %= 60;
 			}
 		
@@ -516,7 +516,7 @@ sub do_update_prestations {
 			$m += $item -> {type} -> {time_step};
 			
 			if ($m >= 60) {
-				$h ++;
+				$h += int ($m / 60);
 				$m %= 60;
 			}
 		
