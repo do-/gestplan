@@ -61,7 +61,7 @@ sub draw_item_of_organisations {
 				top_toolbar => [
 				
 					{
-						keep_params => ['type'],
+						keep_params => ['type', 'id'],
 					},
 					
 		#			draw_toolbar_button ({
