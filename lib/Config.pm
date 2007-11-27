@@ -74,7 +74,7 @@ our $conf = {
 			edit   => 'éditer (F4)',
 			cancel => 'retour (Echap)',
 			ok     => 'enregistrer (Ctrl-Entrée)',
-			delete => 'supprimer (Ctrl-Del)',
+			delete => 'supprimer (Ctrl-Supp)',
 		
 		}
 	
