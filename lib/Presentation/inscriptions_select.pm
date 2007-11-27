@@ -18,19 +18,19 @@ sub draw_item_of_inscriptions_select {
 		[
 			{
 				name  => '_1',
-				label => 'Jour',
+				label => 'Date',
 				type  => 'static',
-				value => "$data->{day_name} le $data->{prestation}->{dt_start}",
+				value => "$data->{day_name} $data->{prestation}->{dt_start}",
 			},
 			{
 				name  => 'label',
-				label => 'Temps',
+				label => 'Horaire',
 				off   => !$_REQUEST {__read_only} || $data -> {prestation} -> {type} -> {is_half_hour} != -1,
 			},
 			{
 				
 				type  => 'hgroup',
-				label => 'Temps',
+				label => 'Horaire',
 				off   => $_REQUEST {__read_only} || $data -> {prestation} -> {type} -> {is_half_hour} != -1,
 				
 				items => [
@@ -60,12 +60,12 @@ sub draw_item_of_inscriptions_select {
 			},
 			{
 				name  => 'nom',
-				label => 'Nom',
+				label => 'Nom ou objet',
 				size  => 40,
 			},
 			{
 				name  => 'prenom',
-				label => 'Prénom',
+				label => 'Prénom ou complément',
 				size  => 40,
 			},
 			
@@ -110,7 +110,7 @@ sub draw_item_of_inscriptions_select {
 		
 		{
 		
-			title => {label => 'Co-animateurs'},
+			title => {label => 'Participants'},
 			
 			name => 't1',
 			
@@ -121,7 +121,7 @@ sub draw_item_of_inscriptions_select {
 				[
 					{
 						icon    => 'create',
-						label   => 'ajouter les participants séléctionnés',
+						label   => 'ajouter les participants sélectionnés',
 						href    => "javaScript:if(confirm('Je les ajoute, OK?'))document.forms['t1'].submit()",
 					}
 				]
