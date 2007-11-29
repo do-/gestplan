@@ -5,6 +5,7 @@ sub draw_item_of_organisations {
 	my ($data) = @_;
 
 	draw_form ({
+			name => 'f1',
 			right_buttons => [ del ($data) ],
 		},
 		$data,
@@ -57,6 +58,8 @@ sub draw_item_of_organisations {
 			{
 
 				title => {label => 'Utilisateurs'},
+				
+				off => !$_REQUEST {__read_only},
 
 				top_toolbar => [
 				
