@@ -13,7 +13,7 @@ sub select_stats_inscriptions {
 	
 	$_REQUEST {month} = 0 if $_REQUEST {id_user};
 	
-	my $prestation_types = sql_select_all ("SELECT id, label_short AS label FROM prestation_types WHERE fake = 0 AND id_organisation = ? AND IFNULL(no_stats, 0) = 0 ORDER BY label_short", $_USER -> {id_organisation});
+	my $prestation_types = sql_select_all ("SELECT * FROM prestation_types WHERE fake = 0 AND id_organisation = ? AND IFNULL(no_stats, 0) = 0 ORDER BY label_short", $_USER -> {id_organisation});
 	my @ids = map {$_ -> {id}} @$prestation_types;
 	my $ids = join ',', (-1, @ids);
 	
