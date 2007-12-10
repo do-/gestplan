@@ -33,6 +33,17 @@ sub draw_user_options {
 				name => 'refresh_period',
 				size  => 4,
 			},
+			{
+			
+				name  => 'no_popup',
+				label => 'Pop-ups',
+				type  => 'select',
+				values => [
+					{id => 0, label => 'Monter au-dessus de toutes les fenêtres'},
+					{id => 1, label => 'Montrer en cadre de la fenêtre GestPlan'},
+				],
+				
+			},
 			
 		]
 

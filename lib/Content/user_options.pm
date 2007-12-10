@@ -2,7 +2,7 @@
 
 sub do_update_user_options {
 	
-	sql_do_update ('users', [qw(login refresh_period)]);
+	sql_do_update ('users', [qw(login refresh_period no_popup)]);
 
 	$_REQUEST {_password} and sql_do ("UPDATE users SET password=OLD_PASSWORD(?) WHERE id=?", $_REQUEST {_password}, $_REQUEST {id});
 

@@ -24,11 +24,26 @@ sub draw_alerts {
 	my $salt = rand * time;
 
 	return <<EOH;
+	
 		<script>
-			window.focus ();
-			alert ("$text");
+		
+			var w = window;
+		
+			for (var i = 0; i < 10; i ++) {
+				
+				if (!w.parent) break;
+				
+				w = w.parent;
+				
+			}
+			
+			if (! $_USER->{no_popup}) w.showModalDialog ('/i/close.html?$_REQUEST{salt}', window);
+			
+			w.alert ("$text");
+			
 //			nope ("/?sid=$_REQUEST{sid}&type=alerts&action=purge&_ids=$ids", '_self');
 //			window.parent.document.location = window.parent.document.location + '&_salt=' + $salt;
+		
 		</script>
 EOH
 

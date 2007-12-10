@@ -12,6 +12,7 @@ columns => {
 	id_organisation => {TYPE_NAME => 'int'},
 	id_site         => {TYPE_NAME => 'int'},
 	id_group        => {TYPE_NAME => 'int'},
+	no_popup        => {TYPE_NAME => 'tinyint', NULLABLE => 0, COLUMN_DEFAULT => 0},
 
 },
 
