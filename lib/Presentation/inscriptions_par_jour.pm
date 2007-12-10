@@ -124,6 +124,12 @@ sub draw_inscriptions_par_jour {
 						empty  => '[Tout type]',
 					},
 					{
+						type    => 'pager',
+						total   => $data -> {cnt},
+						cnt     => 0 + @{$data -> {inscriptions_par_conseiller}},
+						portion => $data -> {portion},
+					},
+					{
 						type         => 'button',
 						icon		 => 'cancel',
 						label        => 'retour (Esc)',

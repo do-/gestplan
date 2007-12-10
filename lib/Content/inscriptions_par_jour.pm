@@ -52,7 +52,9 @@ sub select_inscriptions_par_jour {
 			$filter
 EOS
 	
-	my $inscriptions_par_conseiller = sql_select_all (<<EOS);
+	my %ids_ext_fields = (-1 => 1);
+
+	sql_select_loop (<<EOS, sub {foreach (split /\,/, $i -> {ids_ext_fields}) {$ids_ext_fields {$_} ||= 1}});
 	 	SELECT DISTINCT
 	 		prestation_types.ids_ext_fields
 	 	FROM
@@ -65,18 +67,6 @@ EOS
 	 		AND prestations.id IN ($id_prestations)
 	 		$site_filter
 EOS
-	
-	my %ids_ext_fields = (-1 => 1);
-	
-	foreach my $inscription (@$inscriptions_par_conseiller) {
-		
-		foreach my $id_ext_field (split /\,/, $inscription -> {ids_ext_fields}) {
-		
-			$ids_ext_fields {$id_ext_field} = 1;
-		
-		}
-		
-	}
 		
 	my $ids_ext_fields = join ',', keys %ids_ext_fields;
 
@@ -112,13 +102,9 @@ EOS
 
 	}
 	
-	 my $inscriptions_par_conseiller = sql_select_all (<<EOS, @params);
-	 	SELECT
-	 		inscriptions.*
-	 		, prestations.dt_start
-	 		, prestations.dt_finish
-	 		, users.label AS user_label
-	 		, prestation_types.label_short
+	my $ids_inscriptions_par_conseiller = sql_select_ids (<<EOS, @params);
+		SELECT
+			inscriptions.id
 	 	FROM
 	 		inscriptions
 	 		INNER JOIN prestations ON inscriptions.id_prestation = prestations.id
@@ -129,9 +115,35 @@ EOS
 	 		AND prestations.id IN ($id_prestations)
 	 		$site_filter
 	 		$filter
+EOS
+
+	$ids_inscriptions_par_conseiller = sql_select_ids ("SELECT id FROM inscriptions WHERE id IN ($ids_inscriptions_par_conseiller) AND IFNULL(parent, 0) NOT IN ($ids_inscriptions_par_conseiller)");	
+
+	my $cnt = $ids_inscriptions_par_conseiller =~ y/,/,/;
+	
+	$_REQUEST {start} += 0;
+	
+	my $portion = $_REQUEST {xls} ? 100000 : 50;
+	
+	my $inscriptions_par_conseiller = sql_select_all (<<EOS);
+		SELECT
+			inscriptions.*
+	 		, prestations.dt_start
+	 		, prestations.dt_finish
+	 		, users.label AS user_label
+	 		, prestation_types.label_short
+	 	FROM
+	 		inscriptions
+	 		INNER JOIN prestations ON inscriptions.id_prestation = prestations.id
+	 		INNER JOIN users ON prestations.id_user = users.id
+	 		INNER JOIN prestation_types ON prestations.id_prestation_type = prestation_types.id
+	 	WHERE
+	 		inscriptions.id IN ($ids_inscriptions_par_conseiller)
 	 	ORDER BY
 	 		inscriptions.nom
 	 		, inscriptions.prenom
+	 	LIMIT
+	 		$_REQUEST{start}, $portion
 EOS
 
 		
@@ -174,15 +186,19 @@ EOS
 	}
 	
 	my ($ids, $idx) = ids ($inscriptions_par_conseiller);
+	
+#	$_REQUEST {__suicide} = 1;
 		
 	return {
-		inscriptions_par_conseiller => [grep {!$idx -> {$_ -> {parent}}} @$inscriptions_par_conseiller],
-		prev  => $prev,		
-		next  => $next,		
-		users => $users,
-		prestation_types => $prestation_types,
-		menu  => $menu,
-		ext_fields => $ext_fields,
+		inscriptions_par_conseiller => $inscriptions_par_conseiller,
+		cnt                         => $cnt,
+		portion                     => $portion,
+		prev                        => $prev,		
+		next                        => $next,		
+		users                       => $users,
+		prestation_types            => $prestation_types,
+		menu                        => $menu,
+		ext_fields                  => $ext_fields,
 	};
 
 }
