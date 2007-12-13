@@ -251,6 +251,8 @@ EOS
 	};
 	
 	delete $_REQUEST {id_log};
+	
+	$_REQUEST {_id_author} = $_USER -> {id};
 
 	return undef;
 	
@@ -391,14 +393,16 @@ sub select_inscriptions {
 
 	my $prestation_1 = sql_select_hash (<<EOS, $_REQUEST {id_user}, '%,' . $_REQUEST {id_user} . ',%', $dt . 1, $dt . 1);
 		SELECT
-			*
+			prestations.*
+			, prestation_types.id_organisation
 		FROM
 			prestations
+			LEFT JOIN prestation_types ON prestations.id_prestation_type = prestation_types.id
 		WHERE
 			(prestations.id_user = ? OR prestations.id_users LIKE ?)
 			AND CONCAT(prestations.dt_start,  prestations.half_start)  <= ?
 			AND CONCAT(prestations.dt_finish, prestations.half_finish) >= ?
-			and fake = 0
+			and prestations.fake = 0
 EOS
 	
 	if ($prestation_1 -> {id}) {
@@ -430,7 +434,21 @@ EOS
 				IFNULL(prestation_types_ext_fields.ord, ext_fields.ord)
 EOS
 
-		$prestation_1 -> {inscriptions} = sql_select_all ('SELECT * FROM inscriptions WHERE id_prestation = ? AND fake <= 0 ORDER BY hour_start, minute_start, id', $prestation_1 -> {id});
+		$prestation_1 -> {inscriptions} = sql_select_all (<<EOS, $prestation_1 -> {id});
+			SELECT
+				inscriptions.*
+				, users.id_organisation
+			FROM
+				inscriptions
+				LEFT JOIN users ON inscriptions.id_author = users.id
+			WHERE
+				id_prestation = ?
+				AND inscriptions.fake <= 0
+			ORDER BY
+				hour_start
+				, minute_start
+				, id
+EOS
 
 		foreach my $field (@{$prestation_1 -> {ext_fields}}) {
 		
@@ -469,15 +487,20 @@ EOS
 
 	my $prestation_2 = sql_select_hash (<<EOS, $_REQUEST {id_user}, '%,' . $_REQUEST {id_user} . ',%', $dt . 2, $dt . 2);
 		SELECT
-			*
+			prestations.*
+			, prestation_types.id_organisation
 		FROM
 			prestations
+			LEFT JOIN prestation_types ON prestations.id_prestation_type = prestation_types.id
 		WHERE
 			(prestations.id_user = ? OR prestations.id_users LIKE ?)
 			AND CONCAT(prestations.dt_start,  prestations.half_start)  <= ?
 			AND CONCAT(prestations.dt_finish, prestations.half_finish) >= ?
-			and fake = 0
+			and prestations.fake = 0
 EOS
+
+
+
 
 	if ($prestation_2 -> {id}) {
 
@@ -508,7 +531,21 @@ EOS
 				IFNULL(prestation_types_ext_fields.ord, ext_fields.ord)
 EOS
 
-		$prestation_2 -> {inscriptions} = sql_select_all ('SELECT * FROM inscriptions WHERE id_prestation = ? AND fake <= 0 ORDER BY hour_start, minute_start, id', $prestation_2 -> {id});
+		$prestation_2 -> {inscriptions} = sql_select_all (<<EOS, $prestation_2 -> {id});
+			SELECT
+				inscriptions.*
+				, users.id_organisation
+			FROM
+				inscriptions
+				LEFT JOIN users ON inscriptions.id_author = users.id
+			WHERE
+				id_prestation = ?
+				AND inscriptions.fake <= 0
+			ORDER BY
+				hour_start
+				, minute_start
+				, id
+EOS
 		
 		foreach my $field (@{$prestation_2 -> {ext_fields}}) {
 		

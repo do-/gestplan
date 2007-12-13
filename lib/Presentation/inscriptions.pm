@@ -255,6 +255,8 @@ sub draw_inscriptions {
 
 			sub {
 			
+				my $c_est_mon_organisation = ($data -> {prestation_1} -> {id_organisation} == $_USER -> {id_organisation});
+
 				if ($i -> {is_note}) {
 					
 					$i -> {label} =~ s{\n}{<br>}gsm;
@@ -263,6 +265,24 @@ sub draw_inscriptions {
 						{
 							label   => '<b>Note:</b> ' . $i -> {label},
 							colspan => 4 + @{$data -> {prestation_1} -> {ext_fields}},
+							max_len => 10000,
+							no_nobr => 1,
+						},
+					]);
+					
+				}
+				elsif ($i -> {fake} == 0 && !(
+				
+					$c_est_mon_organisation or ($i -> {id_organisation} == $_USER -> {id_organisation}) or !$i -> {id_organisation}
+				
+				)) {
+					
+
+					return draw_cells ({}, [
+						$i -> {label},
+						{
+							label   => 'Réservé',
+							colspan => 3 + @{$data -> {prestation_1} -> {ext_fields}},
 							max_len => 10000,
 							no_nobr => 1,
 						},
@@ -366,6 +386,8 @@ sub draw_inscriptions {
 			
 			sub {
 
+				my $c_est_mon_organisation = ($data -> {prestation_2} -> {id_organisation} == $_USER -> {id_organisation});
+
 				if ($i -> {is_note}) {
 					
 					$i -> {label} =~ s{\n}{<br>}gsm;
@@ -375,6 +397,24 @@ sub draw_inscriptions {
 							label   => '<b>Note:</b> ' . $i -> {label},
 							colspan => 4 + @{$data -> {prestation_2} -> {ext_fields}},
 							max_len => 100000,
+							no_nobr => 1,
+						},
+					]);
+					
+				}
+				elsif ($i -> {fake} == 0 && !(
+				
+					$c_est_mon_organisation or ($i -> {id_organisation} == $_USER -> {id_organisation} or !$i -> {id_organisation})
+				
+				)) {
+					
+
+					return draw_cells ({}, [
+						$i -> {label},
+						{
+							label   => 'Réservé',
+							colspan => 3 + @{$data -> {prestation_1} -> {ext_fields}},
+							max_len => 10000,
 							no_nobr => 1,
 						},
 					]);
