@@ -861,6 +861,7 @@ sub select_prestations {
 				, prestation_types.is_half_hour
 				, prestation_types.is_placeable_by_conseiller
 				, prestation_types.ids_users
+				, prestation_types.id_organisation
 				, prestation_types.length + prestation_types.length_ext AS length
 				, IF(prestations.dt_start < '$dt_start', '$dt_start', prestations.dt_start) AS dt_start
 				, IF(prestations.dt_start < '$dt_start', 1, prestations.half_start) AS half_start
@@ -868,6 +869,7 @@ sub select_prestations {
 				, IF(prestations.dt_finish > '$dt_finish', 2, prestations.half_finish) AS half_finish
 				, IFNULL(prestation_type_group_colors.color, prestation_type_groups.color) AS color
 				, 1 AS is_alien
+				, organisations.label AS inscriptions
 			FROM
 				prestations
 				LEFT  JOIN prestation_types       ON prestations.id_prestation_type = prestation_types.id
@@ -876,6 +878,7 @@ sub select_prestations {
 					prestation_type_group_colors.id_prestation_type_group = prestation_type_groups.id
 					AND prestation_type_group_colors.id_organisation = ?
 				)
+				LEFT JOIN organisations ON prestation_types.id_organisation = organisations.id
 			WHERE
 				prestations.fake = 0
 				AND prestations.dt_start  <= '$dt_finish'
@@ -1033,8 +1036,10 @@ EOS
 		"SELECT * FROM inscriptions WHERE id_prestation IN ($ids) AND fake = 0 ORDER BY id",
 				
 		sub {
-			
+					
 			my $prestation = $idx -> {$i -> {id_prestation}};
+
+			return if $prestation -> {is_alien};
 			
 			$prestation -> {inscriptions} .= ', ' if $prestation -> {inscriptions};
 			$prestation -> {inscriptions} .= $i -> {prenom};
