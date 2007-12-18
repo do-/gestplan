@@ -6,6 +6,14 @@ sub get_item_of_users_model {
 	
 	__d ($item, 'dt_birth', 'dt_start', 'dt_finish');
 	
+	add_vocabularies ($item,
+			
+		prestation_types => {
+			filter => "id_organisation = $$_USER{id_organisation}",
+		},
+
+	);
+
 	$_REQUEST {__read_only} ||= !($_REQUEST {__edit} || $item -> {fake} > 0);	
 
 	add_vocabularies ($item,
@@ -19,10 +27,6 @@ sub get_item_of_users_model {
 			filter => $_USER -> {role} eq 'superadmin' ? 'id IN (1,4)' : 'id < 4',
 		},
 		
-		prestation_types => {
-			filter => "id_organisation = $$_USER{id_organisation}",
-		},
-
 	);
 
 	$item -> {path} = [
