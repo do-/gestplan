@@ -129,7 +129,6 @@ sub draw_item_of_prestations {
 			
 			title => {label => 'Salles'},
 			
-#			off   => 0 == @{$data -> {ids_rooms}} || !$_REQUEST {__read_only},
 			off   => !$_REQUEST {__read_only},
 			
 			name  => 'rtf',
@@ -212,7 +211,19 @@ sub draw_prestations {
 			function coord_h (row, col, what) {
 				var thead = document.getElementById ('scrollable_table').tHead;
 				var _row = thead.rows [row];
+
+				if (!_row) {
+//					alert ('coord_h ('+row+', ' + col +', '+what+') : no row');
+					return 0;
+				}
+
 				var _cell = _row.cells [col];
+
+				if (!_cell) {
+//					alert ('coord_h ('+row+', ' + col +', '+what+') : no cell');
+					return 0;
+				}
+
 				return _cell ['offset' + what];			
 			}
 			
@@ -280,30 +291,6 @@ EOH
 EOH
 
 				my $day = $data -> {days} -> [2 * $i - 1];
-
-#				if ($data -> {holydays} -> {$data -> {days} -> [2 * $i - 1] -> {iso_dt}}) {
-#					$off_period_divs .= <<EOH;
-#						<div
-#							style="
-#								border:0px;
-#								position:absolute;
-#								background:url('/i/reptile007.jpg');
-#								left:expression(
-#									coord_h (0, $i, 'Left')
-#									- document.getElementById ('scrollable_table').offsetParent.scrollLeft
-#									+ 1
-#								);
-#								height:$height1;
-#								top:$top;
-#								z-index:0;
-#								width:expression(
-#									coord_h (0, $i, 'Width')
-#								);
-#						"
-#						><img src="/i/0.gif" width=1 height=1></div>
-#EOH
-#
-#				}
 
 			}
 
@@ -686,10 +673,6 @@ EOH
 			
 		)
 		
-#		.
-		
-#		$off_period_divs
-
 		.
 		
 		iframe_alerts ()

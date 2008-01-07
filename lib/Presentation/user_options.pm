@@ -39,8 +39,8 @@ sub draw_user_options {
 				label => 'Pop-ups',
 				type  => 'select',
 				values => [
-					{id => 0, label => 'Monter au-dessus de toutes les fenêtres'},
-					{id => 1, label => 'Montrer en cadre de la fenêtre GestPlan'},
+					{id => 0, label => 'Au-dessus'},
+					{id => 1, label => 'En cadre'},
 				],
 				
 			},
