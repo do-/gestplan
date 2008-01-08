@@ -382,6 +382,53 @@ sub select_inscriptions {
 	my ($y, $m, $d) = reverse split /\//, $_REQUEST {dt};
 	$_REQUEST {_day_name} = $day_names [Day_of_Week ($y, $m, $d) - 1];
 	
+	my $organisation = sql_select_hash (organisations => $_USER -> {id_organisation});
+	
+	foreach (split /\,/, $organisation -> {days}) { $organisation -> {days} -> {$_} = 1}
+
+	my $prevnext = {
+
+		-1 => {
+			type => 'button',
+			icon => 'left',
+		},
+
+		1 => {
+			type => 'button',
+			icon => 'right',
+		},
+
+	};
+	
+	foreach my $dir (-1, 1) {
+
+		my @day = ($y, $m, $d);
+	
+		while (1) {
+		
+			@day = Add_Delta_Days (@day, $dir);
+			
+			$organisation -> {days} -> {Day_of_Week (@day)} or next;
+			
+			my $dt = sprintf ('%02d/%02d/%04d', reverse @day);
+			
+			$prevnext -> {$dir} -> {label} = $dt;
+			$prevnext -> {$dir} -> {href}  = {dt => $dt};
+			
+			last;
+		
+		}
+
+	}
+	
+	
+
+
+
+
+
+
+	
 	my $week_status_type = sql_select_hash ('week_status_types', week_status ($_REQUEST {dt}, $user -> {id_organisation}));
 
  	if ($week_status_type -> {id} == 1 && $_USER -> {role} ne 'admin') {
@@ -600,6 +647,7 @@ EOS
 		users => sql_select_vocabulary ('users', {filter => 'id_group > 0 AND id_organisation = ' . $_USER -> {id_organisation}}),
 		day_periods => sql_select_vocabulary ('day_periods'),
 		user => $user,
+		prevnext => $prevnext,
 	};
 	
 }

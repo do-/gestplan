@@ -230,12 +230,14 @@ sub draw_inscriptions {
 						name         => 'id_user',
 						values       => $data -> {users},
 					},
+					$data -> {prevnext} -> {-1},
 					{
 						type         => 'input_date',
 #						label		 => 'pour',
 						name         => 'dt',
 						no_read_only => 1,
 					},		
+					$data -> {prevnext} -> {1},
 					{
 						type         => 'input_select',
 						name         => 'id_day_period',
