@@ -232,7 +232,7 @@ sub draw_inscriptions {
 					},
 					{
 						type         => 'input_date',
-						label		 => 'pour',
+#						label		 => 'pour',
 						name         => 'dt',
 						no_read_only => 1,
 					},		
