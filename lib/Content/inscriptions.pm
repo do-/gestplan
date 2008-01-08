@@ -236,7 +236,17 @@ EOS
 		$_REQUEST {_id_user} or return "#_hour#:Ce(tte) jeune est reçu(e), donc il faut indiquer la personne";
 	}
 
-	my $item = sql_select_hash ('inscriptions');
+	my $item = get_item_of_inscriptions ();
+	
+	foreach my $i (@{$item -> {ext_fields}}) {
+		
+		$i -> {is_mandatory} or next;
+		
+		my $name = '_field_' . $i -> {id};
+		
+		$_REQUEST {$name} or return "#$name#:Vous avez oublié de remplir le champ \"$i->{label}\"";
+		
+	}
 
 	if ($_REQUEST {id_log} != $item -> {id_log}) {
 	

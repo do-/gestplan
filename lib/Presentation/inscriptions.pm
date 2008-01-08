@@ -13,6 +13,8 @@ sub draw_item_of_inscriptions {
 		no_edit => $data -> {read_only},
 		
 		keep_params => ['id_log'],
+
+		target => '_self',
 	
 	}, $data,
 		[

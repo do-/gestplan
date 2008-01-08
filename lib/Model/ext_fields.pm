@@ -5,4 +5,5 @@ columns => {
 	length          => {TYPE_NAME => 'int'},
 	ord             => {TYPE_NAME => 'int'},
 	id_organisation => {TYPE_NAME => 'int'},
+	is_mandatory    => {TYPE_NAME => 'tinyint', NULLABLE => 0, COLUMN_DEFAULT => 0},
 },

@@ -26,6 +26,11 @@ sub draw_item_of_ext_fields {
 				type   => 'radio',
 				values => $data -> {ext_field_types},
 			},
+			{
+				name  => 'is_mandatory',
+				label => 'Obligatoire',
+				type  => 'checkbox',
+			},
 		],
 	);
 
@@ -47,6 +52,7 @@ sub draw_ext_fields {
 
 				draw_cells ({
 					href  => "/?type=ext_fields&id=$$i{id}",
+					bold  => $i -> {is_mandatory},
 				}, [
 					$i -> {ord},
 					$i -> {label},

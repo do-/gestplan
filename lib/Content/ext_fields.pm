@@ -8,6 +8,7 @@ sub do_update_ext_fields {
 		id_voc
 		length
 		ord
+		is_mandatory
 	)]);
 	
 	my $item = sql_select_hash ('ext_fields');
@@ -67,6 +68,8 @@ sub validate_update_ext_fields {
 		$_REQUEST {'_length_' . $ext_field_type -> {id}} < $ext_field_type -> {max_len} or return "#_length_$$ext_field_type{id}#:La dimension pour cette nature de données est limitée par " . $ext_field_type -> {max_len};
 		$_REQUEST {_length} = $_REQUEST {'_length_' . $ext_field_type -> {id}};
 	}
+	
+	$_REQUEST {_is_mandatory} += 0;
 
 	return undef;
 	
