@@ -18,7 +18,13 @@ sub select_inscriptions_par_jour {
 		($_REQUEST {week}, $_REQUEST {year}) = Week_of_Year (Today ());	
 	}
 	
-	my $users = sql_select_vocabulary ('users', {filter => "id_organisation = $_USER->{id_organisation}"});
+	
+	my $ids_groups = sql_select_ids ("SELECT id FROM groups WHERE id_organisation = ? AND fake = 0 AND IFNULL(is_hidden, 0) = 0", $_USER -> {id_organisation});
+	$ids_groups .= ',';
+	$ids_groups .= (0 + $_USER -> {id_group});
+	
+	my $users = sql_select_vocabulary ('users', {filter => "id_group IN ($ids_groups)"});
+	
 	my $prestation_types = sql_select_vocabulary ('prestation_types', {filter => "id_organisation = $_USER->{id_organisation}"}),
 	
 	my $id_prestation_types = -1;

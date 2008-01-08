@@ -12,6 +12,7 @@ sub draw_groups {
 
 				draw_cells ({
 					href  => "/?type=groups&id=$$i{id}",
+					bgcolor => $i -> {is_hidden} ? '#ddddff' : undef,
 				}, [
 					{
 						label => $i -> {ord},
@@ -84,6 +85,11 @@ sub draw_item_of_groups {
 				name  => 'ord',
 				label => 'Ordre',
 				size  => 5,
+			},
+			{
+				name  => 'is_hidden',
+				label => 'Caché',
+				type  => 'checkbox',
 			},
 		],
 	);

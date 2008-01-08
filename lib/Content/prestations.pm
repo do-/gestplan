@@ -648,7 +648,7 @@ sub get_item_of_prestations {
 	
 	$item -> {id_users} = [split /\,/, $item -> {id_users}];
 
-    	$item -> {id_prestation_type} += 0;
+	$item -> {id_prestation_type} += 0;
     	
 	$item -> {prestation_type} = sql_select_hash ('prestation_types', $item -> {id_prestation_type});
 
@@ -687,8 +687,12 @@ EOS
 	
 	$filter = "($filter) AND id_organisation = $_USER->{id_organisation}";
 	
+	my $ids_groups = sql_select_ids ("SELECT id FROM groups WHERE id_organisation = ? AND fake = 0 AND IFNULL(is_hidden, 0) = 0", $_USER -> {id_organisation});
+	$ids_groups .= ',';
+	$ids_groups .= (0 + $_USER -> {id_group});
+
 	add_vocabularies ($item,
-		'users'            => {filter => "id_organisation = $_USER->{id_organisation} AND id_group > 0 AND (dt_finish IS NULL OR dt_finish > '$item->{_dt_finish}')"},
+		'users'            => {filter => "id_group IN ($ids_groups) AND (dt_finish IS NULL OR dt_finish > '$item->{_dt_finish}')"},
 		'prestation_types' => {filter => $filter},
 	);
 
@@ -899,7 +903,7 @@ EOS
 	}
 	my $alien_id_users = join ',', @alien_id_users;	
 
-	my $users = sql_select_all (<<EOS, $days [-1] -> {iso_dt}, $days [0] -> {iso_dt}, $_USER -> {id_organisation});
+	my $users = sql_select_all (<<EOS, $days [-1] -> {iso_dt}, $days [0] -> {iso_dt}, $_USER -> {id_organisation}, 0 + $_USER -> {id_group});
 		SELECT
 			users.id
 			, IFNULL(prenom, users.label) AS label
@@ -919,6 +923,7 @@ EOS
 			AND (dt_start  IS NULL OR dt_start  <= ?)
 			AND (dt_finish IS NULL OR dt_finish >= ?)
 			AND (users.id_organisation = ? OR (users.id IN ($alien_id_users) AND users.id_role < 3))
+			AND (IFNULL(roles.is_hidden, 0) = 0 OR users.id_group = ?)
 		ORDER BY
 			IF(users.id_organisation = $$_USER{id_organisation}, 0, 1)
 			, roles.ord

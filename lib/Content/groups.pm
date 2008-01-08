@@ -5,6 +5,7 @@ sub do_update_groups {
 	sql_do_update ('groups', [qw(
 		label
 		ord
+		is_hidden
 	)]);
 
 }
