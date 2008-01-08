@@ -278,6 +278,8 @@ sub get_item_of_inscriptions {
 	
 	$_REQUEST {__read_only} ||= !($_REQUEST {__edit} || $item -> {fake});
 	
+	$item -> {author} = sql_select_hash ('users', $item -> {id_author});
+
 	$item -> {prestation} = sql_select_hash ('prestations', $item -> {id_prestation});
 	
 	$item -> {prestation} -> {type} = sql_select_hash ('prestation_types', $item -> {prestation} -> {id_prestation_type});

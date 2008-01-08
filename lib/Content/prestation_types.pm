@@ -41,6 +41,7 @@ sub do_update_prestation_types {
 		half_2_to_h
 		half_2_to_m
 		is_collective
+		is_watched
 	)]);
 	
 	sql_do ('DELETE FROM prestation_types_ext_fields WHERE id_prestation_type = ?', $_REQUEST {id});

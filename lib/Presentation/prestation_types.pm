@@ -295,6 +295,20 @@ sub draw_item_of_prestation_types {
 					type  => 'checkbox',
 				},
 			],						
+
+
+
+
+				{
+					name  => 'is_watched',
+					label => 'Inscription suivie',
+					type  => 'checkbox',
+				},
+
+
+
+
+
 			[			
 				{
 					name  => 'is_multiday',

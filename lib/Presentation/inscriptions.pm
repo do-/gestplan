@@ -13,8 +13,6 @@ sub draw_item_of_inscriptions {
 		no_edit => $data -> {read_only},
 		
 		keep_params => ['id_log'],
-
-		target => '_self',
 	
 	}, $data,
 		[
@@ -113,6 +111,13 @@ sub draw_item_of_inscriptions {
 					},
 				],
 				
+			},
+			{
+				name   => '_1',
+				label  => 'Inscrit par',
+				type   => 'static',
+				value  => $data -> {author} -> {label},
+				off    => !$data -> {prestation} -> {type} -> {is_watched},
 			},
 			{
 				name   => 'id_user',
