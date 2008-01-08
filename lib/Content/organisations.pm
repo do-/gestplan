@@ -2,7 +2,7 @@
 
 sub do_update_organisations {
 	
-		sql_do_update ('organisations', [qw(label ids_partners href)]);
+		sql_do_update ('organisations', [qw(label ids_partners href days)]);
 
 }
 
@@ -17,6 +17,10 @@ sub validate_update_organisations {
 	unshift @ids, -1;
 	$_REQUEST {_ids_partners} = join ',', @ids;
 
+	my @ids = get_ids ('days');
+	@ids > 0 or return "Vous n'avez indiqué aucune jour travaillée";
+	$_REQUEST {_days} = join ',', @ids;
+
 	return undef;
 	
 }
@@ -28,6 +32,7 @@ sub get_item_of_organisations {
 	my $item = sql_select_hash ('organisations');
 	
 	$item -> {ids_partners} = [split /\,/, $item -> {ids_partners}];
+	$item -> {days} = [split /\,/, $item -> {days}];
 	
 	add_vocabularies ($item,
 		organisations => {filter => "id <> $$item{id}"},

@@ -88,6 +88,8 @@ our @day_names = qw(
 	Mercredi
 	Jeudi
 	Vendredi
+	Samedi
+	Dimanche
 );
 
 our @month_names = qw(

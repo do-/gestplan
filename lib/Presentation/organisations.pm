@@ -24,6 +24,12 @@ sub draw_item_of_organisations {
 				name  => 'href',
 				label => 'Menu extra',
 			},
+			{
+				name   => 'days',
+				label  => 'Jours travaillés',
+				type   => 'checkboxes',
+				values => [map {{id => ($_ + 1), label => $day_names [$_]}} (0 .. @day_names - 1)],
+			},
 		],
 	)
 			

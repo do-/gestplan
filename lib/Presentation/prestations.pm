@@ -233,7 +233,7 @@ EOJS
 
 	my $from = -1;
 
-	foreach my $i (1 .. 5) {
+	foreach my $i (1 .. @{$data -> {organisation} -> {days}}) {
 				
 				$off_period_divs .= <<EOH;
 					<div
@@ -270,7 +270,7 @@ EOH
 			
 			$data -> {users} -> [$from] -> {span} = $j - $from;
 
-			foreach my $i (1 .. 5) {
+			foreach my $i (1 .. @{$data -> {organisation} -> {days}}) {
 				
 				$off_period_divs .= <<EOH;
 					<div
@@ -442,7 +442,7 @@ EOH
 				$i -> {id} or return draw_cells ({}, [
 					{
 						label => $i -> {label},
-						colspan => 11,
+						colspan => 1 + 2 * @{$data -> {days}},
 						attributes => {align => 'center'},
 						bold => 1,
 					},

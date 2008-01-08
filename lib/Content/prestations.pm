@@ -5,7 +5,7 @@ sub do_clear_prestations {
 	my @monday = Monday_of_Week ($_REQUEST {week}, $_REQUEST {year});
 	
 	my $from = sprintf ('%04d-%02d-%02d', @monday);
-	my $to   = sprintf ('%04d-%02d-%02d', Add_Delta_Days (@monday, 4));
+	my $to   = sprintf ('%04d-%02d-%02d', Add_Delta_Days (@monday, 6));
 	
 	my $ids  = sql_select_ids (<<EOS, $_USER -> {id_organisation} + 0, $to, $from);
 		SELECT
@@ -756,22 +756,30 @@ sub select_prestations {
 		$_REQUEST {year} ++;
 		$_REQUEST {week} %= 52;
 	}	
-
-	my @day = Monday_of_Week ($_REQUEST {week}, $_REQUEST {year});
 	
-	my $prev = [Week_of_Year (Add_Delta_Days (@day, -7))];
-	my $next = [Week_of_Year (Add_Delta_Days (@day, 7))];
+	my @monday = Monday_of_Week ($_REQUEST {week}, $_REQUEST {year});
+
+	my $prev = [Week_of_Year (Add_Delta_Days (@monday, -7))];
+	my $next = [Week_of_Year (Add_Delta_Days (@monday, 7))];
 	
 	my @days = ();
 	
 	my $ix_days = {};
 	
-	for (my $i = 0; $i < 5; $i++) {
+	my $organisation = sql_select_hash (organisations => $_USER -> {id_organisation});
 	
+	$organisation -> {days} = [sort split ',', $organisation -> {days}];
+		
+	for (my $i = 0; $i < @{$organisation -> {days}}; $i++) {
+	
+		my $day_index = $organisation -> {days} -> [$i] - 1;
+	
+		my @day = Add_Delta_Days (@monday, $day_index);
+
 		my $iso_dt = sprintf ('%04d-%02d-%02d', @day);
 		my $fr_dt  = sprintf ('%02d/%02d/%04d', reverse @day);
 	
-		my $label = $day_names [$i] . '&nbsp;' . $day [2];
+		my $label = $day_names [$day_index] . '&nbsp;' . $day [2];
 		
 		my $h_create = {href => "/?type=prestations&action=create&dt_start=$iso_dt&half_start=1&dt_finish=$iso_dt&half_finish=1&id_prestation_type=$_REQUEST{id_prestation_type}"};
 		check_href ($h_create);
@@ -806,8 +814,6 @@ sub select_prestations {
 		$ix_days -> {$iso_dt . '-' . 2} = $days [-1];
 
 		$days [-2] -> {next} = $days [-1];
-
-		@day = Add_Delta_Days (@day, 1);
 	
 	}
 	
@@ -848,7 +854,6 @@ sub select_prestations {
 	my $dt_finish = $days [-1] -> {iso_dt};
 
 
-	my $organisation = sql_select_hash ('organisations', $_USER -> {id_organisation});
 	$organisation -> {ids_partners} ||= '-1';
 
 	my $alien_prestations = sql_select_all (<<EOS);

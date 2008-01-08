@@ -4,6 +4,10 @@ sub get_item_of_users_model {
 
 	my $item = sql_select_hash ("users");
 	
+	$item -> {organisation} = sql_select_hash (organisations => $item -> {id_organisation});
+	
+	$item -> {organisation} -> {days} = [sort split /\,/, $item -> {organisation} -> {days}];
+	
 	__d ($item, 'dt_birth', 'dt_start', 'dt_finish');
 	
 	add_vocabularies ($item,
@@ -52,7 +56,15 @@ sub get_item_of_users_model {
 			id            => $_ . 2,
 			by_mod2       => [{}, {}],
 		},
-	)} (1 .. 5) ];
+	)} @{$item -> {organisation} -> {days}} ];
+	
+	my $ix = {};
+	
+	foreach my $day (@{$item -> {days}}) {
+			
+		$ix -> {$day -> {day}, $day -> {id_day_period}} = $day;
+	
+	}
 	
 	$item -> {prestation_models} = sql_select_all (<<EOS, $item -> {id}, {fake => 'prestation_models'});
 		SELECT
@@ -71,10 +83,7 @@ EOS
 
 	foreach my $prestation_model (@{$item -> {prestation_models}}) {
 	
-		my $day = $item -> {days} -> [
-			2 * ($prestation_model -> {day_start} - 1)
-			+ ($prestation_model -> {half_start} - 1)
-		] -> {by_mod2} -> [$prestation_model -> {is_odd}];
+		my $day = $ix -> {$prestation_model -> {day_start}, $prestation_model -> {half_start}} -> {by_mod2} -> [$prestation_model -> {is_odd}];
 		
 		$day -> {id_prestation_model} = $prestation_model -> {id};
 		$day -> {prestation_model_label} = $prestation_model -> {label};
