@@ -296,18 +296,20 @@ sub draw_item_of_prestation_types {
 				},
 			],						
 
-
-
+			[
 
 				{
 					name  => 'is_watched',
 					label => 'Inscription suivie',
 					type  => 'checkbox',
 				},
+				{
+					name  => 'is_protedted',
+					label => 'Inscription protégée',
+					type  => 'checkbox',
+				},
 
-
-
-
+			],
 
 			[			
 				{

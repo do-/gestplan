@@ -10,6 +10,7 @@ columns => {
 	is_placeable_by_conseiller => {TYPE_NAME => 'tinyint'},
 	is_private                 => {TYPE_NAME => 'tinyint'},
 	is_watched                 => {TYPE_NAME => 'tinyint'},
+	is_protedted               => {TYPE_NAME => 'tinyint'},
 	is_collective              => {TYPE_NAME => 'tinyint'},
 	ids_ext_fields             => {TYPE_NAME => 'varchar', COLUMN_SIZE  => 255},
 	ids_roles                  => {TYPE_NAME => 'varchar', COLUMN_SIZE  => 255},

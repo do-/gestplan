@@ -42,6 +42,7 @@ sub do_update_prestation_types {
 		half_2_to_m
 		is_collective
 		is_watched
+		is_protedted
 	)]);
 	
 	sql_do ('DELETE FROM prestation_types_ext_fields WHERE id_prestation_type = ?', $_REQUEST {id});
@@ -116,6 +117,8 @@ sub validate_update_prestation_types {
 	push @ids, -1;
 	unshift @ids, -1;
 	$_REQUEST {_ids_rooms} = join ',', @ids;
+	
+	$_REQUEST {_is_watched} ||= $_REQUEST {_is_protedted};
 
 	return undef;
 	

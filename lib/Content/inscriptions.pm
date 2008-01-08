@@ -292,8 +292,16 @@ sub get_item_of_inscriptions {
 
 	$item -> {week_status_type} = sql_select_hash ('week_status_types', week_status ($item -> {prestation} -> {dt_start}, $_USER -> {id_organisation}));
 	
-	$item -> {read_only} = $item -> {week_status_type} -> {id} == 3 || ($item -> {week_status_type} -> {id} == 1 && $_USER -> {role} ne 'admin');
+	$item -> {read_only} = 1 if	$item -> {week_status_type} -> {id} == 3;
 	
+	if ($_USER -> {role} ne 'admin') {
+
+		$item -> {read_only} ||= 1 if $item -> {week_status_type} -> {id} == 1;
+
+		$item -> {read_only} ||= 1 if $item -> {prestation} -> {type} -> {is_protedted} && $item -> {id_author} && ($item -> {id_author} != $_USER -> {id});
+
+	}
+		
 	$item -> {prestation} -> {user} = sql_select_hash ('users', $item -> {prestation} -> {id_user});
 	
 	$item -> {id_user} = $item -> {prestation} -> {id_user} if $_REQUEST {__edit};
