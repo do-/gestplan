@@ -901,7 +901,10 @@ EOS
 		push @alien_id_users, $alien_prestation -> {id_user};
 		push @alien_id_users, (split /\,/, $alien_prestation -> {id_users});	
 	}
-	my $alien_id_users = join ',', @alien_id_users;	
+
+	my $alien_id_users = join ',', grep {$_} @alien_id_users;	
+	
+	$_USER -> {id_organisation} += 0;
 
 	my $users = sql_select_all (<<EOS, $days [-1] -> {iso_dt}, $days [0] -> {iso_dt}, $_USER -> {id_organisation}, 0 + $_USER -> {id_group});
 		SELECT
@@ -918,7 +921,6 @@ EOS
 			INNER JOIN organisations ON users.id_organisation = organisations.id
 		WHERE
 			users.fake = 0
-#			AND users.id_role IN (2,3)
 			$site_filter
 			AND (dt_start  IS NULL OR dt_start  <= ?)
 			AND (dt_finish IS NULL OR dt_finish >= ?)
