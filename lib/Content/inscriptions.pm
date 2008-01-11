@@ -488,7 +488,7 @@ EOS
 #			&& $prestation_1 -> {type} -> {ids_roles} !~ /,$$_USER{id_role},/
 			;
 			
-		my $id_users = join ',', grep {$_} ($prestation_1 -> {id_users}, $prestation_1 -> {id_user});						
+		my $id_users = join ',', grep {$_ > 0} ($prestation_1 -> {id_users}, $prestation_1 -> {id_user});						
 		$prestation_1 -> {present_users} = sql_select_scalar ("SELECT COUNT(*) FROM users WHERE id IN ($id_users) AND id NOT IN ($id_absent_users)");
 		
 		$prestation_1 -> {ext_fields} = sql_select_all (<<EOS,  $prestation_1 -> {type} -> {id});
@@ -585,7 +585,7 @@ EOS
 #			&& $prestation_2 -> {type} -> {ids_roles} !~ /,$$_USER{id_role},/
 			;
 
-		my $id_users = join ',', grep {$_} ($prestation_2 -> {id_users}, $prestation_2 -> {id_user});						
+		my $id_users = join ',', grep {$_ > 0} ($prestation_2 -> {id_users}, $prestation_2 -> {id_user});						
 		$prestation_2 -> {present_users} = sql_select_scalar ("SELECT COUNT(*) FROM users WHERE id IN ($id_users) AND id NOT IN ($id_absent_users)");
 
 		$prestation_2 -> {ext_fields} = sql_select_all (<<EOS,  $prestation_2 -> {type} -> {id});
