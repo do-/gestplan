@@ -74,21 +74,17 @@ EOS
 		
 	my $ids_ext_fields = join ',', keys %ids_ext_fields;
 
-	my $ext_fields = sql_select_all (<<EOS);
-		SELECT
-			ext_fields.*
-		FROM
-			ext_fields
-		WHERE
-			ext_fields.id IN ($ids_ext_fields)
-		ORDER BY
-			ext_fields.ord
-EOS
-		
 	my $filter = '';
 	my @params = ();	
+	my @ext_fields = ();
 		
-	foreach my $field (@$ext_fields) {
+	my $collect = sub {
+		
+		my $field = $i;
+		
+		push @ext_fields, {type => 'break',	break_table => 1,} unless @ext_fields % 5;
+
+		push @ext_fields, $i;
 		
 		$field -> {name} = 'field_' . $field -> {id};
 		
@@ -103,9 +99,19 @@ EOS
 			push @params, '%' . $_REQUEST {$field -> {name}} . '%';
 		}
 		
+	};
 
-	}
-	
+	sql_select_loop (<<EOS, $collect);
+		SELECT
+			ext_fields.*
+		FROM
+			ext_fields
+		WHERE
+			ext_fields.id IN ($ids_ext_fields)
+		ORDER BY
+			ext_fields.ord
+EOS
+
 	my $ids_inscriptions_par_conseiller = sql_select_ids (<<EOS, @params);
 		SELECT
 			inscriptions.id
@@ -151,7 +157,7 @@ EOS
 EOS
 
 		
-	foreach my $field (@$ext_fields) {
+	foreach my $field (@ext_fields) {
 		
 		if ($field -> {id_field_type} == 1) {
 		
@@ -182,7 +188,7 @@ EOS
 			}
 			
 		}
-		else {
+		elsif ($field -> {type} ne 'break') {
 			$field -> {type} = 'input_text';
 			$field -> {keep_params} = [];
 		}
@@ -202,7 +208,7 @@ EOS
 		users                       => $users,
 		prestation_types            => $prestation_types,
 		menu                        => $menu,
-		ext_fields                  => $ext_fields,
+		ext_fields                  => \@ext_fields,
 	};
 
 }

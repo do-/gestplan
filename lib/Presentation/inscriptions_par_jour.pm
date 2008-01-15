@@ -42,7 +42,7 @@ sub draw_inscriptions_par_jour {
 				'No / temps',
 				'Arrivé',
 				'Reçu par',
-				map {$_ -> {label}} @{$data -> {ext_fields}},
+				map {$_ -> {label}} grep {$_ -> {type} ne 'break'} @{$data -> {ext_fields}},
 			],			
 
 			sub {
@@ -73,7 +73,7 @@ sub draw_inscriptions_par_jour {
 						label => map {$_ -> {label}} grep {$_ -> {id} == $i -> {id_user}} @{$data -> {users}},
 #						off   => !$i -> {hour},
 					},
-					map {$i -> {'field_' . $_ -> {id}}} @{$data -> {ext_fields}},
+					map {$i -> {'field_' . $_ -> {id}}}  grep {$_ -> {type} ne 'break'} @{$data -> {ext_fields}},
 				])
 
 			},
@@ -137,13 +137,7 @@ sub draw_inscriptions_par_jour {
 						href         => "/?type=prestations&week=$_REQUEST{week}&year=$_REQUEST{year}&id_site=$_REQUEST{id_site}",
 					},
 					
-					{
-						type => 'break',
-						break_table => 1,
-						off  => 0 == @{$data -> {ext_fields}},
-					},
-					
-						@{$data -> {ext_fields}},
+					@{$data -> {ext_fields}},
 					
 				],
 
