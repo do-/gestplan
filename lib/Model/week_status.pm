@@ -4,3 +4,7 @@ columns => {
 	week => {TYPE_NAME => 'int'},
 	id_organisation => {TYPE_NAME => 'int'},
 },
+
+keys => {
+	id_organisation => 'id_organisation,year,week',
+},

@@ -857,10 +857,27 @@ sub select_prestations {
 	my $dt_start  = $days [0]  -> {iso_dt};
 	my $dt_finish = $days [-1] -> {iso_dt};
 
+	my $ids_partners = $organisation -> {ids_partners} || '-1';
+	
+	if ($ids_partners ne '-1') {
 
-	$organisation -> {ids_partners} ||= '-1';
+		$ids_partners = sql_select_ids (<<EOS, $_REQUEST {year}, $_REQUEST {week});
+			SELECT
+				week_status.id_organisation
+			FROM
+				week_status
+			WHERE
+				week_status.id_organisation IN ($$organisation{ids_partners})
+				AND week_status.id_week_status_type = 2
+				AND week_status.year = ?
+				AND week_status.week = ?
+EOS
 
-	my $alien_prestations = sql_select_all (<<EOS);
+	}
+
+	my $alien_prestations = $ids_partners eq '-1' ? [] :
+		
+		sql_select_all (<<EOS);
 			SELECT
 				prestations.id
 				, prestations.id_user
@@ -893,7 +910,7 @@ sub select_prestations {
 				AND prestations.dt_start  <= '$dt_finish'
 				AND prestations.dt_finish >= '$dt_start'
 				AND prestation_types.is_open = 1
-				AND prestation_types.id_organisation IN ($$organisation{ids_partners})
+				AND prestation_types.id_organisation IN ($ids_partners)
 EOS
 
 	my @alien_id_users = (-1);	
