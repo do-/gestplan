@@ -688,8 +688,8 @@ EOS
 	$filter = "($filter) AND id_organisation = $_USER->{id_organisation}";
 	
 	my $ids_groups = sql_select_ids ("SELECT id FROM groups WHERE id_organisation = ? AND fake = 0 AND IFNULL(is_hidden, 0) = 0", $_USER -> {id_organisation});
-	$ids_groups .= ',';
-	$ids_groups .= (0 + $_USER -> {id_group});
+#	$ids_groups .= ',';
+#	$ids_groups .= (0 + $_USER -> {id_group});
 
 	add_vocabularies ($item,
 		'users'            => {filter => "id_group IN ($ids_groups) AND (dt_finish IS NULL OR dt_finish > '$item->{_dt_finish}')"},
