@@ -687,7 +687,7 @@ EOS
 	
 	$filter = "($filter) AND id_organisation = $_USER->{id_organisation}";
 	
-	my $ids_groups = sql_select_ids ("SELECT id FROM groups WHERE id_organisation = ? AND fake = 0 AND IFNULL(is_hidden, 0) = 0", $_USER -> {id_organisation});
+	my $ids_groups = sql_select_ids ("SELECT id FROM groups WHERE id_organisation = ? AND fake = 0 AND (IFNULL(is_hidden, 0) = 0 OR id = ?)", $_USER -> {id_organisation}, 0 + $_USER -> {id_group});
 #	$ids_groups .= ',';
 #	$ids_groups .= (0 + $_USER -> {id_group});
 
