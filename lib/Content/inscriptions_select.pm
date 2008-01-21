@@ -103,7 +103,8 @@ sub get_item_of_inscriptions_select {
 #		users => {filter => "id IN ($item->{prestation}->{id_user},$item->{prestation}->{id_users})"}
 	);
 
-	
+	my $ids_groups = sql_select_ids ("SELECT id FROM groups WHERE id_organisation = ? AND fake = 0 AND (IFNULL(is_hidden, 0) = 0 OR id = ?)", $_USER -> {id_organisation}, 0 + $_USER -> {id_group});
+
 	$item -> {users} = sql_select_all (<<EOS);
 		SELECT
 			*
@@ -111,7 +112,7 @@ sub get_item_of_inscriptions_select {
 			users
 		WHERE
 			id_organisation = $_USER->{id_organisation}
-			AND id_group > 0
+			AND id_group IN ($ids_groups)
 			AND fake = 0
 			AND (dt_finish IS NULL OR dt_finish > '$item->{prestation}->{dt_finish}')
 			AND id NOT IN ($item->{prestation}->{id_user},$item->{prestation}->{ids_users})
