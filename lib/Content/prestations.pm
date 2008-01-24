@@ -922,8 +922,16 @@ EOS
 	my $alien_id_users = join ',', grep {$_} @alien_id_users;	
 	
 	$_USER -> {id_organisation} += 0;
+	
+	my $filter = '';
+	my @params = ();
+	
+	unless ($_USER -> {role} eq 'admin') {
+		$filter .= ' AND (IFNULL(roles.is_hidden, 0) = 0 OR users.id_group = ?)';
+		push @params, 0 + $_USER -> {id_group};
+	}
 
-	my $users = sql_select_all (<<EOS, $days [-1] -> {iso_dt}, $days [0] -> {iso_dt}, $_USER -> {id_organisation}, 0 + $_USER -> {id_group});
+	my $users = sql_select_all (<<EOS, $days [-1] -> {iso_dt}, $days [0] -> {iso_dt}, $_USER -> {id_organisation}, @params);
 		SELECT
 			users.id
 			, IFNULL(prenom, users.label) AS label
@@ -942,7 +950,7 @@ EOS
 			AND (dt_start  IS NULL OR dt_start  <= ?)
 			AND (dt_finish IS NULL OR dt_finish >= ?)
 			AND (users.id_organisation = ? OR (users.id IN ($alien_id_users) AND users.id_role < 3))
-			AND (IFNULL(roles.is_hidden, 0) = 0 OR users.id_group = ?)
+			$filter
 		ORDER BY
 			IF(users.id_organisation = $$_USER{id_organisation}, 0, 1)
 			, roles.ord

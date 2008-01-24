@@ -18,7 +18,9 @@ sub select_inscriptions_par_jour {
 		($_REQUEST {week}, $_REQUEST {year}) = Week_of_Year (Today ());	
 	}
 	
-	my $ids_groups = sql_select_ids ("SELECT id FROM groups WHERE id_organisation = ? AND fake = 0 AND IFNULL(is_hidden, 0) = 0", $_USER -> {id_organisation});
+	my $filter = $_USER -> {role} eq 'admin' ? '' : ' AND IFNULL(is_hidden, 0) = 0';
+	
+	my $ids_groups = sql_select_ids ("SELECT id FROM groups WHERE id_organisation = ? AND fake = 0 $filter", $_USER -> {id_organisation});
 	$ids_groups .= ",$_USER->{id_group}" if $_USER -> {id_group} > 0;
 	
 	my $users = sql_select_vocabulary ('users', {filter => "id_group IN ($ids_groups)"});
@@ -43,9 +45,37 @@ sub select_inscriptions_par_jour {
 		$filter .= " AND prestations.id_prestation_type = " . $_REQUEST {id_prestation_type};
 	}
 
-	my $id_prestations = sql_select_ids (<<EOS, $dt_to, $dt_from);
+	my ($id_users, $idx_users) = ids ($users);
+
+	$id_prestations = -1;
+
+	my $collect = sub {
+	
+		my $is_visible = $idx_users -> {$i -> {id_user}};
+
+		if (!$is_visible && $i -> {id_users}) {
+		
+			foreach my $id_user (split /\,/, $i -> {id_users}) {
+			
+				$idx_users -> {$id_user} or next;
+				
+				$is_visible = 1;
+				
+				last;
+			
+			}
+		
+		}
+		
+		$is_visible or return;
+		
+		$id_prestations .= ",$i->{id}";
+	
+	};
+	
+	sql_select_loop (<<EOS, $collect, $dt_to, $dt_from);
 		SELECT
-			id
+			*
 		FROM
 			prestations
 		WHERE
