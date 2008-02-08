@@ -188,7 +188,19 @@ EOS
 		{type => 'prestation_types', name => $item -> {label}, id => $item -> {id}},
 	];
 
+	$item -> {prestation_type_files} = sql_select_all (<<EOS, $item -> {id}, {fake => 'prestation_type_files'});
+		SELECT
+			prestation_type_files.*
+		FROM
+			prestation_type_files
+		WHERE
+			prestation_type_files.id_prestation_type = ?
+		ORDER BY
+			prestation_type_files.label
+EOS
+
 	return $item;
+	
 }
 
 ################################################################################

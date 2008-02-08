@@ -42,6 +42,7 @@ sub draw_prestation_types {
 					keep_params => ['type'],
 					
 				},
+
 					{
 						icon    => 'create',
 						label   => 'Créer',
@@ -387,7 +388,53 @@ sub draw_item_of_prestation_types {
 
 		],
 		
-	);
+	)
+		
+	.
+
+	draw_table (
+
+		sub {
+		
+			draw_cells ({
+				href => "?type=prestation_type_files&id=$i->{id}",
+			},[
+				
+				$i -> {label},
+				
+			]),
+		
+		},
+		
+		$data -> {prestation_type_files},
+		
+		{
+			
+			title => {label => 'Documents'},
+			
+			off   => !$_REQUEST{__read_only},
+			
+			name  => 't1',
+						
+			top_toolbar => [{
+				keep_params => ['type', 'id'],
+			},
+				{
+					icon    => 'create',
+					label   => 'Créer',
+					href    => "?type=prestation_type_files&action=create&id_prestation_type=$data->{id}",
+					off     => $_USER -> {role} ne 'admin',
+				},
+				
+				fake_select (),
+				
+			],
+			
+		}
+
+	)
+	
+	;
 
 }
 

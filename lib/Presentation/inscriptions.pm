@@ -170,6 +170,39 @@ sub draw_item_of_inscriptions {
 	
 	)	
 	
+	.
+
+	draw_table (
+
+		sub {
+		
+			draw_cells ({
+				href => "?type=prestation_type_files&id=$i->{id}&action=download",
+			},[
+				
+				$i -> {label},
+				
+			]),
+		
+		},
+		
+		$data -> {prestation_type_files},
+		
+		{
+			
+			title => {label => 'Documents'},
+			
+			off   =>
+				!$_REQUEST{__read_only}
+				|| 0 == @{$data -> {prestation_type_files}},
+			,
+			
+			name  => 't1',
+									
+		}
+
+	)
+
 	;
 
 }

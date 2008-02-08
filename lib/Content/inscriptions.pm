@@ -376,6 +376,18 @@ EOS
 		sql_do ('UPDATE inscriptions SET is_unseen = 0 WHERE id = ?', $item -> {id});
 	}
 
+	$item -> {prestation_type_files} = sql_select_all (<<EOS, $item -> {prestation} -> {id_prestation_type});
+		SELECT
+			prestation_type_files.*
+		FROM
+			prestation_type_files
+		WHERE
+			prestation_type_files.fake = 0			
+			AND prestation_type_files.id_prestation_type = ?
+		ORDER BY
+			prestation_type_files.label
+EOS
+
 	return $item;
 
 }
