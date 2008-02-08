@@ -228,7 +228,7 @@ sub draw_inscriptions {
 						icon		 => 'cancel',
 						label        => 'retour (Esc)',
 						hotkey       => {code => Esc},
-						href         => "/?type=prestations&week=$_REQUEST{_week}&year=$_REQUEST{_year}&id_site=$_REQUEST{id_site}",
+						href         => "/?type=prestations&week=$_REQUEST{_week}&year=$_REQUEST{_year}&id_site=$_REQUEST{id_site}&aliens=$_REQUEST{aliens}",
 					},
 					{
 						type         => 'input_select',

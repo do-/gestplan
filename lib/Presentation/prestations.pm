@@ -488,7 +488,7 @@ EOH
 						title   => $p -> {note} || $p -> {inscriptions} || "$$day{label} " . $data -> {day_periods} -> [$day -> {id} % 2] -> {label} . " pour $$i{label}",
 					};
 					
-					$cell -> {href} = "/?type=inscriptions&id_user=$$i{id}&dt=$$day{fr_dt}&id_site=$_REQUEST{id_site}&id_day_period=" . $p -> {half_start} if $p -> {label} && $i -> {id} >= 0 && !$p -> {no_href};
+					$cell -> {href} = "/?type=inscriptions&id_user=$$i{id}&dt=$$day{fr_dt}&id_site=$_REQUEST{id_site}&aliens=$_REQUEST{aliens}&id_day_period=" . $p -> {half_start} if $p -> {label} && $i -> {id} >= 0 && !$p -> {no_href};
 					
 					$cell -> {attributes} = {
 						bgcolor => ($p -> {bgcolor} ||= 'white'),

@@ -735,13 +735,32 @@ EOS
 
 sub select_prestations {
 
+	my $item = {};
+
 	my $sites = sql_select_vocabulary (sites => {filter => "id_organisation = $_USER->{id_organisation}"});
 	
-	my $menu = @$sites == 0 ? undef : [map {{
-		label     => $_ -> {label},
-		href      => {id_site => $_ -> {id}},
-		is_active => $_REQUEST {id_site} == $_ -> {id},
-	}} ({label => 'Tous sites'}, @$sites)];
+	my @menu = ({
+		label     => 'Tous sites',
+		href      => {id_site => '', aliens => ''},
+		is_active => !$_REQUEST {id_site} && !$_REQUEST {aliens},
+	});
+	
+	foreach my $site (@$sites) {
+	
+		push @menu, {
+			label     => $site -> {label},
+			href      => {id_site => $site -> {id}, aliens => ''},
+			is_active => $_REQUEST {id_site} == $site -> {id} && !$_REQUEST {aliens},
+		};
+	
+	}
+	
+	if (@menu == 1) {
+		
+		$menu [0] -> {label} = 'Prestations locales',
+		
+	}
+
 
 	my $site_filter = $_REQUEST {id_site} ? " AND IFNULL(id_site, 0) IN ($_REQUEST{id_site}, 0) " : '';
 
@@ -938,7 +957,7 @@ EOS
 			, dt_start - INTERVAL 1 DAY  AS dt_start
 			, dt_finish + INTERVAL 1 DAY AS dt_finish
 			, roles.id AS id_role
-			, IF(users.id_organisation = $$_USER{id_organisation}, roles.label, CONCAT('Partenaire : ', organisations.label)) AS role
+			, IF(users.id_organisation = $$_USER{id_organisation}, roles.label, organisations.label) AS role
 			, IF(users.id_organisation = $$_USER{id_organisation}, 0, 1) AS is_alien
 		FROM
 			users
@@ -962,6 +981,10 @@ EOS
 	
 	foreach my $user (@$users) {
 	
+		$item -> {has_aliens} ||= $user -> {is_alien};
+		
+		$user -> {is_alien} == $_REQUEST {aliens} or next;
+	
 		my $role = $user -> {role};
 		
 #		unless ($user -> {is_alien}) {
@@ -974,8 +997,22 @@ EOS
 		
 	}
 	
-	push @users, {label => 'Salle'};
-	push @users, @{ sql_select_all ("SELECT -id AS id, label FROM rooms WHERE fake = 0 $site_filter AND id_organisation = ? ORDER BY label", $_USER -> {id_organisation})};
+	if ($item -> {has_aliens}) {
+	
+		push @menu, {
+			label     => 'Partenaires',
+			href      => {id_site => '', aliens => 1},
+			is_active => $_REQUEST {aliens},
+		};
+	
+	}
+	
+	unless ($_REQUEST {aliens}) {
+	
+		push @users, {label => 'Salle'};
+		push @users, @{ sql_select_all ("SELECT -id AS id, label FROM rooms WHERE fake = 0 $site_filter AND id_organisation = ? ORDER BY label", $_USER -> {id_organisation})};
+	
+	}
 	
 	$users = \@users;	
 
@@ -1363,9 +1400,11 @@ EOS
 		
 		have_models => $have_models,
 
-		menu => $menu,		
+		menu => @menu > 1 ? \@menu : undef,
 		
 		holydays => $holydays,
+		
+		%$item,
 			
 	};
 	
