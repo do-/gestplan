@@ -21,7 +21,7 @@ columns => {
 	id_organisation            => {TYPE_NAME => 'int'},
 	is_open                    => {TYPE_NAME => 'tinyint'},
 	no_stats                   => {TYPE_NAME => 'tinyint'},
-	time_step                  => {TYPE_NAME => 'tinyint'},
+	time_step                  => {TYPE_NAME => 'int'},
 	half_1_h                   => {TYPE_NAME => 'tinyint'},
 	half_1_m                   => {TYPE_NAME => 'tinyint'},
 	half_1_to_h                => {TYPE_NAME => 'tinyint'},

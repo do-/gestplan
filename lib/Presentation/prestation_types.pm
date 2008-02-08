@@ -94,7 +94,7 @@ sub draw_item_of_prestation_types {
 					label => 'en ',
 					name  => 'time_step',
 					no_colon => 1,
-					size  => 2
+					size  => 3
 				},
 				{
 					label => 'minutes',

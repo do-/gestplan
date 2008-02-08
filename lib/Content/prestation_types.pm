@@ -68,13 +68,13 @@ sub validate_update_prestation_types {
 	$_REQUEST {_label} or return "#_label#:Vous avez oublié d'indiquer la désignation";
 	$_REQUEST {_label_short} or return "#_label_short#:Vous avez oublié d'indiquer l'abréviation";
 
-
 	$_REQUEST {_id_day_period} = 0;
 	foreach (get_ids ('_id_day_period')) {$_REQUEST {_id_day_period} += $_};	
 	$_REQUEST {_id_day_period} or return "#_id_day_period#:Vous avez oublié d'indiquer la moitié du jour";
 	
 	if ($_REQUEST {_is_half_hour} == 1) {
-		$_REQUEST {_time_step} > 0 or return "#_time_step#:Vous avez oublié d'indiquer l'horaire";
+		$_REQUEST {_time_step} >    0 or return "#_time_step#:Vous avez oublié d'indiquer l'horaire";
+		$_REQUEST {_time_step} <= 300 or return "#_time_step#:300 minutes, soit 5 heures entre deux inscriptions, est la valeur maximum";
 	}
 	elsif ($_REQUEST {_is_half_hour} == -1) {
 	
