@@ -572,7 +572,7 @@ sub validate_update_prestations {
 		return "#_half_finish#: L'ordre des périodes est incorrect";
 	}
 	
-	my @id_users = grep {$_ != $_REQUEST {_id_user}} get_ids ('id_users');
+	my @id_users = grep {$_ > 0} grep {$_ != $_REQUEST {_id_user}} get_ids ('id_users');
 	$_REQUEST {_id_users} ||= join ',', (-1, @id_users, -1);
 		
 	foreach my $id_user ($_REQUEST {_id_user}, @id_users) {
@@ -583,7 +583,7 @@ sub validate_update_prestations {
 		
 		$prestation_type -> {ids_roles} =~ /\,$$user{id_role}\,/ or return "Désolé, mais $$user{label} ne peut pas assister aux prestations $$prestation_type{label_short}.";
 			
-		0 == sql_select_scalar (<<EOS, $_REQUEST {id}, $user -> {id}, '%,' . $user -> {id} . ',%' , $_REQUEST {_dt_finish} . $_REQUEST {_half_finish}, $_REQUEST {_dt_start} . $_REQUEST {_half_start}) or return "Désolé, mais $$user{label} est occupé pendant cette période.";
+		0 == sql_select_scalar (<<EOS, $_REQUEST {id}, $user -> {id}, '%,' . $user -> {id} . ',%' , $_REQUEST {_dt_finish} . $_REQUEST {_half_finish}, $_REQUEST {_dt_start} . $_REQUEST {_half_start}) or return "#_id_users_$$user{id}#:Désolé, mais $$user{label} est occupé pendant cette période.";
 			SELECT
 				id
 			FROM
