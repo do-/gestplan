@@ -178,6 +178,7 @@ sub draw_item_of_inscriptions {
 		
 			draw_cells ({
 				href => "?type=prestation_type_files&id=$i->{id}&action=download",
+				target => 'invisible',
 			},[
 				
 				$i -> {label},
