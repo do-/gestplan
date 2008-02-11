@@ -6,22 +6,28 @@ sub draw_item_of_prestations {
 	
 	$_REQUEST {__read_only} or $_REQUEST {__on_load} .= <<EOH;
 	
-		document.forms['form'].elements['_id_users_0'].onclick = function () {
-			
-			var elems = document.forms['form'].elements;
-			
-			if (!elems ['_id_users_0'].checked) return;
-			
-			for (var ix=0; ix < elems.length; ix ++) {	
-			
-			    var elem = elems [ix];
-			    if (elem.type != 'checkbox')    continue;
-			    if (elem.name == '_id_users_0') continue;
-			    if (elem.checked)               continue;
-			    elem.checked = true;
-			    
+		var id_users_0 = document.forms['form'].elements['_id_users_0'];
+		
+		if (id_users_0) {
+	
+			id_users_0.onclick = function () {
+				
+				var elems = document.forms['form'].elements;
+				
+				if (!elems ['_id_users_0'].checked) return;
+				
+				for (var ix=0; ix < elems.length; ix ++) {	
+				
+				    var elem = elems [ix];
+				    if (elem.type != 'checkbox')    continue;
+				    if (elem.name == '_id_users_0') continue;
+				    if (elem.checked)               continue;
+				    elem.checked = true;
+				
+				}
+	
 			}
-
+		
 		}
 
 EOH
