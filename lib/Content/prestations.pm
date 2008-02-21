@@ -600,7 +600,7 @@ EOS
 
 	}
 	
-	my @id_prestations_rooms = sql_select_col ('SELECT id_room FROM prestations_rooms WHERE id_prestation = ?', $_REQUEST {id});
+	my @id_prestations_rooms = sql_select_col ('SELECT id_room FROM prestations_rooms WHERE id_prestation = ? AND id_room > 0', $_REQUEST {id});
 	
 	if (@id_prestations_rooms) {
 	
