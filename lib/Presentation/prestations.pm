@@ -418,6 +418,8 @@ EOH
 				bottom_toolbar => ' ',
 
 				max_len => 255,
+				
+				off => $_REQUEST {xls},
 
 			},
 			
@@ -470,7 +472,7 @@ EOH
 				$i -> {id} or return draw_cells ({}, [
 					{
 						label => $i -> {label},
-						colspan => 1 + 2 * @{$data -> {days}},
+						colspan => 1 + 2 * @{$data -> {organisation} -> {days}},
 						attributes => {align => 'center'},
 						bold => 1,
 					},

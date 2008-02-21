@@ -1404,6 +1404,8 @@ EOS
 		
 		holydays => $holydays,
 		
+		organisation => $organisation,
+		
 		%$item,
 			
 	};
