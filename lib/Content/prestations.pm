@@ -421,6 +421,10 @@ sub do_create_prestations {
 
 sub do_update_prestations {
 
+	my $lockfile = $r -> document_root . "/i/upload/images/$item->{id}.lock";
+	
+	trylock ($lockfile) or return;
+
 	my $old_item = sql_select_hash ('prestations');
 
 	sql_do_update ('prestations', [qw(
@@ -443,7 +447,7 @@ sub do_update_prestations {
 		, $_REQUEST {_half_finish}
 		, $item -> {id}
 	);
-	
+		
 	if (
 		$old_item -> {id_prestation_type} != $item -> {id_prestation_type} ||
 		0 == sql_select_scalar ('SELECT COUNT(*) FROM inscriptions WHERE id_prestation = ?', $_REQUEST {id})
@@ -535,6 +539,8 @@ sub do_update_prestations {
 		}
 
 	}	
+	
+	unlock ($lockfile);	
 
 }
 
