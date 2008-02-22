@@ -1113,17 +1113,17 @@ EOS
 					
 			my $prestation = $idx -> {$i -> {id_prestation}};
 
+			if ($prestation -> {is_half_hour} != -1 && $i -> {label} !~ /^\+/) {
+				$prestation -> {cnt_inscriptions} ++;
+			}
+
 			return if $prestation -> {is_alien};
 			
 			$prestation -> {inscriptions} .= ', ' if $prestation -> {inscriptions};
 			$prestation -> {inscriptions} .= $i -> {prenom};
 			$prestation -> {inscriptions} .= ' ';
 			$prestation -> {inscriptions} .= $i -> {nom};
-			
-			if ($prestation -> {is_half_hour} != -1 && $i -> {label} !~ /^\+/) {
-				$prestation -> {cnt_inscriptions} ++;
-			}
-			
+						
 		},
 							
 	);
