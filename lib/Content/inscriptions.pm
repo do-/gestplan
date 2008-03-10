@@ -312,7 +312,7 @@ sub get_item_of_inscriptions {
 	$ids_groups .= ',';
 	$ids_groups .= (0 + $_USER -> {id_group});
 
-	my @vocs = ('users', {filter => "id_group IN ($ids_groups)"});
+	my @vocs = ('users', {filter => "id_group IN ($ids_groups) AND id_organisation=$item->{prestation}->{type}->{id_organisation}"});
 	
 	foreach my $field (@{$item -> {ext_fields}}) {
 		
