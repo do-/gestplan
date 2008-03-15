@@ -9,6 +9,18 @@ sub draw_item_of_inscriptions {
 		max_len => 1000,
 		
 		right_buttons => [ $data -> {read_only} ? () : del ($data) ],
+
+		additional_buttons => [
+		
+			{
+				label  => 'dupliquer (F6)',
+				hotkey => {code => F6},
+				icon   => 'create',
+				href   => "/?type=prestations&id_inscription_to_clone=$$data{id}",
+				keep_esc => 1,
+			},
+			
+		],
 		
 		no_edit => $data -> {read_only},
 		
@@ -243,6 +255,7 @@ sub draw_inscriptions {
 	
 	}
 	
+	$title_1 .= " pour $data->{user}->{label}";
 	
 	
 	
@@ -260,14 +273,16 @@ sub draw_inscriptions {
 					{
 						type         => 'button',
 						icon		 => 'cancel',
-						label        => 'retour (Esc)',
+						label        => 'retour (Echap)',
 						hotkey       => {code => Esc},
-						href         => "/?type=prestations&week=$_REQUEST{_week}&year=$_REQUEST{_year}&id_site=$_REQUEST{id_site}&aliens=$_REQUEST{aliens}",
+						href         =>
+							$_REQUEST {id_inscription_to_clone} ? esc_href () : "/?type=prestations&week=$_REQUEST{_week}&year=$_REQUEST{_year}&id_site=$_REQUEST{id_site}&aliens=$_REQUEST{aliens}",
 					},
 					{
 						type         => 'input_select',
 						name         => 'id_user',
 						values       => $data -> {users},
+						off          => $_REQUEST {id_inscription_to_clone},
 					},
 					$data -> {prevnext} -> {-1},
 					{
@@ -275,12 +290,14 @@ sub draw_inscriptions {
 #						label		 => 'pour',
 						name         => 'dt',
 						no_read_only => 1,
+						off          => $_REQUEST {id_inscription_to_clone},
 					},		
 					$data -> {prevnext} -> {1},
 					{
 						type         => 'input_select',
 						name         => 'id_day_period',
 						values       => $data -> {day_periods},
+						off          => $_REQUEST {id_inscription_to_clone},
 					},
 			)
 		
@@ -338,6 +355,7 @@ sub draw_inscriptions {
 
 				draw_cells ({
 					href  =>
+
 						$data -> {prestation_1} -> {read_only} || (
 							$i -> {fake} && (
 								0
@@ -345,7 +363,11 @@ sub draw_inscriptions {
 								|| $data -> {week_status_type} -> {id} != 2
 							)
 						) ? undef :
+
+						$_REQUEST {id_inscription_to_clone} ? "/?type=inscriptions&id=$$i{id}&action=copy_from&_id_inscription_to_clone=$_REQUEST{id_inscription_to_clone}" :
+
 						"/?type=inscriptions&id=$$i{id}",
+
 					strike => 0,
 				}, [
 					$i -> {label},
@@ -475,7 +497,11 @@ sub draw_inscriptions {
 								|| $data -> {week_status_type} -> {id} != 2
 							)
 						) ? undef :
+						
+						$_REQUEST {id_inscription_to_clone} ? "/?type=inscriptions&id=$$i{id}&action=copy_from&_id_inscription_to_clone=$_REQUEST{id_inscription_to_clone}" :
+						
 						"/?type=inscriptions&id=$$i{id}",
+						
 					strike => 0,
 				}, [
 					$i -> {label},
@@ -503,7 +529,7 @@ sub draw_inscriptions {
 
 			{
 				
-				title => {label => "$_REQUEST{_day_name} $_REQUEST{dt}" . ' après-midi : ' . ($data -> {prestation_2} -> {type} -> {label} || 'libre')},
+				title => {label => "$_REQUEST{_day_name} $_REQUEST{dt}" . ' après-midi : ' . ($data -> {prestation_2} -> {type} -> {label} || 'libre') . " pour $data->{user}->{label}"},
 				
 				off => $data -> {prestation_1} -> {id} == $data -> {prestation_2} -> {id} || $_REQUEST {id_day_period} == 1,
 

@@ -77,14 +77,14 @@ EOH
 							type => 'date',
 							name => 'dt_start',
 							no_read_only => 1,
-							read_only => 0 < @{$data -> {inscriptions}},
+							read_only => $data -> {no_move},
 							add_hidden => 1,
 						},
 						{
 							type   => 'select',
 							name   => 'half_start',
 							values => $data -> {day_periods},
-							read_only => 0 < @{$data -> {inscriptions}},
+							read_only => $data -> {no_move},
 							add_hidden => 1,
 						},
 										
@@ -99,14 +99,14 @@ EOH
 							type => 'date',
 							name => 'dt_finish',
 							no_read_only => 1,
-							read_only => 0 < @{$data -> {inscriptions}},
+							read_only => $data -> {no_move},
 							add_hidden => 1,
 						},
 						{
 							type  => 'select',
 							name  => 'half_finish',
 							values => $data -> {day_periods},
-							read_only => 0 < @{$data -> {inscriptions}},
+							read_only => $data -> {no_move},
 							add_hidden => 1,
 						},
 										
@@ -437,7 +437,8 @@ EOH
 					' ' .
 					$data -> {days} -> [-1] -> {date} -> [0] .
 					': ' .
-					$data -> {week_status_type} -> {label},
+					$data -> {week_status_type} -> {label}
+					. ($_REQUEST {id_inscription_to_clone} ? ' (Déplacement)' : '')
 					,					
 				}],
 			},
@@ -518,7 +519,7 @@ EOH
 						title   => $p -> {note} || $p -> {inscriptions} || "$$day{label} " . $data -> {day_periods} -> [$day -> {id} % 2] -> {label} . " pour $$i{label}",
 					};
 					
-					$cell -> {href} = "/?type=inscriptions&id_user=$$i{id}&dt=$$day{fr_dt}&id_site=$_REQUEST{id_site}&aliens=$_REQUEST{aliens}&id_day_period=" . $p -> {half_start} if $p -> {label} && $i -> {id} >= 0 && !$p -> {no_href};
+					$cell -> {href} = "/?type=inscriptions&id_inscription_to_clone=$_REQUEST{id_inscription_to_clone}&id_user=$$i{id}&dt=$$day{fr_dt}&id_site=$_REQUEST{id_site}&aliens=$_REQUEST{aliens}&id_day_period=" . $p -> {half_start} if $p -> {label} && $i -> {id} >= 0 && !$p -> {no_href};
 					
 					$cell -> {attributes} = {
 						bgcolor => ($p -> {bgcolor} ||= 'white'),
@@ -532,6 +533,7 @@ EOH
 							(
 								$_USER -> {role} eq 'admin'
 								&& !$i -> {is_alien}
+								&& !$_REQUEST {id_inscription_to_clone}
 							)
 							
 							|| (
@@ -542,7 +544,7 @@ EOH
 									
 									$p -> {ids_users} =~ m{\,$$_USER{id}\,}
 
-                            						|| (
+                            		|| (
 
 										!$p -> {label}
 										
@@ -641,6 +643,14 @@ EOH
 				},
 
 					{
+						icon    => 'cancel',
+						label   => 'retour (Echap)',
+						href    => esc_href (),
+						off     => !$_REQUEST {id_inscription_to_clone},
+						hotkey  => {code => ESC},
+					},
+
+					{
 						icon    => 'left',
 						label   => 'Précédente',
 						href    => {week => $data -> {prev} -> [0], year => $data -> {prev} -> [1]},
@@ -667,7 +677,10 @@ EOH
 						name   => 'id_prestation_type',
 						values => $data -> {prestation_types},
 						empty  => '',
-						off    => $_USER -> {role} eq 'accueil',
+						off    =>
+							$_USER -> {role} eq 'accueil'
+							|| $_REQUEST {id_inscription_to_clone},
+						,
 					},
 					
 					{
@@ -675,7 +688,10 @@ EOH
 						label   => $data -> {week_status_type} -> {switch} -> {label},
 						confirm => $data -> {week_status_type} -> {switch} -> {label} . ' le planning pour cette semaine, vous êtes sûr ?',
 						href    => {action => 'switch_status', id_week_status_type => $data -> {week_status_type} -> {switch} -> {id}},
-						off     => $_USER -> {role} ne 'admin',
+						off     =>
+							$_USER -> {role} ne 'admin'
+							|| $_REQUEST {id_inscription_to_clone},
+						,
 					},
 			
 					{
@@ -684,9 +700,11 @@ EOH
 						href    => {action => 'add_models'},
 						target  => 'invisible',
 						off     =>
-							$data -> {have_models} ||
-							$_USER -> {role} ne 'admin' ||
-							$data -> {week_status_type} -> {id} != 1,
+							$data -> {have_models}
+							|| $_USER -> {role} ne 'admin'
+							|| $data -> {week_status_type} -> {id} != 1
+							|| $_REQUEST {id_inscription_to_clone},
+						,
 					},
 					
 					{
@@ -694,7 +712,11 @@ EOH
 						label   => 'Effacer',
 						href    => {action => 'clear'},
 						confirm => "Etes-vous sûr qu'il soit nécessaire de supprimer TOUTES les prestations de cette semaine?",
-						off     => $_USER -> {role} ne 'admin' || $data -> {week_status_type} -> {id} != 1,
+						off     =>
+							$_USER -> {role} ne 'admin'
+							|| $data -> {week_status_type} -> {id} != 1
+							|| $_REQUEST {id_inscription_to_clone},
+						,
 					},
 
 				],

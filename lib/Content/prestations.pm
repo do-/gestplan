@@ -714,6 +714,12 @@ EOS
 	
 	$item -> {inscriptions} = sql_select_all ('SELECT * FROM inscriptions WHERE id_prestation = ? ORDER BY id', $item -> {id}, {fake => 'inscriptions'});
 
+	foreach (@{$item -> {inscriptions}}) {
+		$_ -> {id_user} or next;
+		$item -> {no_move} = 1;
+		last;
+	}
+	
 	$item -> {prestations_rooms} = sql_select_all (<<EOS, $item -> {id});
 		SELECT
 			prestations_rooms.*
@@ -742,6 +748,17 @@ EOS
 sub select_prestations {
 
 	my $item = {};
+
+	$item -> {inscription_to_clone} = sql_select_hash (<<EOS => $_REQUEST {id_inscription_to_clone}) if $_REQUEST {id_inscription_to_clone};
+		SELECT
+			inscriptions.*
+			, prestations.id_prestation_type
+		FROM
+			inscriptions
+			LEFT JOIN prestations ON inscriptions.id_prestation = prestations.id
+		WHERE
+			inscriptions.id = ?
+EOS
 
 	my $sites = sql_select_vocabulary (sites => {filter => "id_organisation = $_USER->{id_organisation}"});
 	
@@ -908,6 +925,7 @@ EOS
 				, prestations.id_user
 				, prestations.id_users
 				, prestations.note
+				, prestations.id_prestation_type
 				, prestation_types.label_short AS label
 				, prestation_types.is_half_hour
 				, prestation_types.is_placeable_by_conseiller
@@ -1013,7 +1031,7 @@ EOS
 	
 	}
 	
-	unless ($_REQUEST {aliens}) {
+	if (!$_REQUEST {aliens} && !$item -> {inscription_to_clone}) {
 	
 		push @users, {label => 'Salle'};
 		push @users, @{ sql_select_all ("SELECT -id AS id, label FROM rooms WHERE fake = 0 $site_filter AND id_organisation = ? ORDER BY label", $_USER -> {id_organisation})};
@@ -1034,6 +1052,7 @@ EOS
 				, prestations.id_users
 				, prestations.note
 				, prestations.id_prestation_model
+				, prestations.id_prestation_type
 				, prestation_types.label_short AS label
 				, prestation_types.is_half_hour
 				, prestation_types.is_placeable_by_conseiller
@@ -1092,6 +1111,13 @@ EOS
 	
 	my $have_models = 0;
 	
+	if ($item -> {inscription_to_clone}) {
+	
+		$prestations = [grep {$_ -> {id_prestation_type} == $item -> {inscription_to_clone} -> {id_prestation_type}} @$prestations]
+	
+	}
+	
+	
 	my ($ids, $idx) = ids ($prestations);
 	
 	sql_select_loop (
@@ -1139,6 +1165,8 @@ EOS
 		
 	PRESTATION: foreach my $prestation (@$prestations, @$prestations_rooms) {
 	
+		next if $item -> {inscription_to_clone} && !$prestation -> {cnt_fake};
+	
 	        foreach my $holyday (@holydays) {
 	
 	        	next if $holyday lt $prestation -> {dt_start};
@@ -1156,8 +1184,8 @@ EOS
 
 			}
 						
-	        	$prestation -> {dt_start} = sprintf ('%04d-%02d-%02d', Add_Delta_Days ((split /-/, $holyday), 1));
-	        	$prestation -> {half_start} = 1;
+	        $prestation -> {dt_start} = sprintf ('%04d-%02d-%02d', Add_Delta_Days ((split /-/, $holyday), 1));
+	        $prestation -> {half_start} = 1;
 
 			next PRESTATION if $prestation -> {dt_start} . $prestation -> {half_start} gt $prestation -> {dt_finish} . $prestation -> {half_finish};
 	

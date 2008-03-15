@@ -1,3 +1,28 @@
+
+################################################################################
+
+sub do_copy_from_inscriptions {
+
+	my $item          = sql_select_hash (inscriptions);
+	my $item_to_clone = sql_select_hash (inscriptions => $_REQUEST {_id_inscription_to_clone});
+	
+	foreach (qw(
+		hour
+		minute
+		id_user
+	)) {
+		delete $item_to_clone -> {$_}
+	}
+	
+	$item_to_clone -> {id}            = $item -> {id};
+	$item_to_clone -> {id_prestation} = $item -> {id_prestation};
+	
+	sql_do ('DELETE FROM inscriptions WHERE id = ?', $item -> {id});
+	
+	sql_do_insert (inscriptions => $item_to_clone);
+
+}
+
 ################################################################################
 
 sub do_create_inscriptions {
@@ -126,6 +151,8 @@ sub do_delete_inscriptions {
 	$item -> {prestation} = sql_select_hash ('prestations', $item -> {id_prestation});
 
 	$item -> {prestation} -> {type} = sql_select_hash ('prestation_types', $item -> {prestation} -> {id_prestation_type});
+	
+	$item -> {prestation} -> {type} -> {ids_ext_fields} ||= -1;
 
 	$item -> {ext_fields} = sql_select_all ("SELECT * FROM ext_fields WHERE fake = 0 AND id IN (" . $item -> {prestation} -> {type} -> {ids_ext_fields} . ") ORDER BY ord");
 	
@@ -283,6 +310,8 @@ sub get_item_of_inscriptions {
 	$item -> {prestation} = sql_select_hash ('prestations', $item -> {id_prestation});
 	
 	$item -> {prestation} -> {type} = sql_select_hash ('prestation_types', $item -> {prestation} -> {id_prestation_type});
+
+warn Dumper ($item);
 	
 	my ($y, $m, $d) = split /\-/, $item -> {prestation} -> {dt_start};
 	$item -> {day} = Day_of_Week ($y, $m, $d);
@@ -673,7 +702,7 @@ EOS
 		users => sql_select_vocabulary ('users', {filter => 'id_group > 0 AND id_organisation = ' . $_USER -> {id_organisation}}),
 		day_periods => sql_select_vocabulary ('day_periods'),
 		user => $user,
-		prevnext => $prevnext,
+		prevnext => $_REQUEST {id_inscription_to_clone} ? {} : $prevnext,
 	};
 	
 }
