@@ -50,11 +50,7 @@ sub select_stats_prestations {
 			, MONTH(prestations.dt_start) AS month
 			, prestations.id_user
 			, prestations.id_users
-			, SUM(
-				2 * (TO_DAYS(prestations.dt_finish) - TO_DAYS(prestations.dt_start)) +
-				    (prestations.half_finish        - prestations.half_start) +
-				    1
-			) AS cnt
+			, prestations.cnt
 		FROM
 			prestations
 		WHERE

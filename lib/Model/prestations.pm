@@ -15,6 +15,8 @@ columns => {
 
 	id_prestation_model => {TYPE_NAME => 'int'},
 
+	cnt         => {TYPE_NAME => 'int'},
+
 },
 
 keys => {

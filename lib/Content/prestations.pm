@@ -436,6 +436,7 @@ sub do_update_prestations {
 		id_users
 		id_prestation_type
 		note
+		cnt
 	)]);
 		
 	my $item = sql_select_hash ('prestations');
@@ -551,6 +552,8 @@ sub validate_update_prestations {
 	$_REQUEST {_id_prestation_type} or return "#_id_prestation_type#:Veuillez choisir le type de prestation";
 	
 	my $prestation_type = sql_select_hash ('prestation_types', $_REQUEST {_id_prestation_type});
+
+	my $organisation = sql_select_hash ('organisations', $prestation_type -> {id_organisation});
 	
 	my $item = sql_select_hash ('prestations');
 
@@ -576,6 +579,49 @@ sub validate_update_prestations {
 	}
 	elsif (Delta_Days (@start, @finish) < 0 && $_REQUEST {_half_start} > $_REQUEST {_half_finish}) {
 		return "#_half_finish#: L'ordre des périodes est incorrect";
+	}
+	
+	
+	my %holyday = ();
+	
+	sql_select_loop ('SELECT dt FROM holydays WHERE fake = 0 AND id_organisation = ? AND dt BETWEEN ? AND ?', sub {$holyday {$i -> {dt}} = 1}, $prestation_type -> {id_organisation}, $_REQUEST {_dt_start}, $_REQUEST {_dt_finish});
+
+	my %workday = (map {$_ => 1} split /\D/, $organisation -> {days});
+		
+	my @days = ();
+	
+	my $day = $_REQUEST {_dt_start};
+
+	while ($day le $_REQUEST {_dt_finish}) {
+	
+		my @day = split /-/, $day;
+		
+		$workday {Day_of_Week (@day)} or $holyday {$day} ||= 1;
+		
+		$holyday {$day} or push @days, $day;
+		
+		@day = Add_Delta_Days (@day, 1);
+		
+		$day = sprintf ('%04d-%02d-%02d', @day);
+	
+	}
+	
+	$_REQUEST {_cnt} = 0;
+	
+	my $start  = $_REQUEST {_dt_start}  . $_REQUEST {_half_start};
+	my $finish = $_REQUEST {_dt_finish} . $_REQUEST {_half_finish};
+	
+	foreach my $day (@days) {
+	
+		foreach my $half (1, 2) {
+		
+			$day . $half ge $start  or next;
+			$day . $half le $finish or next;
+			
+			$_REQUEST {_cnt} ++;
+			
+		}
+	
 	}
 	
 	my @id_users = grep {$_ > 0} grep {$_ != $_REQUEST {_id_user}} get_ids ('id_users');
@@ -1053,6 +1099,7 @@ EOS
 				, prestations.note
 				, prestations.id_prestation_model
 				, prestations.id_prestation_type
+				, prestations.cnt
 				, prestation_types.label_short AS label
 				, prestation_types.is_half_hour
 				, prestation_types.is_placeable_by_conseiller
