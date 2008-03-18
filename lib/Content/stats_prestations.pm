@@ -125,6 +125,7 @@ EOS
 	return {
 		lines => $lines,
 		sites => $sites,
+		prestations => $prestations,
 		users => [grep {$_ -> {id}} @$users],
 		prestation_types => $prestation_types,
 		years => [map {{id => $_, label => $_}} (2005 .. $year)],

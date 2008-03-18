@@ -121,6 +121,20 @@ sub do_add_models_prestations {
 
 	my @monday = Monday_of_Week ($_REQUEST {week}, $_REQUEST {year});
 	
+	my %days = ();
+	
+	my $organisation = sql_select_hash (organisations => $_USER -> {id_organisation});
+	
+	foreach my $d (split /\,/, $organisation -> {days}) {
+	
+		my $dt = sprintf ('%04d-%02d-%02d', Add_Delta_Days (@monday, $d - 1));
+		
+		next if sql_select_scalar ('SELECT id FROM holydays WHERE id_organisation = ? AND dt = ?', $_USER -> {id_organisation}, $dt);
+	
+		$days {$dt} = 1;
+	
+	}
+	
 	my $prestation_models = sql_select_all (<<EOS, $_USER -> {id_organisation}, $_REQUEST {week} % 2, {fake => 'prestation_models'});
 		SELECT
 			prestation_models.*
@@ -141,6 +155,8 @@ EOS
 	foreach my $prestation_model (@$prestation_models) {
 	
 		my $dt = sprintf ('%04d-%02d-%02d', Add_Delta_Days (@monday, $prestation_model -> {day_start} - 1));
+		
+		$days {$dt} or next;
 
 		my $type = (
 			$prestation_types -> {$prestation_model -> {id_prestation_type}} ||=
@@ -158,7 +174,7 @@ EOS
 			}
 		
 		}
-
+		
 		my $id = sql_do_insert ('prestations', {
 			fake                => 0,
 			dt_start            => $dt,
@@ -168,6 +184,7 @@ EOS
 			id_user             => $prestation_model -> {id_user},
 			id_prestation_type  => $prestation_model -> {id_prestation_type},
 			id_prestation_model => $prestation_model -> {id},
+			cnt                 => 1 + $prestation_model -> {half_finish} - $prestation_model -> {half_start},
 		});
 		
 		if ($type -> {is_collective}) {

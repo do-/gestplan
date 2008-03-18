@@ -62,4 +62,5 @@ sql_select_loop (<<EOS, $collect);
 		LEFT JOIN prestation_types ON prestations.id_prestation_type = prestation_types.id
 	WHERE
 		prestations.fake = 0
+		AND IFNULL(prestations.cnt, 0) = 0
 EOS
