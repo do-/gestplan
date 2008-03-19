@@ -14,8 +14,13 @@ sub do_copy_from_inscriptions {
 		delete $item_to_clone -> {$_}
 	}
 	
-	$item_to_clone -> {id}            = $item -> {id};
-	$item_to_clone -> {id_prestation} = $item -> {id_prestation};
+	foreach (qw(
+		id
+		id_prestation
+		label
+	)) {
+		$item_to_clone -> {$_} = $item -> {$_};
+	}
 	
 	sql_do ('DELETE FROM inscriptions WHERE id = ?', $item -> {id});
 	
