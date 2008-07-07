@@ -11,33 +11,33 @@ sub do_update_ext_fields {
 		is_mandatory
 	)]);
 	
-	my $item = sql_select_hash ('ext_fields');
-	
-	my $ext_field_type = sql_select_hash ('ext_field_types', $item -> {id_field_type});
-	
-	my $definition = {
-		TYPE_NAME => $ext_field_type -> {sql_type},
-	};
-	
-	if ($item -> {length} > 0) {
-		$definition -> {COLUMN_SIZE} = $item -> {length};
-	}
-
-	$model_update -> assert (
-	
-		tables => {	
-				
-			inscriptions => {
-					
-				columns => {				
-					'field_' . $item -> {id} => $definition,
-				},
-				
-			},
-	
-		}
-		
-	);	
+#	my $item = sql_select_hash ('ext_fields');
+#	
+#	my $ext_field_type = sql_select_hash ('ext_field_types', $item -> {id_field_type});
+#	
+#	my $definition = {
+#		TYPE_NAME => $ext_field_type -> {sql_type},
+#	};
+#	
+#	if ($item -> {length} > 0) {
+#		$definition -> {COLUMN_SIZE} = $item -> {length};
+#	}
+#
+#	$model_update -> assert (
+#	
+#		tables => {	
+#				
+#			inscriptions => {
+#					
+#				columns => {				
+#					'field_' . $item -> {id} => $definition,
+#				},
+#				
+#			},
+#	
+#		}
+#		
+#	);	
 
 }
 

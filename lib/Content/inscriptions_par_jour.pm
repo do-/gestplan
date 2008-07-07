@@ -2,6 +2,8 @@
 
 sub select_inscriptions_par_jour {
 
+warn Dumper (sql_select_all ('SHOW VARIABLES'));
+
 	my $sites = sql_select_vocabulary (sites => {filter => "id_organisation = $_USER->{id_organisation}"});
 	
 	my $menu = @$sites == 0 ? undef : [map {{
@@ -107,6 +109,7 @@ EOS
 	my $filter = '';
 	my @params = ();	
 	my @ext_fields = ();
+	my $join = '';
 		
 	my $collect = sub {
 		
@@ -120,15 +123,17 @@ EOS
 		
 		$_REQUEST {$field -> {name}} or next;
 		
+		$join .= " LEFT JOIN ext_field_values AS t_$field->{name} ON (t_$field->{name}.id_inscription = inscriptions.id AND t_$field->{name}.id_ext_field = $field->{id})";
+
 		if ($field -> {id_field_type} != 3) {
-			$filter .= " AND $field->{name} = ?";
+			$filter .= " AND t_$field->{name}.value = ?";
 			push @params, $_REQUEST {$field -> {name}};
                	}
 		else {
-			$filter .= " AND $field->{name} LIKE ?";
+			$filter .= " AND t_$field->{name}.value LIKE ?";
 			push @params, '%' . $_REQUEST {$field -> {name}} . '%';
 		}
-		
+				
 	};
 
 	sql_select_loop (<<EOS, $collect);
@@ -150,6 +155,7 @@ EOS
 	 		INNER JOIN prestations ON inscriptions.id_prestation = prestations.id
 	 		INNER JOIN users ON prestations.id_user = users.id
 	 		INNER JOIN prestation_types ON prestations.id_prestation_type = prestation_types.id
+	 		$join
 	 	WHERE
 	 		inscriptions.fake = 0
 	 		AND prestations.id IN ($id_prestations)
@@ -186,6 +192,13 @@ EOS
 	 		$_REQUEST{start}, $portion
 EOS
 
+	my ($ids, $idx) = ids ($inscriptions_par_conseiller);
+
+	sql_select_loop ("SELECT * FROM ext_field_values WHERE id_inscription IN ($ids)", sub {
+	
+		$idx -> {$i -> {id_inscription}} -> {"field_$i->{id_ext_field}"} = $i -> {value};
+	
+	});
 		
 	foreach my $field (@ext_fields) {
 		
@@ -224,9 +237,7 @@ EOS
 		}
 			
 	}
-	
-	my ($ids, $idx) = ids ($inscriptions_par_conseiller);
-	
+		
 #	$_REQUEST {__suicide} = 1;
 		
 	return {

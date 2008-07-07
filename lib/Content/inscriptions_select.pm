@@ -66,6 +66,14 @@ sub get_item_of_inscriptions_select {
 
 	my $item = sql_select_hash ('inscriptions');
 	
+foreach my $k (keys %$item) {$k =~ /^field_\d/ or next; delete $item -> {$k}};
+
+	sql_select_loop ("SELECT * FROM ext_field_values WHERE id_inscription = ?", sub {
+	
+		$item -> {"field_$i->{id_ext_field}"} = $i -> {value};
+	
+	}, $item -> {id});
+
 	$_REQUEST {__read_only} = 1;
 	
 	$item -> {prestation} = sql_select_hash ('prestations', $item -> {id_prestation});

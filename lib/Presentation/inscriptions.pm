@@ -18,6 +18,7 @@ sub draw_item_of_inscriptions {
 				icon   => 'create',
 				href   => "/?type=prestations&id_inscription_to_clone=$$data{id}",
 				keep_esc => 1,
+				off    => !$_REQUEST {__read_only},
 			},
 			
 		],

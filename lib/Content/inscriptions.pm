@@ -25,6 +25,16 @@ sub do_copy_from_inscriptions {
 	sql_do ('DELETE FROM inscriptions WHERE id = ?', $item -> {id});
 	
 	sql_do_insert (inscriptions => $item_to_clone);
+	
+	sql_select_loop ('SELECT * FROM ext_field_values WHERE id_inscription = ?', sub {
+
+		delete $i -> {id};
+		$i -> {fake} = 0;
+		$i -> {id_inscription} = $_REQUEST {id};
+		
+		sql_do_insert (ext_field_values => $i);
+
+	}, $_REQUEST {_id_inscription_to_clone});
 
 }
 
@@ -104,7 +114,27 @@ EOS
 ################################################################################
 
 sub do_update_inscriptions {
+		
+	sql_do ('DELETE FROM ext_field_values WHERE id_inscription = ?', $_REQUEST {id});
 	
+	foreach my $key (keys %_REQUEST) {
+	
+		$key =~ /^_field_(\d+)$/ or next;
+				
+		sql_do_insert (ext_field_values => {
+			
+			fake => 0,
+			
+			id_inscription => $_REQUEST {id},
+			id_ext_field   => $1,
+			value          => $_REQUEST {$key},
+			
+		}) if $_REQUEST {$key};
+		
+		delete $_REQUEST {$key};
+		
+	}
+
 	do_update_DEFAULT ();
 	
 	$_REQUEST {_hour} or return;
@@ -306,6 +336,14 @@ sub get_item_of_inscriptions {
 
 	my $item = sql_select_hash ('inscriptions');
 	
+foreach my $k (keys %$item) {$k =~ /^field_\d/ or next; delete $item -> {$k}};
+
+	sql_select_loop ("SELECT * FROM ext_field_values WHERE id_inscription = ?", sub {
+	
+		$item -> {"field_$i->{id_ext_field}"} = $i -> {value};
+	
+	}, $item -> {id});	
+	
 	$_REQUEST {id_log} = $item -> {id_log};
 	
 	$_REQUEST {__read_only} ||= !($_REQUEST {__edit} || $item -> {fake});
@@ -315,8 +353,6 @@ sub get_item_of_inscriptions {
 	$item -> {prestation} = sql_select_hash ('prestations', $item -> {id_prestation});
 	
 	$item -> {prestation} -> {type} = sql_select_hash ('prestation_types', $item -> {prestation} -> {id_prestation_type});
-
-warn Dumper ($item);
 	
 	my ($y, $m, $d) = split /\-/, $item -> {prestation} -> {dt_start};
 	$item -> {day} = Day_of_Week ($y, $m, $d);
@@ -567,6 +603,14 @@ EOS
 				, id
 EOS
 
+		my ($ids, $idx) = ids ($prestation_1 -> {inscriptions});
+	
+		sql_select_loop ("SELECT * FROM ext_field_values WHERE id_inscription IN ($ids)", sub {
+		
+			$idx -> {$i -> {id_inscription}} -> {"field_$i->{id_ext_field}"} = $i -> {value};
+		
+		});
+
 		foreach my $field (@{$prestation_1 -> {ext_fields}}) {
 		
 			if ($field -> {id_field_type} == 1) {
@@ -664,6 +708,14 @@ EOS
 				, id
 EOS
 		
+		my ($ids, $idx) = ids ($prestation_2 -> {inscriptions});
+	
+		sql_select_loop ("SELECT * FROM ext_field_values WHERE id_inscription IN ($ids)", sub {
+		
+			$idx -> {$i -> {id_inscription}} -> {"field_$i->{id_ext_field}"} = $i -> {value};
+		
+		});
+
 		foreach my $field (@{$prestation_2 -> {ext_fields}}) {
 		
 			if ($field -> {id_field_type} == 1) {
