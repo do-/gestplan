@@ -42,6 +42,8 @@ sub do_copy_from_inscriptions {
 
 sub do_create_inscriptions {
 
+
+
 	my $item = {};
 	$item -> {prestation} = sql_select_hash ('prestations', $_REQUEST {id_prestation});
 	$item -> {prestation} -> {type} = sql_select_hash ('prestation_types', $item -> {prestation} -> {id_prestation_type});
@@ -74,6 +76,7 @@ sub do_create_inscriptions {
 		hour_start     => $h,
 		minute_start   => $m,		
 	});
+	
 
 
 }
@@ -358,6 +361,13 @@ foreach my $k (keys %$item) {$k =~ /^field_\d/ or next; delete $item -> {$k}};
 	$item -> {day} = Day_of_Week ($y, $m, $d);
 	$item -> {day_name} = $day_names [$item -> {day} - 1];
 
+### ok
+
+
+
+
+
+
 	__d ($item -> {prestation}, 'dt_start');
 
 	$item -> {week_status_type} = sql_select_hash ('week_status_types', week_status ($item -> {prestation} -> {dt_start}, $_USER -> {id_organisation}));
@@ -375,6 +385,9 @@ foreach my $k (keys %$item) {$k =~ /^field_\d/ or next; delete $item -> {$k}};
 	$item -> {prestation} -> {user} = sql_select_hash ('users', $item -> {prestation} -> {id_user});
 	
 	$item -> {id_user} = $item -> {prestation} -> {id_user} if $_REQUEST {__edit};
+
+
+
 
 	$item -> {ext_fields} = sql_select_all ("SELECT * FROM ext_fields WHERE fake = 0 AND id IN (" . $item -> {prestation} -> {type} -> {ids_ext_fields} . ") ORDER BY ord");
 	
@@ -412,6 +425,7 @@ foreach my $k (keys %$item) {$k =~ /^field_\d/ or next; delete $item -> {$k}};
 		{type => 'inscriptions', name => $item -> {label}, id => $item -> {id}},
 	];
 	
+	
 	if ($item -> {prestation} -> {type} -> {is_half_hour} == -1) {
 	
 		$parent = {%$item};
@@ -422,7 +436,9 @@ foreach my $k (keys %$item) {$k =~ /^field_\d/ or next; delete $item -> {$k}};
 		
 		}
 		
-		$item -> {inscriptions} = sql_select_all (<<EOS, $item -> {id}, $parent -> {id}, $parent -> {id});
+		$item -> {inscriptions} = [
+		
+		    @{sql_select_all (<<EOS, $item -> {id}, $parent -> {id})},
 			SELECT
 				inscriptions.*
 				, users.label AS user_label
@@ -432,8 +448,25 @@ foreach my $k (keys %$item) {$k =~ /^field_\d/ or next; delete $item -> {$k}};
 				LEFT JOIN users ON prestations.id_user = users.id
 			WHERE
 				inscriptions.id <> ?
-				AND (inscriptions.id = ? OR inscriptions.parent = ?)
+				AND (inscriptions.id = ?)
 EOS
+
+		    @{sql_select_all (<<EOS, $item -> {id}, $parent -> {id})},
+			SELECT
+				inscriptions.*
+				, users.label AS user_label
+			FROM
+				inscriptions
+				LEFT JOIN prestations ON inscriptions.id_prestation = prestations.id
+				LEFT JOIN users ON prestations.id_user = users.id
+			WHERE
+				inscriptions.id <> ?
+				AND (inscriptions.parent = ?)
+EOS
+
+
+		];
+
 	
 	}
 	else {
@@ -457,6 +490,8 @@ EOS
 		ORDER BY
 			prestation_type_files.label
 EOS
+
+
 
 	return $item;
 
