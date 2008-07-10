@@ -2,8 +2,6 @@
 
 sub select_inscriptions_par_jour {
 
-warn Dumper (sql_select_all ('SHOW VARIABLES'));
-
 	my $sites = sql_select_vocabulary (sites => {filter => "id_organisation = $_USER->{id_organisation}"});
 	
 	my $menu = @$sites == 0 ? undef : [map {{
@@ -25,16 +23,20 @@ warn Dumper (sql_select_all ('SHOW VARIABLES'));
 	my $ids_groups = sql_select_ids ("SELECT id FROM groups WHERE id_organisation = ? AND fake = 0 $filter", $_USER -> {id_organisation});
 	$ids_groups .= ",$_USER->{id_group}" if $_USER -> {id_group} > 0;
 	
-	my $users = sql_select_vocabulary ('users', {filter => "id_group IN ($ids_groups)"});
+	my $dt_from = sprintf ('%04d-%02d-%02d', reverse split /\//, $_REQUEST {dt_from});
+	my $dt_to   = sprintf ('%04d-%02d-%02d', reverse split /\//, $_REQUEST {dt_to});
+
+	my $users = sql_select_vocabulary ('users', {filter => "
+		id_group IN ($ids_groups)
+		AND IFNULL(users.dt_start,  '1970-01-01') <= '$dt_to'
+		AND IFNULL(users.dt_finish, '9999-99-99') >= '$dt_from'
+	"});
 	
 	my $prestation_types = sql_select_vocabulary ('prestation_types', {filter => "id_organisation = $_USER->{id_organisation}"}),
 	
 	my $id_prestation_types = -1;
 	foreach (@$prestation_types) {	$id_prestation_types .= ",$$_{id}" }
-	
-	my $dt_from = sprintf ('%04d-%02d-%02d', reverse split /\//, $_REQUEST {dt_from});
-	my $dt_to   = sprintf ('%04d-%02d-%02d', reverse split /\//, $_REQUEST {dt_to});
-	
+		
 	($_REQUEST {_week}, $_REQUEST {_year}) = Week_of_Year (reverse split /\//, $_REQUEST {dt_from});	
 	
 	my $filter = $_REQUEST {id_user} ? "AND (id_user = $_REQUEST{id_user} OR id_users LIKE ',%$_REQUEST{id_user}%,')" : '';
