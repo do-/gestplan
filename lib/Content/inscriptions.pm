@@ -202,10 +202,23 @@ sub do_delete_inscriptions {
 
 	sql_do ("UPDATE inscriptions SET $fields WHERE id = ?", $_REQUEST {id});
 	
+	if (!$item -> {parent} && $item -> {id_author} == $_USER -> {id}) {
+			
+		my $ids = sql_select_ids ('SELECT id FROM inscriptions WHERE id = ? OR parent = ?', $item -> {id}, $item -> {id});
+			
+		sql_do ("DELETE FROM ext_field_values WHERE id_inscription IN ($ids)");		
+		
+	}
+	else {		
+	
+		sql_do ("DELETE FROM ext_field_values WHERE id_inscription = ?", $_REQUEST {id});
+
+	}
+
 	if ($item -> {prestation} -> {type} -> {is_half_hour} == -1) {
 	
 		if (!$item -> {parent} && $item -> {id_author} == $_USER -> {id}) {
-		
+								
 			sql_do ('DELETE FROM inscriptions WHERE id = ? OR parent = ?', $item -> {id}, $item -> {id});
 		
 		}
