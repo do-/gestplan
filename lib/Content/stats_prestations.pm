@@ -66,7 +66,7 @@ EOS
 		$_REQUEST {id_site} ? " AND id_site = $_REQUEST{id_site} " :
 		'';
 	
-	my $users = sql_select_all (<<EOS, $_USER -> {id_organisation}, $from, $from, $to, $to);
+	my $users = sql_select_all (<<EOS, $_USER -> {id_organisation}, $to, $to, $from, $from);
 		SELECT
 			id
 			, label
