@@ -50,7 +50,7 @@ sub select_stats_prestations {
 			, MONTH(prestations.dt_start) AS month
 			, prestations.id_user
 			, prestations.id_users
-			, prestations.cnt
+			, SUM(prestations.cnt) cnt
 		FROM
 			prestations
 		WHERE
