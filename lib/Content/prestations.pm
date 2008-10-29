@@ -424,6 +424,7 @@ sub do_create_prestations {
 			$_REQUEST {_dt_finish} =          $_REQUEST {dt_finish};
 			$_REQUEST {_half_finish} =        $_REQUEST {half_finish};
 			$_REQUEST {_id_prestation_type} = $_REQUEST {id_prestation_type};
+			$_REQUEST {_cnt} = 1;
 			
 			do_update_prestations ();
 			
