@@ -40,8 +40,9 @@ sub select_log {
 	
 	my ($object_type, $object_id) = split /\./, $_REQUEST {object_type};
 	
-	my $type_filer = $object_type ? "AND log.type      = '$object_type'" : '';
-	my $id_filer   = $object_id ?   "AND log.id_object = $object_id" : '';
+	my $type_filer   = $object_type ? "AND log.type         = '$object_type'" : '';
+	my $action_filer = $_REQUEST {object_action} ? "AND log.action = '$_REQUEST{object_action}'" : '';
+	my $id_filer     = $object_id ?   "AND log.id_object    = $object_id" : '';
 
 	my ($log, $cnt) = sql_select_all_cnt (<<EOS);
 		SELECT
@@ -55,6 +56,7 @@ sub select_log {
 			1=1
 			$user_filer
 			$type_filer
+			$action_filer
 			$id_filer
 		ORDER BY 		
 			log.id DESC

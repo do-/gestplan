@@ -106,6 +106,13 @@ sub draw_log {
 				name   => 'object_type',
 			}),
 
+			draw_toolbar_input_text ({
+				icon   => 'tv',
+				label  => 'Action',
+				keep_params => [],
+				name   => 'object_action',
+			}),
+
 			draw_toolbar_input_select ({				
 					name => 'id_user',
 					values => $data -> {users},
