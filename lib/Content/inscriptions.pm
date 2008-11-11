@@ -246,6 +246,21 @@ sub do_delete_inscriptions {
 sub validate_update_inscriptions {
 	
 	my $item = sql_select_hash ('inscriptions');
+	
+	if ($_REQUEST {id_log} != $item -> {id_log}) {
+	
+		my $log  = sql_select_hash ('log',   $item -> {id_log});
+		
+		__d ($log, 'dt');
+		
+		my $user = sql_select_hash ('users', $log -> {id_user});
+		
+		return "Désolé, mais $user->{label} vient d'éditer cette fiche (à $log->{dt}). Veuillez cliquer 'retour'.";
+	
+	};
+	
+	delete $_REQUEST {id_log};
+	
 	$item -> {prestation} = sql_select_hash ('prestations', $item -> {id_prestation});
 	$item -> {prestation} -> {type} = sql_select_hash ('prestation_types', $item -> {prestation} -> {id_prestation_type});
 
@@ -325,20 +340,6 @@ EOS
 		$_REQUEST {$name} or return "#$name#:Vous avez oublié de remplir le champ \"$i->{label}\"";
 		
 	}
-
-	if ($_REQUEST {id_log} != $item -> {id_log}) {
-	
-		my $log  = sql_select_hash ('log',   $item -> {id_log});
-		
-		__d ($log, 'dt');
-		
-		my $user = sql_select_hash ('users', $log -> {id_user});
-		
-		return "Désolé, mais $user->{label} vient d'éditer cette fiche (à $log->{dt}). Veuillez cliquer 'retour'.";
-	
-	};
-	
-	delete $_REQUEST {id_log};
 	
 	$_REQUEST {_id_author} = $_USER -> {id};
 
