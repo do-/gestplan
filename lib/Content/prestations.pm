@@ -761,8 +761,12 @@ EOS
 #	$ids_groups .= ',';
 #	$ids_groups .= (0 + $_USER -> {id_group});
 
+	my @ids_users = (-1, grep {$_ > 0} ($item -> {id_user}, @{$item -> {id_users}}));
+	
+	my $ids_users = join ',', @ids_users;
+
 	add_vocabularies ($item,
-		'users'            => {filter => "id_group IN ($ids_groups) AND (dt_finish IS NULL OR dt_finish > '$item->{_dt_finish}')"},
+		'users'            => {filter => "(id in ($ids_users)) OR (id_group IN ($ids_groups) AND (dt_finish IS NULL OR dt_finish > '$item->{_dt_finish}'))"},
 		'prestation_types' => {filter => $filter},
 	);
 

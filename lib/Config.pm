@@ -48,7 +48,7 @@ our $conf = {
 	core_auto_edit  => 1,
 	core_show_icons => 1,
 	core_hide_row_buttons => 2,
-	core_recycle_ids => 1,
+	core_recycle_ids => 0,
 	core_unlimit_xls => 1,
 	
 #	db_temporality => ['workbook', 'vacations'],
