@@ -196,9 +196,9 @@ sub do_delete_inscriptions {
 	
 	my $fields = 'nom = NULL, prenom = NULL, id_user = NULL, hour = NULL, minute = NULL, fake = -1';
 	
-	foreach my $field (@{$item -> {ext_fields}}) {
-		$fields .= ', field_' . $field -> {id} . ' = NULL';
-	}
+#	foreach my $field (@{$item -> {ext_fields}}) {
+#		$fields .= ', field_' . $field -> {id} . ' = NULL';
+#	}
 
 	sql_do ("UPDATE inscriptions SET $fields WHERE id = ?", $_REQUEST {id});
 	
