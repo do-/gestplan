@@ -781,11 +781,15 @@ EOS
 	];
 	
 	$item -> {inscriptions} = sql_select_all ('SELECT * FROM inscriptions WHERE id_prestation = ? ORDER BY id', $item -> {id}, {fake => 'inscriptions'});
-
-	foreach (@{$item -> {inscriptions}}) {
-		$_ -> {id_user} or next;
-		$item -> {no_move} = 1;
-		last;
+	
+	if ($item -> {prestation_type} -> {is_half_hour} != 0) {
+	
+		foreach my $i (@{$item -> {inscriptions}}) {
+			$i -> {id_user} or next;
+			$item -> {no_move} = 1;
+			last;
+		}
+	
 	}
 	
 	$item -> {prestations_rooms} = sql_select_all (<<EOS, $item -> {id});
