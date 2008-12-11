@@ -382,7 +382,7 @@ foreach my $k (keys %$item) {$k =~ /^field_\d/ or next; delete $item -> {$k}};
 
 
 
-	__d ($item -> {prestation}, 'dt_start');
+	__d ($item -> {prestation}, 'dt_start', 'dt_finish');
 
 	$item -> {week_status_type} = sql_select_hash ('week_status_types', week_status ($item -> {prestation} -> {dt_start}, $_USER -> {id_organisation}));
 	
@@ -409,7 +409,7 @@ foreach my $k (keys %$item) {$k =~ /^field_\d/ or next; delete $item -> {$k}};
 	$ids_groups .= ',';
 	$ids_groups .= (0 + $_USER -> {id_group});
 
-	my @vocs = ('users', {filter => "id_group IN ($ids_groups) AND id_organisation=$item->{prestation}->{type}->{id_organisation}"});
+	my @vocs = ('users', {filter => "id_group IN ($ids_groups) AND IFNULL(dt_start, '$item->{prestation}->{dt_finish}') <= '$item->{prestation}->{dt_finish}' AND IFNULL(dt_finish, '$item->{prestation}->{dt_start}') >= '$item->{prestation}->{dt_start}' AND id_organisation=$item->{prestation}->{type}->{id_organisation}"});
 	
 	foreach my $field (@{$item -> {ext_fields}}) {
 		
