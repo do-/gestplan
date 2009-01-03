@@ -10,7 +10,7 @@ sub draw_item_of_tasks {
 
 	draw_form ({
 				
-			no_ok => 1,
+			no_ok => $data -> {fake} <= 0,
 			
 			path => [
 				{type => 'tasks', name => 'Support'},

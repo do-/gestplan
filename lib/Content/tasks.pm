@@ -25,6 +25,8 @@ sub validate_update_tasks {
 
 sub do_update_tasks {
 
+	my $data = sql ('tasks');
+
 	if ($data -> {fake} > 0) {
 
 		my $id = sql_do_insert (tasks => {
@@ -38,6 +40,7 @@ sub do_update_tasks {
 			fake    => 0,
 			id_user => $_USER -> {id},
 			id_task => $id,
+			id_task_status => 100,
 			id_log  => $_REQUEST {_id_log},	
 			label   => $_REQUEST {_label},
 			body    => $_REQUEST {_body},
