@@ -13,6 +13,8 @@ columns => {
 	id_site         => {TYPE_NAME => 'int'},
 	id_group        => {TYPE_NAME => 'int'},
 	no_popup        => {TYPE_NAME => 'tinyint', NULLABLE => 0, COLUMN_DEFAULT => 0},
+	
+	options => {TYPE_NAME => 'text'},
 
 },
 

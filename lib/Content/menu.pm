@@ -26,6 +26,8 @@ sub select_menu_for_superadmin {
 			],
 		},
 	
+		support_menu (),
+
 	];
 
 }
@@ -111,6 +113,8 @@ sub select_menu_for_admin {
 			
 		stat_menu (),
 		
+		support_menu (),
+
 		extra_menu (),
 	
 	];
@@ -138,6 +142,8 @@ sub select_menu_for_conseiller {
 		
 		stat_menu (),
 	
+		support_menu (),
+
 		extra_menu (),
 
 	];
@@ -160,6 +166,8 @@ sub select_menu_for_accueil {
 		},
 		
 		stat_menu (),
+		
+		support_menu (),
 	
 		extra_menu (),
 

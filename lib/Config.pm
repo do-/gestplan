@@ -179,7 +179,17 @@ sub is_past {
 
 ################################################################################
 
-sub get_page {sql_do ('SET NAMES latin1')}
+sub get_page {
+	
+	sql_do ('SET NAMES latin1');
+	
+	foreach (split /,/, $_USER -> {options}) {
+	
+		$_USER -> {options_hash} -> {$_} = 1;
+		
+	}
+	
+}
 
 ################################################################################
 
@@ -227,6 +237,26 @@ sub iframe_alerts {
 		<iframe style="display:none" name="alerts" src="/?sid=$_REQUEST{sid}&type=alerts&_salt=$salt">
 		</iframe>
 EOH
+
+}
+
+################################################################################
+
+sub support_menu {
+	
+    return {
+    
+		label => 'Support',
+		name  => 'tasks',
+    	
+    	items => [
+    		{
+				label => 'Correspondance',
+				name  => 'task_notes',
+			},
+		],
+    	
+	}		
 
 }
 

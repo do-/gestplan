@@ -95,6 +95,7 @@ sub draw_item_of_users {
 				type   => 'select',
 				empty  => ' ',
 				values => $data -> {groups},
+				off    => 0 == @{$data -> {groups}},
 			},
 			{
 				name   => 'id_site',
@@ -103,6 +104,23 @@ sub draw_item_of_users {
 				empty  => ' ',
 				values => $data -> {sites},
 				off    => 0 == @{$data -> {sites}},
+			},
+			{
+				name   => 'options',
+				label  => 'Options',
+				type   => 'checkboxes',
+				values => [
+					{
+						id    => 'support',
+						label => 'Support' ,
+						items => [
+							{
+								id    => 'support_developer',
+								label => 'Développeur',
+							},
+						],
+					},
+				],
 			},
 			
 			{

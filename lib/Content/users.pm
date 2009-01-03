@@ -75,6 +75,8 @@ sub get_item_of_users {
 			dt_start DESC
 EOS
 
+	$item -> {options} = [split /\,/, $item -> {options}];
+
 	return $item;	
 	
 }
@@ -105,6 +107,18 @@ sub validate_update_users {
 	}
 			
 	delete $_REQUEST {_id_organisation} if $_REQUEST {_id_role} == 4;
+	
+	foreach (keys %_REQUEST) {	
+		/^_options_/ or next;		
+		$_REQUEST {_options} .= ",$'";	
+	}
+	
+	if ($_REQUEST {_password}) {
+		$_REQUEST {_password} = sql_select_scalar ('SELECT OLD_PASSWORD(?)', $_REQUEST {_password});
+	}
+	else {
+		delete $_REQUEST {_password};
+	}
 
 	return undef;
 	
@@ -114,11 +128,10 @@ sub validate_update_users {
 
 sub do_update_users {
 
-	sql_do_update ('users', [qw(nom prenom label id_organisation id_site id_group)]);
+	do_update_DEFAULT ();
 	
 	if ($_USER -> {role} eq 'admin' || $_USER -> {role} eq 'superadmin') {
 		sql_do_update ('users', [qw(login id_role dt_start dt_finish)]);
-		$_REQUEST {_password} and sql_do ("UPDATE users SET password=OLD_PASSWORD(?) WHERE id=?", $_REQUEST {_password}, $_REQUEST {id});
 	}
 	
 }
