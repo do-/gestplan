@@ -1,4 +1,17 @@
 
+
+################################################################################
+
+sub do_create_tasks {
+
+	$_REQUEST {id} = sql_do_insert (tasks => {
+		id_user  => $_USER -> {id},
+		id_task_status => 100,
+	});
+
+}
+
+
 ################################################################################
 
 sub validate_update_tasks {
@@ -29,12 +42,7 @@ sub do_update_tasks {
 
 	if ($data -> {fake} > 0) {
 
-		my $id = sql_do_insert (tasks => {
-			fake => 0,
-			id_user        => $_USER -> {id},
-			id_task_status => 100,
-			label          => $_REQUEST {_label},
-		});
+		my $id = $_REQUEST {id};
 	
 		$_REQUEST {id} = sql_do_insert (task_notes => {
 			fake    => 0,
@@ -56,7 +64,7 @@ sub do_update_tasks {
 			path_column => 'file_path',
 		});
 		
-		sql_do ('UPDATE tasks SET id_task_note = ? WHERE id = ?', $_REQUEST {id}, $id);
+		sql_do ('UPDATE tasks SET label = ?, id_task_note = ? WHERE id = ?', $_REQUEST {_label}, $_REQUEST {id}, $id);
 		
 		$_REQUEST {id} = $id;
 		
@@ -134,6 +142,13 @@ sub get_item_of_tasks {
 			];
 		
 		}
+		elsif ($data -> {id_task_status} == 100) {
+		
+			$data -> {actions} = [
+				{id => 100, label => 'Compléter'},
+			];
+		
+		}
 
 	}
 	
@@ -167,7 +182,7 @@ sub select_tasks {
 		),
 
 		$data -> {task_status} = [
-			{id => - 100, label => 'A faire'},
+			{id =>   100, label => 'A faire'},
 			{id => - 200, label => 'A verifier'},
 			{id => - 300, label => 'Archive'},
 			{id =>   201, label => 'A preciser'},
@@ -184,6 +199,8 @@ sub select_tasks {
 		$_REQUEST {id_user} = $_USER -> {id};		
 		
 		$data -> {task_status} = [
+			{id => - 100, label => 'A surveiller'},
+			{id =>   100, label => 'A faire'},
 			{id => - 200, label => 'A vérifier'},
 			{id => - 300, label => 'Archive'},
 			{id =>   201, label => 'A préciser'},
@@ -192,11 +209,12 @@ sub select_tasks {
 			{id =>   301, label => 'Annulé'},
 		];
 
-		exists $_REQUEST {id_task_status} or $_REQUEST {id_task_status} = - 200;
+		exists $_REQUEST {id_task_status} or $_REQUEST {id_task_status} = - 100;
 	
 	}
 	
 	my $id_task_status =
+		$_REQUEST {id_task_status} == - 100 ? '100,200,201' :
 		$_REQUEST {id_task_status} == - 200 ? '200,201' :
 		$_REQUEST {id_task_status} == - 300 ? '300,301' :
 		$_REQUEST {id_task_status}

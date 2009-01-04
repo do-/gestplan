@@ -39,10 +39,10 @@ sub draw_item_of_tasks {
 
 			{
 				name    => 'body',
-				label   => 'Déscription',
+				label   => 'Description',
 				type    => 'text',
-				rows    => 5,
-				cols    => 80,
+				rows    => 10,
+				cols    => 120,
 				off     => $data -> {fake} <= 0,
 			},
 
@@ -135,7 +135,7 @@ sub draw_item_of_tasks {
 		
 		{
 			
-			title => {label => 'Histoire', height => 1},
+			title => {label => 'Historique', height => 1},
 			
 #			off   => !$_REQUEST{__read_only} || @{$data -> {clones}} < 2,
 			off   => $data -> {fake} > 0,
@@ -285,7 +285,7 @@ sub draw_tasks {
 				
 				name => 't1',
 				
-				title => {label => 'Tâches pour des développeurs'},
+				title => {label => 'Tâches pour développeurs'},
 
 				top_toolbar => [{
 						keep_params => ['type', 'select'],
