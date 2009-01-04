@@ -64,7 +64,7 @@ sub do_update_tasks {
 			path_column => 'file_path',
 		});
 		
-		sql_do ('UPDATE tasks SET label = ?, id_task_note = ? WHERE id = ?', $_REQUEST {_label}, $_REQUEST {id}, $id);
+		sql_do ('UPDATE tasks SET fake = 0, label = ?, id_task_note = ? WHERE id = ?', $_REQUEST {_label}, $_REQUEST {id}, $id);
 		
 		$_REQUEST {id} = $id;
 		
