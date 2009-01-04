@@ -142,7 +142,7 @@ sub get_item_of_tasks {
 			];
 		
 		}
-		elsif ($data -> {id_task_status} == 100) {
+		elsif ($data -> {id_task_status} == 100 && !$data -> {fake}) {
 		
 			$data -> {actions} = [
 				{id => 100, label => 'Compléter'},
