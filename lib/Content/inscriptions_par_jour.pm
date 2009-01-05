@@ -113,6 +113,11 @@ EOS
 	my @ext_fields = ();
 	my $join = '';
 		
+	if ($_REQUEST {q}) {
+		$filter .= " AND CONCAT(IFNULL(inscriptions.nom, ''), ' ', IFNULL(inscriptions.prenom, '')) LIKE ? ";
+		push @params, '%' . $_REQUEST {q} . '%';
+	}
+
 	my $collect = sub {
 		
 		my $field = $i;
@@ -123,7 +128,7 @@ EOS
 		
 		$field -> {name} = 'field_' . $field -> {id};
 		
-		$_REQUEST {$field -> {name}} or next;
+		$_REQUEST {$field -> {name}} or return;
 		
 		$join .= " LEFT JOIN ext_field_values AS t_$field->{name} ON (t_$field->{name}.id_inscription = inscriptions.id AND t_$field->{name}.id_ext_field = $field->{id})";
 

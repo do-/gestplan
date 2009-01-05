@@ -124,6 +124,12 @@ sub draw_inscriptions_par_jour {
 						empty  => '[Tout type]',
 					},
 					{
+						type   => 'input_text',
+						name   => 'q',
+						keep_params => [],
+						label  => 'Nom'
+					},
+					{
 						type    => 'pager',
 						total   => $data -> {cnt},
 						cnt     => 0 + @{$data -> {inscriptions_par_conseiller}},
