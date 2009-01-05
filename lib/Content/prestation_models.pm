@@ -67,7 +67,7 @@ EOS
 				
 			}
 		
-			return "Conflit pour la salle nommée '$room->{label}' avec $conflict->{label}";
+			return "Conflit pour la ressource nommée '$room->{label}' avec $conflict->{label}";
 		
 		}
 	

@@ -326,7 +326,7 @@ sub draw_item_of_prestation_types {
 			],
 			{
 				name   => 'ids_rooms',
-				label  => 'Salle(s) par défaut',
+				label  => 'Ressource(s) par défaut',
 				type   => 'checkboxes',
 				cols   => 8,
 				values => $data -> {rooms},

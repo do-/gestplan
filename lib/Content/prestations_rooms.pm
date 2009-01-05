@@ -16,7 +16,7 @@ sub do_update_prestations_rooms {
 
 sub validate_update_prestations_rooms {
 	
-	$_REQUEST {_id_room} or return "#_id_room#:Veuillez choisir la salle";
+	$_REQUEST {_id_room} or return "#_id_room#:Veuillez choisir la ressource";
 
 	my @start  = vld_date ('dt_start');
 	my @finish = vld_date ('dt_finish');
@@ -47,7 +47,7 @@ sub validate_update_prestations_rooms {
 		return "#_half_finish#: Le temps du finissement exccède celui de la prestation";
 	}
 
-	0 == sql_select_scalar (<<EOS, $_REQUEST {id}, $_REQUEST {_id_room}, $_REQUEST {_dt_finish} . $_REQUEST {_half_finish}, $_REQUEST {_dt_start} . $_REQUEST {_half_start}) or return "Désolé, mais la salle est occupée pendant cette période.";
+	0 == sql_select_scalar (<<EOS, $_REQUEST {id}, $_REQUEST {_id_room}, $_REQUEST {_dt_finish} . $_REQUEST {_half_finish}, $_REQUEST {_dt_start} . $_REQUEST {_half_start}) or return "Désolé, mais la ressource est occupée pendant cette période.";
 		SELECT
 			prestations_rooms.id
 		FROM

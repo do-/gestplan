@@ -32,7 +32,7 @@ sub get_item_of_rooms {
 	$_REQUEST {__read_only} ||= !($_REQUEST {__edit} || $item -> {fake} > 0);
 
 	$item -> {path} = [
-		{type => 'rooms', name => 'Salles'},
+		{type => 'rooms', name => 'Ressources'},
 		{type => 'rooms', name => $item -> {label}, id => $item -> {id}},
 	];
 

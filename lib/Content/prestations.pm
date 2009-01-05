@@ -105,7 +105,7 @@ EOS
 				
 				$dt = join '/', reverse split /-/, $dt;
 	        	
-	        		return "Désolé, mais la salle nommée '$room->{label}' est occupé(e) le $dt_fr (conflit pour $user->{label})";
+	        		return "Désolé, mais la ressource nommée '$room->{label}' est occupé(e) le $dt_fr (conflit pour $user->{label})";
 	        	
 			}        		
 
@@ -1105,7 +1105,7 @@ EOS
 	
 	if (!$_REQUEST {aliens} && !$item -> {inscription_to_clone}) {
 	
-		push @users, {label => 'Salle'};
+		push @users, {label => 'Ressource'};
 		push @users, @{ sql_select_all ("SELECT -id AS id, label FROM rooms WHERE fake = 0 $site_filter AND id_organisation = ? ORDER BY label", $_USER -> {id_organisation})};
 	
 	}

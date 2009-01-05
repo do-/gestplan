@@ -155,7 +155,7 @@ EOH
 		
 		{
 			
-			title => {label => 'Salles'},
+			title => {label => 'Ressources'},
 			
 			off   => !$_REQUEST {__read_only},
 			

@@ -23,7 +23,7 @@ sub draw_rooms {
 
 			{
 			
-				title => {label => 'Salles'},
+				title => {label => 'Ressources'},
 
 				top_toolbar => [{
 						keep_params => ['type'],

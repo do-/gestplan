@@ -13,10 +13,10 @@ sub draw_item_of_prestations_rooms {
 			
 			{
 				name   => 'id_room',
-				label  => 'Salle',
+				label  => 'Ressource',
 				type   => 'select',
 				values => $data -> {rooms},
-				empty  => '[Veuillez choisir la salle]',
+				empty  => '[Veuillez choisir la ressource]',
 			},
 			
 			[

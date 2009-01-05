@@ -106,7 +106,7 @@ sub select_menu_for_admin {
 				},
 				{
 					name  => 'rooms',
-					label => "Salles",
+					label => "Ressources",
 				},
 			],
 		},
