@@ -22,6 +22,10 @@ sub validate_update_tasks {
 
 		$_REQUEST {_label} or return "#_label#:Vous avez oublié d'entituler la tâche";
 
+		$_REQUEST {_id_task_severity} or return "#_id_task_severity#:Vous avez oublié de marquer la sévérité";
+		$_REQUEST {_id_task_priority} or return "#_id_task_priority#:Vous avez oublié de marquer la priorité";
+		$_REQUEST {_id_task_reproductibility} or return "#_id_task_reproductibility#:Vous avez oublié de marquer la reproductibilité";		
+
 	}
 	else {
 
@@ -65,8 +69,18 @@ sub do_update_tasks {
 		});
 		
 		sql_do ('UPDATE tasks SET fake = 0, label = ?, id_task_note = ? WHERE id = ?', $_REQUEST {_label}, $_REQUEST {id}, $id);
+				
+		$_REQUEST {_id_task_note} = $_REQUEST {id};
 		
 		$_REQUEST {id} = $id;
+		
+		sql_do_update (tasks => [qw(
+			id_task_note
+			label
+			id_task_reproductibility
+			id_task_severity
+			id_task_priority
+		)]);
 		
 	}
 	else {
@@ -111,9 +125,11 @@ sub get_item_of_tasks {
 
 #	$_REQUEST {__read_only} ||= !($data -> {fake} > 0);
 
-#	add_vocabularies ($data,
-#		voc_foo => {order => "id", filter => "id=$$data{id_tasks}"}
-#	);
+	add_vocabularies ($data,
+		task_priorities => {order => 'id'},
+		task_severities => {order => 'id'},
+		task_reproductibilities => {order => 'id'},
+	);
 
 #	$data -> {clones} = sql (tasks => [
 #		['label LIKE', substr ($data -> {label}, 0, ($_REQUEST {first} ||= 10)) . '%'],
@@ -175,6 +191,12 @@ sub select_tasks {
 
 	my $data = {};
 
+	add_vocabularies ($data,
+		task_priorities => {order => 'id'},
+		task_severities => {order => 'id'},
+		task_reproductibilities => {order => 'id'},
+	);
+
 	if ($_USER -> {options_hash} -> {support_developer}) {
 	
 		add_vocabularies ($data,
@@ -225,6 +247,9 @@ sub select_tasks {
 		tasks => [
 	
 			'id_user',
+			'id_task_severity',
+			'id_task_priority',
+			'id_task_reproductibility',
 			
 			['label LIKE %?%' => $_REQUEST {q}],
 			
@@ -236,9 +261,9 @@ sub select_tasks {
 		
 		],
 			
-		'users', 'task_status(*)', 'task_notes'
-		
-	);	
+		'users', 'task_status(*)', 'task_notes', 'task_priorities', 'task_severities', 'task_reproductibilities',
+
+	);
 
 }
 

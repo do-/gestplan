@@ -47,21 +47,39 @@ sub draw_item_of_tasks {
 			},
 
 			{
+				name   => 'id_task_severity',
+				label  => 'Sévérité',
+				type   => 'select',
+				values => $data -> {task_severities},
+				empty  => '[Veuillez choisir...]',
+				read_only => $data -> {fake} <= 0,
+			},
+
+			{
+				name   => 'id_task_priority',
+				label  => 'Priorité',
+				type   => 'select',
+				values => $data -> {task_priorities},
+				empty  => '[Veuillez choisir...]',
+				read_only => $data -> {fake} <= 0,
+			},
+
+			{
+				name   => 'id_task_reproductibility',
+				label  => 'Reproductibilité',
+				type   => 'select',
+				values => $data -> {task_reproductibilities},
+				empty  => '[Veuillez choisir...]',
+				read_only => $data -> {fake} <= 0,
+			},
+
+			{
 				name    => 'file',
 				label   => 'Fichier',
 				type    => 'file',
 				size    => 80,
 				off     => $data -> {fake} <= 0,
 			},
-
-#			{
-#				name   => 'id_user',
-#				label  => 'Ïîëüçîâàòåëü',
-#				type   => 'select',
-#				values => $data -> {users},
-#				empty  => '[Âûáåğèòå ïîëüçîâàòåëÿ]',
-#				other  => '/?type=users',
-#			},
 
 #			{
 #				name   => 'id_org',
@@ -178,7 +196,7 @@ sub draw_item_of_tasks {
 
 			name => 'ff',
 			
-			off => !$data -> {actions},
+			off => !$data -> {actions} || $data -> {fake},
 			
 		},
 		
@@ -259,6 +277,9 @@ sub draw_tasks {
 				'No',
 				'Tâche',
 				'Auteur',
+				'Sévérité',
+				'Priorité',
+				'Reproductibilité',
 			],
 
 			sub {
@@ -274,6 +295,9 @@ sub draw_tasks {
 	
 					$i -> {label},
 					$i -> {user} -> {label},
+					$i -> {task_severity} -> {label},
+                    $i -> {task_priority} -> {label},
+					$i -> {task_reproductibility} -> {label},
 
 				])
 
@@ -318,6 +342,29 @@ sub draw_tasks {
 						values => $data -> {task_status},
 #						off    => !$_USER -> {options_hash} -> {support_developer},
 					},
+
+					{
+						name   => 'id_task_severity',
+						type   => 'input_select',
+						values => $data -> {task_severities},
+						empty  => '[Toute sévérité]',
+					},
+		
+					{
+						name   => 'id_task_priority',
+						type   => 'input_select',
+						values => $data -> {task_priorities},
+						empty  => '[Toute priorité]',
+					},
+		
+					{
+						name   => 'id_task_reproductibility',
+						type   => 'input_select',
+						values => $data -> {task_reproductibilities},
+						empty  => '[Toute reproductibilité]',
+					},
+
+
 
 					{
 						type    => 'pager',
