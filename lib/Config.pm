@@ -244,21 +244,21 @@ EOH
 
 sub support_menu {
 
-    return ();
-	
+    $_USER -> {options} =~ /support/ or return ();
+
     return {
     
-		label => 'Support',
-		name  => 'tasks',
+	label => 'Support',
+	name  => 'tasks',
     	
     	items => [
     		{
-				label => 'Correspondance',
-				name  => 'task_notes',
-			},
-		],
+			label => 'Correspondance',
+			name  => 'task_notes',
+		},
+	],
     	
-	}		
+    }
 
 }
 

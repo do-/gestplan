@@ -108,6 +108,8 @@ sub validate_update_users {
 			
 	delete $_REQUEST {_id_organisation} if $_REQUEST {_id_role} == 4;
 	
+	$_REQUEST {_options} = '';
+	
 	foreach (keys %_REQUEST) {	
 		/^_options_/ or next;		
 		$_REQUEST {_options} .= ",$'";	
