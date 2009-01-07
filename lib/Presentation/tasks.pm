@@ -220,7 +220,7 @@ sub draw_item_of_tasks {
 
 			{
 				name    => 'body',
-				label   => 'Message complèt',
+				label   => 'Message complet',
 				type    => 'text',
 				rows    => 5,
 				cols    => 80,
