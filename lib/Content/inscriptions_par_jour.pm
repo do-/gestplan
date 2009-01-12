@@ -37,7 +37,7 @@ sub select_inscriptions_par_jour {
 	my $id_prestation_types = -1;
 	foreach (@$prestation_types) {	$id_prestation_types .= ",$$_{id}" }
 		
-	($_REQUEST {_week}, $_REQUEST {_year}) = Week_of_Year (reverse split /\//, $_REQUEST {dt_from});	
+#	($_REQUEST {_week}, $_REQUEST {_year}) = Week_of_Year (reverse split /\//, $_REQUEST {dt_from});
 	
 	my $filter = $_REQUEST {id_user} ? "AND (id_user = $_REQUEST{id_user} OR id_users LIKE ',%$_REQUEST{id_user}%,')" : '';
 	
