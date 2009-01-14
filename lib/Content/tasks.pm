@@ -112,6 +112,25 @@ sub do_update_tasks {
 		$_REQUEST {id} = $id;
 	
 	}
+	
+	@mail_recipients = $_REQUEST {_id_task_status} =~ /^2/ ? $data -> {id_user} : sql_select_col ('SELECT id FROM users WHERE fake = 0 AND options LIKE ?', '%support_developer%');
+		
+	my $status = sql_select_scalar ('SELECT label FROM task_status WHERE id = ?', $_REQUEST {_id_task_status} || 100);
+	
+	$status =~ s{^A }{à };
+	$status =~ s{é$}{ée};
+	$status =~ y{AC}{ac};
+	
+	$data -> {label} ||= $_REQUEST {_label};
+
+	send_mail ({
+		to	           => @mail_recipients,
+		subject	       => "GestPlan: la tâche $data->{id} est $status ($data->{label})",
+		text	       => "$_REQUEST{_note_label}\n\n$_REQUEST{_body}",
+		href	       => "/?type=tasks&id=$data->{id}",
+		body_charset   => 'windows-1252',
+		header_charset => 'windows-1252',
+	});
 
 }
 
