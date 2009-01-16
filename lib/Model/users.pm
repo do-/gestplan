@@ -3,6 +3,7 @@ columns => {
 	nom    => {TYPE_NAME    => 'varchar', COLUMN_SIZE  => 255},
 	prenom => {TYPE_NAME    => 'varchar', COLUMN_SIZE  => 255},
 	label  => {TYPE_NAME    => 'varchar', COLUMN_SIZE  => 255},
+	mail   => {TYPE_NAME    => 'varchar', COLUMN_SIZE  => 255},
 
 	dt_start    => {TYPE_NAME => 'date'},
 	dt_finish   => {TYPE_NAME => 'date'},

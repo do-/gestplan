@@ -49,6 +49,13 @@ sub draw_item_of_users {
 				size  => 54,
 				off   => $_USER -> {role} ne 'admin' && $_USER -> {role} ne 'superadmin',
 			},
+			{
+				name  => 'mail',
+				label => 'E-mail',
+				size  => 41,
+				max_len => 255,
+				off   => $_USER -> {role} ne 'admin' && $_USER -> {role} ne 'superadmin',
+			},
 #				{
 #					name  => 'ip',
 #					label => 'adresse IP',

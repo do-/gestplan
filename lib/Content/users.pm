@@ -133,7 +133,7 @@ sub do_update_users {
 	do_update_DEFAULT ();
 	
 	if ($_USER -> {role} eq 'admin' || $_USER -> {role} eq 'superadmin') {
-		sql_do_update ('users', [qw(login id_role dt_start dt_finish)]);
+		sql_do_update ('users', [qw(login id_role mail dt_start dt_finish)]);
 	}
 	
 }
