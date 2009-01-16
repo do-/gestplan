@@ -124,7 +124,7 @@ sub do_update_tasks {
 	$data -> {label} ||= $_REQUEST {_label};
 
 	send_mail ({
-		to	           => @mail_recipients,
+		to	           => \@mail_recipients,
 		subject	       => "GestPlan: la tâche $data->{id} est $status ($data->{label})",
 		text	       => "$_REQUEST{_note_label}\n\n$_REQUEST{_body}",
 		href	       => "/?type=tasks&id=$data->{id}",
