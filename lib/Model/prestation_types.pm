@@ -30,6 +30,7 @@ columns => {
 	half_2_m                   => {TYPE_NAME => 'tinyint'},
 	half_2_to_h                => {TYPE_NAME => 'tinyint'},
 	half_2_to_m                => {TYPE_NAME => 'tinyint'},
+	ids_partners => {TYPE_NAME => 'varchar', COLUMN_SIZE  => 255},
 },
 
 data => [

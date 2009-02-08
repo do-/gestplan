@@ -972,6 +972,7 @@ EOS
 	my $dt_finish = $days [-1] -> {iso_dt};
 
 	my $ids_partners = $organisation -> {ids_partners} || '-1';
+	my $ids_alien_types = -1;
 	
 	if ($ids_partners ne '-1') {
 
@@ -985,6 +986,22 @@ EOS
 				AND week_status.id_week_status_type = 2
 				AND week_status.year = ?
 				AND week_status.week = ?
+EOS
+
+		$ids_alien_types = sql_select_ids (<<EOS, '%,' . $organisation -> {id} . ',%');
+			SELECT
+				id
+			FROM
+				prestation_types
+			WHERE
+				id_organisation IN ($ids_partners)
+				AND (
+					is_open = 1
+					OR (
+						is_open = 2
+						AND ids_partners LIKE ?
+					)
+				)
 EOS
 
 	}
@@ -1024,8 +1041,7 @@ EOS
 				prestations.fake = 0
 				AND prestations.dt_start  <= '$dt_finish'
 				AND prestations.dt_finish >= '$dt_start'
-				AND prestation_types.is_open = 1
-				AND prestation_types.id_organisation IN ($ids_partners)
+				AND prestations.id_prestation_type IN ($ids_alien_types)
 EOS
 
 	my @alien_id_users = (-1);	
@@ -1068,6 +1084,7 @@ EOS
 			$filter
 		ORDER BY
 			IF(users.id_organisation = $$_USER{id_organisation}, 0, 1)
+			, organisations.label
 			, roles.ord
 			, prenom
 EOS

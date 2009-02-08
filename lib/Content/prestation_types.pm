@@ -43,6 +43,7 @@ sub do_update_prestation_types {
 		is_collective
 		is_watched
 		is_protedted
+		ids_partners
 	)]);
 	
 	sql_do ('DELETE FROM prestation_types_ext_fields WHERE id_prestation_type = ?', $_REQUEST {id});
@@ -118,6 +119,21 @@ sub validate_update_prestation_types {
 	unshift @ids, -1;
 	$_REQUEST {_ids_rooms} = join ',', @ids;
 	
+	$_REQUEST {_is_open} += 0;
+	
+	if ($_REQUEST {_is_open} < 2) {
+	
+		$_REQUEST {_ids_partners} = '';
+		
+	}
+	else {
+	
+		my @ids = get_ids ('ids_partners');		
+		@ids > 0 or return 'Vous avez oublié de choisir les partenaires';	
+		$_REQUEST {_ids_partners} = join ',', (-1, @ids, -1);
+
+	}
+	
 	$_REQUEST {_is_watched} ||= $_REQUEST {_is_protedted};
 
 	return undef;
@@ -143,10 +159,11 @@ sub get_item_of_prestation_types {
     $item -> {half_2_to_m}   = sprintf ('%02d', $item -> {half_2_to_m});
 
 	$_REQUEST {__read_only} ||= !($_REQUEST {__edit} || $item -> {fake} > 0);
-
+	
 	add_vocabularies ($item,
-		ext_fields             => {order => 'ord', filter => 'id_organisation = ' . $_USER -> {id_organisation}},
-		day_periods            => {order => 'id', filter => 'id < 3'},
+		organisations          => {filter => "CONCAT('-1,', ids_partners, '-1') LIKE ('%,$item->{id_organisation},%')"},
+		ext_fields             => {order  => 'ord', filter => 'id_organisation = ' . $_USER -> {id_organisation}},
+		day_periods            => {order  => 'id', filter => 'id < 3'},
 		prestation_type_groups => {filter => 'id > 0'},
 		'roles',               => {filter => 'id IN (1,2,3)'},
 		'rooms'                => {filter => 'id_organisation = ' . $_USER -> {id_organisation}},
@@ -199,6 +216,10 @@ EOS
 			prestation_type_files.label
 EOS
 
+	$item -> {is_open} += 0;
+
+	$item -> {ids_partners} = [split /\,/, $item -> {ids_partners}];
+	
 	return $item;
 	
 }

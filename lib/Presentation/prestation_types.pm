@@ -359,9 +359,29 @@ sub draw_item_of_prestation_types {
 			},
 			
 			{
-				name  => 'is_open',
-				label => 'Prestation partenariale',
-				type  => 'checkbox',
+				name   => 'is_open',
+				label  => 'Partenariat',
+				type   => 'radio',
+				values => [
+					{
+						id    => 0,
+						label => 'Prestation locale',
+					},
+					{
+						id     => 1,
+						label  => 'Prestation partenariale ouverte',
+					},
+					{
+						id     => 2,
+						label  => 'Prestation partenariale pour...',
+						type   => 'checkboxes',
+						name   => 'ids_partners',
+						values => $data -> {organisations},
+					},
+				],
+				
+				off => 0 == @{$data -> {organisations}},
+				
 			},
 			{
 				name  => 'no_stats',
