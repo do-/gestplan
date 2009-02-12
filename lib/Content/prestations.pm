@@ -1,5 +1,55 @@
 ################################################################################
 
+sub do_erase_prestations {
+
+	my @monday = Monday_of_Week ($_REQUEST {week}, $_REQUEST {year});
+	
+	my $from = sprintf ('%04d-%02d-%02d', @monday);
+	my $to   = sprintf ('%04d-%02d-%02d', Add_Delta_Days (@monday, 6));
+	
+	my $sql = <<EOS;
+		SELECT
+			prestations.id
+		FROM
+			prestations
+			INNER JOIN prestation_types ON prestations.id_prestation_type = prestation_types.id
+		WHERE
+			1=1
+			AND prestations.dt_start  <= ?
+			AND prestations.dt_finish >= ?
+			AND (prestations.id_user = ? OR CONCAT(',', prestations.id_users, ',') LIKE ?)
+EOS
+	
+	my $ids = -1;
+	
+	foreach my $i (@{sql_select_all ($sql, $to, $from, $_REQUEST {id_user}, '%,' . $_REQUEST {id_user} . ',%')}) {
+	
+		$ids .= ", $i->{id}";
+		
+		my @ids_users = grep {$_ != $_REQUEST {id_user}} grep {$_ > 0} ($i -> {id_user}, split /\,/, $i -> {id_users});
+	
+		if (@ids_users) {
+		
+			my $id_user = shift @ids_users;
+			
+			sql_do ('UPDATE prestations SET id_user = ?, ids_users = ? WHERE id = ?', $id_user, (join ',', (-1, @ids_users, -1)), $i -> {id});
+		
+		}
+		else {
+
+			sql_do ('DELETE FROM prestations WHERE id = ?', $i -> {id});
+
+		}
+	
+	}	
+		
+	sql_do ("DELETE FROM inscriptions WHERE id_prestation IN ($ids)");
+	sql_do ("DELETE FROM prestations_rooms WHERE id_prestation IN ($ids)");
+	
+}
+
+################################################################################
+
 sub do_clear_prestations {
 
 	my @monday = Monday_of_Week ($_REQUEST {week}, $_REQUEST {year});
@@ -42,6 +92,12 @@ sub validate_add_models_prestations {
 			users.id_organisation = ?
 			AND prestation_models.is_odd = ?
 EOS
+
+	if ($_REQUEST {id_user}) {
+		
+		$prestation_models = [grep {$_ -> {id_user} == $_REQUEST {id_user} or $_ -> {id_users} =~ /\b$_REQUEST{id_user}\b/} @$prestation_models];
+	
+	}
 
 	my $prestation_types = {};
 	
@@ -145,6 +201,12 @@ sub do_add_models_prestations {
 			users.id_organisation = ?
 			AND prestation_models.is_odd = ?
 EOS
+
+	if ($_REQUEST {id_user}) {
+		
+		$prestation_models = [grep {$_ -> {id_user} == $_REQUEST {id_user} or $_ -> {id_users} =~ /\b$_REQUEST{id_user}\b/} @$prestation_models];
+	
+	}
 
 	my $prestation_types = {};
 	

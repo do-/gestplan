@@ -490,6 +490,8 @@ EOH
 						},
 					},
 				);
+				
+				my $is_virgin = 1;
 								
 				foreach my $day (@{$data -> {days}}) {
 
@@ -518,6 +520,8 @@ EOH
 						status  => $p -> {status},
 						title   => $p -> {note} || $p -> {inscriptions} || "$$day{label} " . $data -> {day_periods} -> [$day -> {id} % 2] -> {label} . " pour $$i{label}",
 					};
+					
+					$is_virgin = 0 if $p -> {label};
 					
 					$cell -> {href} = "/?type=inscriptions&id_inscription_to_clone=$_REQUEST{id_inscription_to_clone}&id_user=$$i{id}&dt=$$day{fr_dt}&id_site=$_REQUEST{id_site}&aliens=$_REQUEST{aliens}&id_day_period=" . $p -> {half_start} if $p -> {label} && $i -> {id} >= 0 && !$p -> {no_href};
 					
@@ -606,7 +610,30 @@ EOH
 					push @cells, $cell;	
 				
 				}
-				
+
+                if ($_USER -> {role} eq 'admin' && $i -> {id} > 0) {
+                
+					push @cells, $is_virgin ? {
+						icon    => 'create',
+						label   => "Appliquer la semaine modèle pour $i->{label}",
+						confirm => "Appliquer la semaine modèle pour $i->{label}, vous êtes sûr?",
+						href    => {
+							action => 'add_models',
+							id_user  => $i -> {id},
+						},
+					} :					
+					{
+						icon    => 'delete',
+						label   => "Effacer la semaine pour $i->{label}",
+						confirm => "Effacer la semaine entière pour $i->{label}, vous êtes sûr?",
+						href    => {
+							action   => 'erase',
+							id_user  => $i -> {id},
+						}
+					};	
+
+				}
+
 				return draw_cells ({}, \@cells);
 
 			},
