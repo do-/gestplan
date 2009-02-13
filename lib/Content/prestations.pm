@@ -506,6 +506,16 @@ sub do_update_prestations {
 	trylock ($lockfile) or return;
 
 	my $old_item = sql_select_hash ('prestations');
+	
+	sql_upload_file ({
+		name             => 'file',
+		table            => 'prestations',
+		dir		         => 'upload/images',
+		path_column      => 'file_path',
+		type_column      => 'file_type',
+		file_name_column => 'file_name',
+		size_column      => 'file_size',
+	});
 
 	sql_do_update ('prestations', [qw(
 		dt_start

@@ -123,19 +123,34 @@ sub do_update_inscriptions {
 	foreach my $key (keys %_REQUEST) {
 	
 		$key =~ /^_field_(\d+)$/ or next;
+		
+		if ($_REQUEST {$key}) {
 				
-		sql_do_insert (ext_field_values => {
+			my $id = sql_do_insert (ext_field_values => {
+	
+				fake => 0,
+	
+				id_inscription => $_REQUEST {id},
+				id_ext_field   => $1,
+				value          => $_REQUEST {$key},
+	
+			}) ;
 			
-			fake => 0,
-			
-			id_inscription => $_REQUEST {id},
-			id_ext_field   => $1,
-			value          => $_REQUEST {$key},
-			
-		}) if $_REQUEST {$key};
+			sql_upload_file ({
+				name             => "field_$1",
+				table            => 'ext_field_values',
+		 		id               => $id,
+				dir		 		 => 'upload/images',
+				path_column      => 'file_path',
+				type_column      => 'file_type',
+				file_name_column => 'file_name',
+				size_column      => 'file_size',
+			});
 		
+		}
+
 		delete $_REQUEST {$key};
-		
+
 	}
 
 	do_update_DEFAULT ();
@@ -353,11 +368,12 @@ sub get_item_of_inscriptions {
 
 	my $item = sql_select_hash ('inscriptions');
 	
-foreach my $k (keys %$item) {$k =~ /^field_\d/ or next; delete $item -> {$k}};
+	foreach my $k (keys %$item) {$k =~ /^field_\d/ or next; delete $item -> {$k}};
 
 	sql_select_loop ("SELECT * FROM ext_field_values WHERE id_inscription = ?", sub {
 	
-		$item -> {"field_$i->{id_ext_field}"} = $i -> {value};
+		$item -> {"field_$i->{id_ext_field}"} = $i -> {file_name} || $i -> {value};
+		$item -> {"field_$i->{id_ext_field}_id"} = $i -> {id};
 	
 	}, $item -> {id});	
 	
@@ -657,7 +673,7 @@ EOS
 	
 		sql_select_loop ("SELECT * FROM ext_field_values WHERE id_inscription IN ($ids)", sub {
 		
-			$idx -> {$i -> {id_inscription}} -> {"field_$i->{id_ext_field}"} = $i -> {value};
+			$idx -> {$i -> {id_inscription}} -> {"field_$i->{id_ext_field}"} = $i -> {file_name} || $i -> {value};
 		
 		});
 
@@ -762,7 +778,7 @@ EOS
 	
 		sql_select_loop ("SELECT * FROM ext_field_values WHERE id_inscription IN ($ids)", sub {
 		
-			$idx -> {$i -> {id_inscription}} -> {"field_$i->{id_ext_field}"} = $i -> {value};
+			$idx -> {$i -> {id_inscription}} -> {"field_$i->{id_ext_field}"} = $i -> {file_name} || $i -> {value};
 		
 		});
 

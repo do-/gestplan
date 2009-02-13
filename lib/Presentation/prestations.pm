@@ -137,7 +137,13 @@ EOH
 				cols  => 80,
 				rows  => 3,
 			},
-		],
+			{
+				type  => 'file',
+				label => 'Pièce jointe',
+				name  => 'file',
+				size  => 63,
+			},
+		]
 	)
 	
 	.

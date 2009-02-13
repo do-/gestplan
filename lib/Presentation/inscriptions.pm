@@ -93,9 +93,14 @@ sub draw_item_of_inscriptions {
 						$_ -> {id_field_type} == 1 ? 'select' :
 						$_ -> {id_field_type} == 4 ? 'radio' :
 						$_ -> {id_field_type} == 5 ? 'text' :
+						($_ -> {id_field_type} == 6 && !$_REQUEST {__read_only}) ? 'file' :
 						'string',
 					rows   => $_ -> {id_field_type} == 5 ? 3 : undef,
 					cols   => 80,
+					href   => $_ -> {id_field_type} == 6 ?
+						qq{/?type=ext_field_values&id=$data->{"field_$_->{id}_id"}&action=download} :
+						undef,
+					target => 'invisible',
 					label  => $_ -> {label},
 					name   => 'field_' . $_ -> {id},
 					size   => $_ -> {length},

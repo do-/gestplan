@@ -17,6 +17,11 @@ columns => {
 
 	cnt         => {TYPE_NAME => 'int'},
 
+	file_name => {TYPE_NAME    => 'varchar', COLUMN_SIZE  => 255},
+	file_type => {TYPE_NAME    => 'varchar', COLUMN_SIZE  => 255},
+	file_path => {TYPE_NAME    => 'varchar', COLUMN_SIZE  => 255},
+	file_size => {TYPE_NAME    => 'int'},
+
 },
 
 keys => {

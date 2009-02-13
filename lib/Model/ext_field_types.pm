@@ -11,4 +11,5 @@ data => [
 	{id => 3, fake => 0, label => 'alphanumérique', sql_type => 'VARCHAR', max_len => 255},
 	{id => 4, fake => 0, label => 'logique',        sql_type => 'TINYINT', max_len => 0},
 	{id => 5, fake => 0, label => 'long texte',     sql_type => 'TEXT',    max_len => 0},
+	{id => 6, fake => 0, label => 'pièce jointe',   sql_type => 'VARCHAR', max_len => 0},
 ],
