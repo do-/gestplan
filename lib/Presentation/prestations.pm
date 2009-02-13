@@ -61,6 +61,13 @@ EOH
 						$data -> {prestation_type} -> {is_placeable_by_conseiller} == 2
 						&& $data -> {prestation_type} -> {ids_users} =~ /\,$$_USER{id}\,/
 					)
+					&& !(
+						$data -> {prestation_type} -> {is_placeable_by_conseiller} == 3
+						&& (
+							$data -> {id_user} == $_USER -> {id}
+							|| $data -> {prestation_type} -> {ids_users} =~ /\,$$_USER{id}\,/
+						)
+					)
 					,
 				off    =>
 					$data -> {prestation_type} -> {id_people_number} == 1

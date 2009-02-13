@@ -92,8 +92,8 @@ sub validate_update_prestation_types {
 	
 #	$_REQUEST {_length} or return "#_length#:Vous avez oublié d'indiquer le nombre de lignes";
 	
-	if ($_REQUEST {_is_placeable_by_conseiller} == 2) {
-		my @ids = get_ids ('ids_users');
+	if ($_REQUEST {_is_placeable_by_conseiller} >= 2) {
+		my @ids = get_ids ('ids_users_' . $_REQUEST {_is_placeable_by_conseiller});
 		push @ids, -1;
 		unshift @ids, -1;
 		$_REQUEST {_ids_users} = join ',', @ids;
@@ -198,7 +198,8 @@ EOS
 	$item -> {ids_ext_fields} = [grep {$_ > 0} split /,/, $item -> {ids_ext_fields}];
 	$item -> {ids_roles}      = [grep {$_ > 0} split /,/, $item -> {ids_roles}];
 	$item -> {ids_rooms}      = [grep {$_ > 0} split /,/, $item -> {ids_rooms}];
-	$item -> {ids_users}      = [grep {$_ > 0} split /,/, $item -> {ids_users}];
+	$item -> {ids_users_2}    = [grep {$_ > 0} split /,/, $item -> {ids_users}];
+	$item -> {ids_users_3}    = [grep {$_ > 0} split /,/, $item -> {ids_users}];
 
 	$item -> {path} = [
 		{type => 'prestation_types', name => 'Prestations'},

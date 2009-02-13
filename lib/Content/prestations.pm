@@ -800,7 +800,7 @@ sub get_item_of_prestations {
 		if ($item -> {id_user} == $_USER -> {id}) {
 		
 			$filter = <<EOS;
-					is_placeable_by_conseiller = 1
+					is_placeable_by_conseiller IN (1, 3)
 					OR ids_users LIKE '%,$$_USER{id},%'
 					OR id=$$item{id_prestation_type}
 EOS
@@ -1550,8 +1550,8 @@ EOS
 	}
 	else {
 
-		$_USER -> {cnt_prestation_types} = sql_select_scalar ('SELECT COUNT(*) FROM prestation_types WHERE fake = 0 AND ids_users LIKE ?', '%,' . $_USER -> {id} . ',%');
-		
+		$_USER -> {cnt_prestation_types} = sql_select_scalar ('SELECT COUNT(*) FROM prestation_types WHERE fake = 0 AND is_placeable_by_conseiller = 2 AND ids_users LIKE ?', '%,' . $_USER -> {id} . ',%');
+
 		$_USER -> {can_dblclick_others_empty} = $_USER -> {cnt_prestation_types} > 0;
 		
 		if ($_REQUEST {id_prestation_type}) {
@@ -1579,7 +1579,7 @@ EOS
 		off_periods => $off_periods,
 		
 		prestation_types => sql_select_vocabulary (
-			prestation_types => {filter => 'id_organisation=' . $_USER -> {id_organisation} . ' AND ' . ($_USER -> {role} ne 'conseiller' ? '1=1' : "is_placeable_by_conseiller = 1 OR ids_users LIKE '%,$$_USER{id},%'")},
+			prestation_types => {filter => 'id_organisation=' . $_USER -> {id_organisation} . ' AND ' . ($_USER -> {role} ne 'conseiller' ? '1=1' : "is_placeable_by_conseiller IN (1, 3) OR ids_users LIKE '%,$$_USER{id},%'")},
 		),
 
 		day_periods => sql_select_vocabulary ('day_periods', {order => 'id'}),

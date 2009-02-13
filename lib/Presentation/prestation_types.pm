@@ -281,8 +281,17 @@ sub draw_item_of_prestation_types {
 						{id => 1, label => 'Administrateurs et utilisateurs'},
 						{
 							id     => 2,
-							name   => 'ids_users',
+							name   => 'ids_users_2',
 							label  => 'Administrateurs et' . ($_REQUEST {__read_only} ? '' : '...'),
+							type   => 'checkboxes',
+							values => $data -> {users},
+							height => 150,
+							cols   => 2,
+						},
+						{
+							id     => 3,
+							name   => 'ids_users_3',
+							label  => 'Administrateurs, utilisateurs et' . ($_REQUEST {__read_only} ? '' : '...'),
 							type   => 'checkboxes',
 							values => $data -> {users},
 							height => 150,
