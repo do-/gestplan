@@ -46,6 +46,8 @@ EOS
 	sql_do ("DELETE FROM inscriptions WHERE id_prestation IN ($ids)");
 	sql_do ("DELETE FROM prestations_rooms WHERE id_prestation IN ($ids)");
 	
+	delete $_REQUEST {id_user};
+	
 }
 
 ################################################################################
@@ -342,6 +344,8 @@ EOS
 		sql_do ("UPDATE prestations SET id_users = ? WHERE id = ?", "$collective_prestation->{id_users},-1", $collective_prestation -> {id});
 
 	}
+
+	delete $_REQUEST {id_user};
 	
 }
 
