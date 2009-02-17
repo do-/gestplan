@@ -1194,7 +1194,7 @@ EOS
 	
 	if (!$_REQUEST {aliens} && !$item -> {inscription_to_clone}) {
 	
-		push @users, {label => 'Ressource'};
+		push @users, {label => 'Ressources'};
 		push @users, @{ sql_select_all ("SELECT -id AS id, label FROM rooms WHERE fake = 0 $site_filter AND id_organisation = ? ORDER BY label", $_USER -> {id_organisation})};
 	
 	}
