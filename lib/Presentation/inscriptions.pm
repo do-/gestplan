@@ -337,6 +337,21 @@ sub draw_inscriptions {
 					]);
 					
 				}
+				if ($i -> {is_file}) {
+					
+					$i -> {label} =~ s{\n}{<br>}gsm;
+
+					return draw_cells ({}, [
+						{
+							label   => '<b>Pièce jointe :</b> ' . $i -> {label},
+							colspan => 4 + @{$data -> {prestation_1} -> {ext_fields}},
+							href    => "/?type=prestations&action=download&id=$data->{prestation_1}->{id}",
+							max_len => 10000,
+							no_nobr => 1,
+						},
+					]);
+					
+				}
 				elsif ($i -> {fake} == 0 && !(
 				
 					$c_est_mon_organisation or ($i -> {id_organisation} == $_USER -> {id_organisation}) or !$i -> {id_organisation}
@@ -468,6 +483,22 @@ sub draw_inscriptions {
 							label   => '<b>Note:</b> ' . $i -> {label},
 							colspan => 4 + @{$data -> {prestation_2} -> {ext_fields}},
 							max_len => 100000,
+							no_nobr => 1,
+						},
+					]);
+					
+				}
+				if ($i -> {is_file}) {
+					
+					$i -> {label} =~ s{\n}{<br>}gsm;
+
+					return draw_cells ({}, [
+						{
+							label   => '<b>Pièce jointe :</b> ' . $i -> {label},
+							colspan => 4 + @{$data -> {prestation_2} -> {ext_fields}},
+							href    => "/?type=prestations&action=download&id=$data->{prestation_2}->{id}",
+							target  => 'invisible',
+							max_len => 10000,
 							no_nobr => 1,
 						},
 					]);

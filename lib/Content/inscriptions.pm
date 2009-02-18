@@ -700,6 +700,16 @@ EOS
 			
 		}
 		
+		if ($prestation_1 -> {file_name}) {
+		
+		    unshift @{$prestation_1 -> {inscriptions}}, {
+		    	id => -1,
+		    	label => $prestation_1 -> {file_name},
+		    	is_file => 1,
+			}
+			
+		}		
+		
 		if ($prestation_1 -> {note}) {
 		
 		    unshift @{$prestation_1 -> {inscriptions}}, {
@@ -804,6 +814,16 @@ EOS
 			}			
 			
 		}
+
+		if ($prestation_2 -> {file_name}) {
+		
+		    unshift @{$prestation_2 -> {inscriptions}}, {
+		    	id => -1,
+		    	label => $prestation_2 -> {file_name},
+		    	is_file => 1,
+			}
+			
+		}		
 
 		if ($prestation_2 -> {note}) {
 		
