@@ -263,13 +263,6 @@ sub draw_inscriptions {
 	
 	$title_1 .= " pour $data->{user}->{label}";
 	
-	
-	
-	
-	
-	
-	
-
 	return
 			
 		draw_toolbar (
@@ -306,7 +299,7 @@ sub draw_inscriptions {
 						off          => $_REQUEST {id_inscription_to_clone},
 					},
 			)
-		
+			
 		.
 
 		draw_table (
@@ -323,36 +316,7 @@ sub draw_inscriptions {
 			
 				my $c_est_mon_organisation = ($data -> {prestation_1} -> {id_organisation} == $_USER -> {id_organisation});
 
-				if ($i -> {is_note}) {
-					
-					$i -> {label} =~ s{\n}{<br>}gsm;
-
-					return draw_cells ({}, [
-						{
-							label   => '<b>Note:</b> ' . $i -> {label},
-							colspan => 4 + @{$data -> {prestation_1} -> {ext_fields}},
-							max_len => 10000,
-							no_nobr => 1,
-						},
-					]);
-					
-				}
-				if ($i -> {is_file}) {
-					
-					$i -> {label} =~ s{\n}{<br>}gsm;
-
-					return draw_cells ({}, [
-						{
-							label   => '<b>Pièce jointe :</b> ' . $i -> {label},
-							colspan => 4 + @{$data -> {prestation_1} -> {ext_fields}},
-							href    => "/?type=prestations&action=download&id=$data->{prestation_1}->{id}",
-							max_len => 10000,
-							no_nobr => 1,
-						},
-					]);
-					
-				}
-				elsif ($i -> {fake} == 0 && !(
+				if ($i -> {fake} == 0 && !(
 				
 					$c_est_mon_organisation or ($i -> {id_organisation} == $_USER -> {id_organisation}) or !$i -> {id_organisation}
 				
@@ -409,7 +373,13 @@ sub draw_inscriptions {
 						label => map {$_ -> {label}} grep {$_ -> {id} == $i -> {id_user}} @{$data -> {users}},
 #						off   => !$i -> {hour},
 					},
-					map {$i -> {'field_' . $_ -> {id_ext_field}}} @{$data -> {prestation_1} -> {ext_fields}},
+					map {
+						{
+							label  => $i -> {'field_' . $_ -> {id_ext_field}},
+							href   => $_ -> {id_field_type} == 6 ? "/?type=ext_field_values&action=download&id=" . $i -> {'field_' . $_ -> {id_ext_field} . '_id'} : undef,
+							target => $_ -> {id_field_type} == 6 ? 'invisible' : undef,
+						},
+					} @{$data -> {prestation_1} -> {ext_fields}},
 				])
 
 			},
@@ -424,7 +394,7 @@ sub draw_inscriptions {
 				
 				lpt => 1,
 
-				top_toolbar => [ {},
+				top_toolbar => draw_toolbar ( {},
 									
 					{
 						icon  => 'create',
@@ -452,8 +422,35 @@ sub draw_inscriptions {
 							$data -> {user} -> {id_organisation} != $_USER -> {id_organisation}
 					},
 				
-				],
+				)
+				
+		.
 
+qq {
+	<table cellspacing=0 cellpadding=0 width="100%"><tr><td class=bgr8><table cellspacing=1 cellpadding=0 width="100%" id="scrollable_table">
+}
+
+		. (!$data -> {prestation_1} -> {note} ? '' : '<tr>' . draw_text_cell ({
+			label   => '<b>Note:</b> ' . $data -> {prestation_1} -> {note},
+			max_len => 10000,
+			no_nobr => 1,
+		}))
+		
+		. (!$data -> {prestation_1} -> {file_name} ? '' : '<tr>' . draw_text_cell ({
+			label   => '<b>Pièce jointe :</b> ' . $data -> {prestation_1} -> {file_name},
+			href    => "/?type=prestations&action=download&id=$data->{prestation_1}->{id}",
+			max_len => 10000,
+			no_nobr => 1,
+		}))
+
+		.
+		
+qq {
+	</table></td></tr></table>
+}
+
+				,
+				
 			}
 			
 		)
@@ -474,37 +471,7 @@ sub draw_inscriptions {
 
 				my $c_est_mon_organisation = ($data -> {prestation_2} -> {id_organisation} == $_USER -> {id_organisation});
 
-				if ($i -> {is_note}) {
-					
-					$i -> {label} =~ s{\n}{<br>}gsm;
-					
-					return draw_cells ({}, [
-						{
-							label   => '<b>Note:</b> ' . $i -> {label},
-							colspan => 4 + @{$data -> {prestation_2} -> {ext_fields}},
-							max_len => 100000,
-							no_nobr => 1,
-						},
-					]);
-					
-				}
-				if ($i -> {is_file}) {
-					
-					$i -> {label} =~ s{\n}{<br>}gsm;
-
-					return draw_cells ({}, [
-						{
-							label   => '<b>Pièce jointe :</b> ' . $i -> {label},
-							colspan => 4 + @{$data -> {prestation_2} -> {ext_fields}},
-							href    => "/?type=prestations&action=download&id=$data->{prestation_2}->{id}",
-							target  => 'invisible',
-							max_len => 10000,
-							no_nobr => 1,
-						},
-					]);
-					
-				}
-				elsif ($i -> {fake} == 0 && !(
+				if ($i -> {fake} == 0 && !(
 				
 					$c_est_mon_organisation or ($i -> {id_organisation} == $_USER -> {id_organisation} or !$i -> {id_organisation})
 				
@@ -557,7 +524,15 @@ sub draw_inscriptions {
 						label => map {$_ -> {label}} grep {$_ -> {id} == $i -> {id_user}} @{$data -> {users}},
 #						off   => !$i -> {hour},
 					},
-					map {$i -> {'field_' . $_ -> {id_ext_field}}} @{$data -> {prestation_2} -> {ext_fields}},
+
+					map {
+						{
+							label  => $i -> {'field_' . $_ -> {id_ext_field}},
+							href   => $_ -> {id_field_type} == 6 ? "/?type=ext_field_values&action=download&id=" . $i -> {'field_' . $_ -> {id_ext_field} . '_id'} : undef,
+							target => $_ -> {id_field_type} == 6 ? 'invisible' : undef,
+						},
+					} @{$data -> {prestation_2} -> {ext_fields}},
+
 				])
 
 			},
@@ -572,7 +547,7 @@ sub draw_inscriptions {
 
 				lpt => 1,
 				
-				top_toolbar => [ {},
+				top_toolbar => draw_toolbar ({},
 				
 					{
 						icon  => 'create',
@@ -600,7 +575,33 @@ sub draw_inscriptions {
 							$data -> {user} -> {id_organisation} != $_USER -> {id_organisation}
 					},
 				
-				],
+				)
+				
+				
+		.
+
+qq {
+	<table cellspacing=0 cellpadding=0 width="100%"><tr><td class=bgr8><table cellspacing=1 cellpadding=0 width="100%" id="scrollable_table">
+}
+
+		. (!$data -> {prestation_2} -> {note} ? '' : '<tr>' . draw_text_cell ({
+			label   => '<b>Note:</b> ' . $data -> {prestation_2} -> {note},
+			max_len => 10000,
+			no_nobr => 1,
+		}))
+		
+		. (!$data -> {prestation_2} -> {file_name} ? '' : '<tr>' . draw_text_cell ({
+			label   => '<b>Pièce jointe :</b> ' . $data -> {prestation_2} -> {file_name},
+			href    => "/?type=prestations&action=download&id=$data->{prestation_2}->{id}",
+			max_len => 10000,
+			no_nobr => 1,
+		}))
+
+		.
+		
+qq {
+	</table></td></tr></table>
+}
 
 			}
 			

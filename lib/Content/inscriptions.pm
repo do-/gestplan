@@ -674,6 +674,7 @@ EOS
 		sql_select_loop ("SELECT * FROM ext_field_values WHERE id_inscription IN ($ids)", sub {
 		
 			$idx -> {$i -> {id_inscription}} -> {"field_$i->{id_ext_field}"} = $i -> {file_name} || $i -> {value};
+			$idx -> {$i -> {id_inscription}} -> {"field_$i->{id_ext_field}_id"} = $i -> {id};
 		
 		});
 
@@ -699,26 +700,6 @@ EOS
 			}			
 			
 		}
-		
-		if ($prestation_1 -> {file_name}) {
-		
-		    unshift @{$prestation_1 -> {inscriptions}}, {
-		    	id => -1,
-		    	label => $prestation_1 -> {file_name},
-		    	is_file => 1,
-			}
-			
-		}		
-		
-		if ($prestation_1 -> {note}) {
-		
-		    unshift @{$prestation_1 -> {inscriptions}}, {
-		    	id => -1,
-		    	label => $prestation_1 -> {note},
-		    	is_note => 1,
-			}
-			
-		}		
 		
 	}
 
@@ -789,6 +770,7 @@ EOS
 		sql_select_loop ("SELECT * FROM ext_field_values WHERE id_inscription IN ($ids)", sub {
 		
 			$idx -> {$i -> {id_inscription}} -> {"field_$i->{id_ext_field}"} = $i -> {file_name} || $i -> {value};
+			$idx -> {$i -> {id_inscription}} -> {"field_$i->{id_ext_field}_id"} = $i -> {id};
 		
 		});
 
@@ -814,26 +796,6 @@ EOS
 			}			
 			
 		}
-
-		if ($prestation_2 -> {file_name}) {
-		
-		    unshift @{$prestation_2 -> {inscriptions}}, {
-		    	id => -1,
-		    	label => $prestation_2 -> {file_name},
-		    	is_file => 1,
-			}
-			
-		}		
-
-		if ($prestation_2 -> {note}) {
-		
-		    unshift @{$prestation_2 -> {inscriptions}}, {
-		    	id => -1,
-		    	label => $prestation_2 -> {note},
-		    	is_note => 1,
-			}
-			
-		}		
 
 	}
 
