@@ -239,12 +239,24 @@ sub do_delete_inscriptions {
 	if (!$item -> {parent} && $item -> {id_author} == $_USER -> {id}) {
 			
 		my $ids = sql_select_ids ('SELECT id FROM inscriptions WHERE id = ? OR parent = ?', $item -> {id}, $item -> {id});
+		
+		sql_select_loop ("SELECT file_path FROM ext_field_values WHERE file_path IS NOT NULL AND id_inscription IN ($ids)", sub {
+		
+			unlink $r -> document_root . $i -> {file_path};
+		
+		});
 			
 		sql_do ("DELETE FROM ext_field_values WHERE id_inscription IN ($ids)");		
 		
 	}
 	else {		
 	
+		sql_select_loop ("SELECT file_path FROM ext_field_values WHERE file_path IS NOT NULL AND id_inscription = ?", sub {
+		
+			unlink $r -> document_root . $i -> {file_path};
+		
+		}, $_REQUEST {id});
+
 		sql_do ("DELETE FROM ext_field_values WHERE id_inscription = ?", $_REQUEST {id});
 
 	}
