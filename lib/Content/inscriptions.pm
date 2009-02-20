@@ -118,40 +118,59 @@ EOS
 
 sub do_update_inscriptions {
 		
-	sql_do ('DELETE FROM ext_field_values WHERE id_inscription = ?', $_REQUEST {id});
+	sql_do ('UPDATE ext_field_values SET fake = -1 WHERE id_inscription = ?', $_REQUEST {id});
 	
 	foreach my $key (keys %_REQUEST) {
 	
 		$key =~ /^_field_(\d+)$/ or next;
 		
-		if ($_REQUEST {$key}) {
-				
-			my $id = sql_do_insert (ext_field_values => {
+		my $id = sql_select_id (ext_field_values => {
+			        	
+			id_inscription => $_REQUEST {id},
+			id_ext_field   => $1,
 	
-				fake => 0,
-	
-				id_inscription => $_REQUEST {id},
-				id_ext_field   => $1,
-				value          => $_REQUEST {$key},
-	
-			}) ;
-			
-			sql_upload_file ({
-				name             => "field_$1",
-				table            => 'ext_field_values',
-		 		id               => $id,
-				dir		 		 => 'upload/images',
-				path_column      => 'file_path',
-				type_column      => 'file_type',
-				file_name_column => 'file_name',
-				size_column      => 'file_size',
-			});
+		}, ['id_inscription', 'id_ext_field']);
 		
+		my $ext_field_value = sql_select_hash (ext_field_values => $id);
+		
+		my $value = $_REQUEST {$key};
+				
+		if ($ext_field_value -> {file_name} && !$value) {
+			
+			sql_do ('UPDATE ext_field_values SET fake = 0 WHERE id = ?', $id);
+			
+		}
+		else {
+			
+			if (length $value) {
+				
+				sql_do ('UPDATE ext_field_values SET value = ?, fake = 0 WHERE id = ?', $value, $id);
+				
+				sql_upload_file ({
+					name             => "field_$1",
+					table            => 'ext_field_values',
+			 		id               => $id,
+					dir		 		 => 'upload/images',
+					path_column      => 'file_path',
+					type_column      => 'file_type',
+					file_name_column => 'file_name',
+					size_column      => 'file_size',
+				});
+			
+			}
+			else {
+			
+				sql_do ('DELETE FROM ext_field_values WHERE id = ?', $id);
+			
+			}
+
 		}
 
 		delete $_REQUEST {$key};
 
 	}
+
+	sql_do ('DELETE FROM ext_field_values WHERE id_inscription = ? AND fake = -1', $_REQUEST {id});
 
 	do_update_DEFAULT ();
 	
