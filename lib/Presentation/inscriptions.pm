@@ -439,6 +439,7 @@ qq {
 		. (!$data -> {prestation_1} -> {file_name} ? '' : '<tr>' . draw_text_cell ({
 			label   => '<b>Pièce jointe :</b> ' . $data -> {prestation_1} -> {file_name},
 			href    => "/?type=prestations&action=download&id=$data->{prestation_1}->{id}",
+			target  => 'invisible',
 			max_len => 10000,
 			no_nobr => 1,
 		}))
@@ -593,6 +594,7 @@ qq {
 		. (!$data -> {prestation_2} -> {file_name} ? '' : '<tr>' . draw_text_cell ({
 			label   => '<b>Pièce jointe :</b> ' . $data -> {prestation_2} -> {file_name},
 			href    => "/?type=prestations&action=download&id=$data->{prestation_2}->{id}",
+			target  => 'invisible',
 			max_len => 10000,
 			no_nobr => 1,
 		}))
