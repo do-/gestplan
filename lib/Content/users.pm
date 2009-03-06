@@ -105,6 +105,8 @@ sub validate_update_users {
 	else {
 		delete $_REQUEST {_dt_finish};
 	}
+
+	$_REQUEST {_id_role} or return "#_id_role#:Vous avez oublié d'indiquer le profil";
 			
 	delete $_REQUEST {_id_organisation} if $_REQUEST {_id_role} == 4;
 	
