@@ -948,9 +948,11 @@ EOS
 		($_REQUEST {week}, $_REQUEST {year}) = Week_of_Year (Today ());	
 	}
 	
-	if ($_REQUEST {week} > 52) {
+	my ($last_week_of_the_year) = Week_of_Year ($_REQUEST {year}, 12, 31);
+	
+	if ($_REQUEST {week} > $last_week_of_the_year) {
 		$_REQUEST {year} ++;
-		$_REQUEST {week} %= 52;
+		$_REQUEST {week} %= $last_week_of_the_year;
 	}	
 	
 	my @monday = Monday_of_Week ($_REQUEST {week}, $_REQUEST {year});
