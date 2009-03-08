@@ -383,7 +383,7 @@ EOS
 		
 		my $name = '_field_' . $i -> {id};
 		
-		$_REQUEST {$name} or return "#$name#:Vous avez oublié de remplir le champ \"$i->{label}\"";
+		defined $_REQUEST {$name} or return "#$name#:Vous avez oublié de remplir le champ \"$i->{label}\"";
 		
 	}
 	
