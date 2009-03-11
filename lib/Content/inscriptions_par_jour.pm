@@ -132,10 +132,10 @@ EOS
 		
 		$join .= " LEFT JOIN ext_field_values AS t_$field->{name} ON (t_$field->{name}.id_inscription = inscriptions.id AND t_$field->{name}.id_ext_field = $field->{id})";
 
-		if ($field -> {id_field_type} != 3) {
+		if ($field -> {id_field_type} !~ /^[35]$/) {
 			$filter .= " AND t_$field->{name}.value = ?";
 			push @params, $_REQUEST {$field -> {name}};
-               	}
+        }
 		else {
 			$filter .= " AND t_$field->{name}.value LIKE ?";
 			push @params, '%' . $_REQUEST {$field -> {name}} . '%';
