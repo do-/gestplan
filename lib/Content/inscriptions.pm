@@ -398,6 +398,8 @@ EOS
 sub get_item_of_inscriptions {
 
 	my $item = sql_select_hash ('inscriptions');
+
+	$item -> {id} or return esc ();
 	
 	foreach my $k (keys %$item) {$k =~ /^field_\d/ or next; delete $item -> {$k}};
 
