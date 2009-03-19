@@ -842,7 +842,7 @@ EOS
 	my $ids_users = join ',', @ids_users;
 
 	add_vocabularies ($item,
-		'users'            => {filter => "(id in ($ids_users)) OR (id_group IN ($ids_groups) AND (dt_finish IS NULL OR dt_finish > '$item->{_dt_finish}'))"},
+		'users'            => {filter => "((id in ($ids_users)) OR (id_group IN ($ids_groups) AND (dt_finish IS NULL OR dt_finish > '$item->{_dt_finish}')))"},
 		'prestation_types' => {filter => $filter},
 	);
 
