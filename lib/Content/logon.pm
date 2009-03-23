@@ -4,6 +4,20 @@ sub select_logon {}
 
 ################################################################################
 
+sub validate_execute_logon {
+
+	our $_USER = sql_select_hash ("SELECT * FROM users WHERE fake = 0 AND login = ? AND password = OLD_PASSWORD(?) AND IFNULL(dt_start, NOW()) <= NOW() AND IFNULL(dt_finish, NOW()) >= NOW()", $_REQUEST {login}, $_REQUEST {password});
+	
+	my $organisation = sql_select_hash ('SELECT * FROM organisations WHERE id = ?', $_USER -> {id_organisation});
+	
+	$organisation -> {fake} == -1 and return "La compte de votre organisme, $organisation->{label}, est suspendue, pardon.";
+		
+	undef;	
+
+}
+
+################################################################################
+
 sub do_execute_logon {
 	our $_USER = {};
 	$_USER -> {id} = sql_select_array ("SELECT id FROM users WHERE fake = 0 AND login = ? AND password = OLD_PASSWORD(?) AND IFNULL(dt_start, NOW()) <= NOW() AND IFNULL(dt_finish, NOW()) >= NOW()", $_REQUEST {login}, $_REQUEST {password});
