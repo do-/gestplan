@@ -101,7 +101,7 @@ sub validate_update_prestation_types {
 	else {
 		delete $_REQUEST {_ids_users};
 	}
-
+	
 	$_REQUEST {_id_people_number} or return "Vous avez oublié d'indiquer le nombre de collaborateurs";
 	
 	my @ids = get_ids ('ids_ext_fields');
@@ -200,6 +200,7 @@ EOS
 	$item -> {ids_rooms}      = [grep {$_ > 0} split /,/, $item -> {ids_rooms}];
 	$item -> {ids_users_2}    = [grep {$_ > 0} split /,/, $item -> {ids_users}];
 	$item -> {ids_users_3}    = [grep {$_ > 0} split /,/, $item -> {ids_users}];
+	$item -> {ids_users_4}    = [grep {$_ > 0} split /,/, $item -> {ids_users}];
 
 	$item -> {path} = [
 		{type => 'prestation_types', name => 'Prestations'},

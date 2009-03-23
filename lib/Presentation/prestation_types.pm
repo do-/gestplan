@@ -269,6 +269,11 @@ sub draw_item_of_prestation_types {
 					],
 				
 				},
+				{
+					name  => 'is_private',
+					label => 'Inscription privée',
+					type  => 'checkbox',
+				},
     				
 			],
 			[
@@ -278,11 +283,11 @@ sub draw_item_of_prestation_types {
 					type  => 'radio',
 					values => [
 						{id => 0, label => 'Administrateurs seulement'},
-						{id => 1, label => 'Administrateurs et utilisateurs'},
+						{id => 1, label => 'Tous les utilisateurs sans délégation'},
 						{
 							id     => 2,
 							name   => 'ids_users_2',
-							label  => 'Administrateurs et' . ($_REQUEST {__read_only} ? '' : '...'),
+							label  => 'Délégué uniquement à' . ($_REQUEST {__read_only} ? '' : '...'),
 							type   => 'checkboxes',
 							values => $data -> {users},
 							height => 150,
@@ -291,18 +296,22 @@ sub draw_item_of_prestation_types {
 						{
 							id     => 3,
 							name   => 'ids_users_3',
-							label  => 'Administrateurs, utilisateurs et' . ($_REQUEST {__read_only} ? '' : '...'),
+							label  => 'Accessible a tous et délégué à' . ($_REQUEST {__read_only} ? '' : '...'),
+							type   => 'checkboxes',
+							values => $data -> {users},
+							height => 150,
+							cols   => 2,
+						},
+						{
+							id     => 4,
+							name   => 'ids_users_4',
+							label  => 'Sans délégation accessible uniquement à' . ($_REQUEST {__read_only} ? '' : '...'),
 							type   => 'checkboxes',
 							values => $data -> {users},
 							height => 150,
 							cols   => 2,
 						},
 					],
-				},
-				{
-					name  => 'is_private',
-					label => 'Inscription privée',
-					type  => 'checkbox',
 				},
 			],						
 

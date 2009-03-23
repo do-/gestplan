@@ -814,7 +814,7 @@ sub get_item_of_prestations {
 		if ($item -> {id_user} == $_USER -> {id}) {
 		
 			$filter = <<EOS;
-					is_placeable_by_conseiller IN (1, 3)
+					is_placeable_by_conseiller IN (1, 3, 5)
 					OR ids_users LIKE '%,$$_USER{id},%'
 					OR id=$$item{id_prestation_type}
 EOS
@@ -1566,7 +1566,7 @@ EOS
 	}
 	else {
 
-		$_USER -> {cnt_prestation_types} = sql_select_scalar ('SELECT COUNT(*) FROM prestation_types WHERE fake = 0 AND is_placeable_by_conseiller = 2 AND ids_users LIKE ?', '%,' . $_USER -> {id} . ',%');
+		$_USER -> {cnt_prestation_types} = sql_select_scalar ('SELECT COUNT(*) FROM prestation_types WHERE fake = 0 AND is_placeable_by_conseiller IN (2, 5) AND ids_users LIKE ?', '%,' . $_USER -> {id} . ',%');
 
 		$_USER -> {can_dblclick_others_empty} = $_USER -> {cnt_prestation_types} > 0;
 		
