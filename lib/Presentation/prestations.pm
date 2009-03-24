@@ -578,7 +578,6 @@ EOH
 										
 										&& (
 											$p -> {is_placeable_by_conseiller} == 1
-											|| $p -> {is_placeable_by_conseiller} == 5
 											|| !$p -> {label}
 										)
 									)

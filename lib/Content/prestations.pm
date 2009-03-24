@@ -814,7 +814,7 @@ sub get_item_of_prestations {
 		if ($item -> {id_user} == $_USER -> {id}) {
 		
 			$filter = <<EOS;
-					is_placeable_by_conseiller IN (1, 3, 5)
+					is_placeable_by_conseiller IN (1, 3, 4)
 					OR ids_users LIKE '%,$$_USER{id},%'
 					OR id=$$item{id_prestation_type}
 EOS
@@ -823,7 +823,7 @@ EOS
 		else {
 
 			$filter = <<EOS;
-					ids_users LIKE '%,$$_USER{id},%'
+					(ids_users LIKE '%,$$_USER{id},%' AND is_placeable_by_conseiller <> 4)
 					OR id=$$item{id_prestation_type}
 EOS
 
@@ -832,7 +832,7 @@ EOS
 	}
 	
 	$filter = "($filter) AND id_organisation = $_USER->{id_organisation}";
-	
+
 	my $ids_groups = sql_select_ids ("SELECT id FROM groups WHERE id_organisation = ? AND fake = 0 AND (IFNULL(is_hidden, 0) = 0 OR id = ?)", $_USER -> {id_organisation}, 0 + $_USER -> {id_group});
 #	$ids_groups .= ',';
 #	$ids_groups .= (0 + $_USER -> {id_group});
@@ -1566,7 +1566,7 @@ EOS
 	}
 	else {
 
-		$_USER -> {cnt_prestation_types} = sql_select_scalar ('SELECT COUNT(*) FROM prestation_types WHERE fake = 0 AND is_placeable_by_conseiller IN (2, 5) AND ids_users LIKE ?', '%,' . $_USER -> {id} . ',%');
+		$_USER -> {cnt_prestation_types} = sql_select_scalar ('SELECT COUNT(*) FROM prestation_types WHERE fake = 0 AND is_placeable_by_conseiller IN (2, 4) AND ids_users LIKE ?', '%,' . $_USER -> {id} . ',%');
 
 		$_USER -> {can_dblclick_others_empty} = $_USER -> {cnt_prestation_types} > 0;
 		
@@ -1574,6 +1574,7 @@ EOS
 		
 			my $prestation_type = sql_select_hash ('prestation_types', $_REQUEST {id_prestation_type});
 	
+			$_USER -> {can_dblclick_others_empty} &&= ($prestation_type -> {is_placeable_by_conseiller} != 4);
 			$_USER -> {can_dblclick_others_empty} &&= $prestation_type -> {ids_users} =~ /\,$_USER->{id}\,/
 		
 		}
