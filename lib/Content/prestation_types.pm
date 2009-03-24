@@ -102,7 +102,7 @@ sub validate_update_prestation_types {
 		delete $_REQUEST {_ids_users};
 	}
 				
-	!$_REQUEST {_is_multiday} or $_REQUEST {_id_day_period} == 3 or return "#_is_multiday#:Comme la prestation peut durer plusieurs jours, il fallait indiquer toutes les 2 moitiés";
+	!$_REQUEST {_is_multiday} or $_REQUEST {_id_day_period} == 3 or return "#_is_multiday#:Pour durer plusieurs demi-journées, elle doit être autorisée matin et après-midi";
 	
 	$_REQUEST {_id_people_number} or return "Vous avez oublié d'indiquer le nombre de collaborateurs";
 	
