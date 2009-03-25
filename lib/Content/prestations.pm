@@ -729,7 +729,7 @@ sub validate_update_prestations {
 		
 		$prestation_type -> {ids_roles} =~ /\,$$user{id_role}\,/ or return "Désolé, mais $$user{label} ne peut pas assister aux prestations $$prestation_type{label_short}.";
 			
-		0 == sql_select_scalar (<<EOS, $_REQUEST {id}, $user -> {id}, '%,' . $user -> {id} . ',%' , $_REQUEST {_dt_finish} . $_REQUEST {_half_finish}, $_REQUEST {_dt_start} . $_REQUEST {_half_start}) or return "#_id_users_$$user{id}#:Désolé, mais $$user{label} est occupé pendant cette période.";
+		0 == sql_select_scalar (<<EOS, $_REQUEST {id}, $user -> {id}, '%,' . $user -> {id} . ',%' , $_REQUEST {_dt_finish} . $_REQUEST {_half_finish}, $_REQUEST {_dt_start} . $_REQUEST {_half_start}, $_REQUEST {_dt_start}) or return "#_id_users_$$user{id}#:Désolé, mais $$user{label} est occupé pendant cette période.";
 			SELECT
 				id
 			FROM
@@ -740,6 +740,7 @@ sub validate_update_prestations {
 				AND fake = 0
 				AND CONCAT(dt_start,  half_start)  <= ?
 				AND CONCAT(dt_finish, half_finish) >= ?
+				AND dt_finish >= ?
 			LIMIT
 				1
 EOS
@@ -752,7 +753,7 @@ EOS
 	
 		my $ids = join ',', @id_prestations_rooms;
 		
-		my $conflict = sql_select_hash (<<EOS, $_REQUEST {_dt_finish} . $_REQUEST {_half_finish}, $_REQUEST {_dt_start} . $_REQUEST {_half_start}, $_REQUEST {id});
+		my $conflict = sql_select_hash (<<EOS, $_REQUEST {_dt_finish} . $_REQUEST {_half_finish}, $_REQUEST {_dt_start} . $_REQUEST {_half_start}, $_REQUEST {_dt_start}, $_REQUEST {id});
 			SELECT
 				prestations_rooms.id
 				, rooms.label
@@ -768,6 +769,7 @@ EOS
 				AND prestations_rooms.id_room IN ($ids)
 				AND CONCAT(prestations_rooms.dt_start, prestations_rooms.half_start) <= ?
 				AND CONCAT(prestations_rooms.dt_finish, prestations_rooms.half_finish) >= ?
+				AND prestations_rooms.dt_finish >= ?
 				AND prestations_rooms.id_prestation <> ?
 			LIMIT
 				1
