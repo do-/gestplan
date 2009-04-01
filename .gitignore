@@ -4,3 +4,4 @@ logs
 docroot/dbm/
 docroot/i/_skins/
 docroot/session_access_logs/
+docroot/i/upload
