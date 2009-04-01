@@ -174,6 +174,10 @@ sub do_update_inscriptions {
 
 	do_update_DEFAULT ();
 	
+	my $item = sql_select_hash ('inscriptions');
+	
+	$item -> {id_author} or sql_do ('UPDATE inscriptions SET id_author = ? WHERE id = ?', $_USER -> {id}, $item -> {id});
+	
 	$_REQUEST {_hour} or return;
 	
 	_refresh_alerts ();
@@ -386,8 +390,6 @@ EOS
 		defined $_REQUEST {$name} or return "#$name#:Vous avez oublié de remplir le champ \"$i->{label}\"";
 		
 	}
-	
-	$_REQUEST {_id_author} = $_USER -> {id};
 
 	return undef;
 	
