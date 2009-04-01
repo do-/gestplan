@@ -76,7 +76,7 @@ EOS
     	$_REQUEST {day_finish}  ||= $_REQUEST {day_start};
     	$_REQUEST {half_finish} ||= $_REQUEST {half_start};
     
-    	$_REQUEST {fake} = 0;
+    	$_REQUEST {_fake} = 0;
 
 	return undef;
 	
