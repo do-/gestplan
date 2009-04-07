@@ -692,9 +692,11 @@ EOS
 			SELECT
 				inscriptions.*
 				, users.id_organisation
+				, reception.label AS recu_par
 			FROM
 				inscriptions
 				LEFT JOIN users ON inscriptions.id_author = users.id
+				LEFT JOIN users AS reception ON inscriptions.id_user = reception.id
 			WHERE
 				id_prestation = ?
 				AND inscriptions.fake <= 0
@@ -788,9 +790,11 @@ EOS
 			SELECT
 				inscriptions.*
 				, users.id_organisation
+				, reception.label AS recu_par
 			FROM
 				inscriptions
 				LEFT JOIN users ON inscriptions.id_author = users.id
+				LEFT JOIN users AS reception ON inscriptions.id_user = reception.id
 			WHERE
 				id_prestation = ?
 				AND inscriptions.fake <= 0

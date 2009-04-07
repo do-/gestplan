@@ -370,7 +370,7 @@ sub draw_inscriptions {
 						
 					},
 					{
-						label => map {$_ -> {label}} grep {$_ -> {id} == $i -> {id_user}} @{$data -> {users}},
+						label => $i -> {recu_par},
 #						off   => !$i -> {hour},
 					},
 					map {
@@ -522,7 +522,7 @@ qq {
 						},
 					},
 					{
-						label => map {$_ -> {label}} grep {$_ -> {id} == $i -> {id_user}} @{$data -> {users}},
+						label => $i -> {recu_par},
 #						off   => !$i -> {hour},
 					},
 

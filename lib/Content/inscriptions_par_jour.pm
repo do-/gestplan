@@ -185,11 +185,13 @@ EOS
 	 		, prestations.dt_finish
 	 		, users.label AS user_label
 	 		, prestation_types.label_short
+	 		, reception.label AS recu_par
 	 	FROM
 	 		inscriptions
 	 		INNER JOIN prestations ON inscriptions.id_prestation = prestations.id
 	 		INNER JOIN users ON prestations.id_user = users.id
 	 		INNER JOIN prestation_types ON prestations.id_prestation_type = prestation_types.id
+	 		LEFT  JOIN users AS reception ON inscriptions.id_user = reception.id
 	 	WHERE
 	 		inscriptions.id IN ($ids_inscriptions_par_conseiller)
 	 	ORDER BY

@@ -70,7 +70,7 @@ sub draw_inscriptions_par_jour {
 						
 					},
 					{
-						label => map {$_ -> {label}} grep {$_ -> {id} == $i -> {id_user}} @{$data -> {users}},
+						label => $i -> {recu_par},
 #						off   => !$i -> {hour},
 					},
 					map {$i -> {'field_' . $_ -> {id}}}  grep {$_ -> {type} ne 'break'} @{$data -> {ext_fields}},
