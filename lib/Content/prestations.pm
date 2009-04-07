@@ -697,6 +697,20 @@ sub validate_update_prestations {
 		@day = Add_Delta_Days (@day, 1);
 		
 		$day = sprintf ('%04d-%02d-%02d', @day);
+		
+		if ($_USER -> {role} ne 'admin') {
+		
+			if (week_status (sprintf ('%02d/%02d/%02d', reverse @day)) != 2) {
+			
+				my @monday = Monday_of_Week (Week_of_Year (@day));
+				
+				my @sunday = Add_Delta_Days (@monday, 6);
+			
+				return sprintf ("#_dt_finish#: La semaine de \%02d/\%02d/\%04d à \%02d/\%02d/\%04d n'est pas encore publiée", (reverse @monday), (reverse @sunday));
+			
+			}
+		
+		}
 	
 	}
 	
