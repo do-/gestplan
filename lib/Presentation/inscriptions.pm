@@ -483,7 +483,7 @@ qq {
 						$i -> {label},
 						{
 							label   => 'Réservé',
-							colspan => 3 + @{$data -> {prestation_1} -> {ext_fields}},
+							colspan => 3 + @{$data -> {prestation_2} -> {ext_fields}},
 							max_len => 10000,
 							no_nobr => 1,
 						},
