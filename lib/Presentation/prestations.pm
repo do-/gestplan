@@ -222,12 +222,6 @@ sub draw_prestations {
 	
 	my ($data) = @_;
 	
-#	my $shift = $data -> {menu} ? 128 : 111;
-
-	my $shift = 143;
-
-	$shift += 17 if $data -> {menu};
-
 	my $off_period_divs = <<EOJS;
 		<script>
 			
