@@ -222,7 +222,11 @@ sub draw_prestations {
 	
 	my ($data) = @_;
 	
-	my $shift = $data -> {menu} ? 128 : 111;
+#	my $shift = $data -> {menu} ? 128 : 111;
+
+	my $shift = 143;
+
+	$shift += 17 if $data -> {menu};
 
 	my $off_period_divs = <<EOJS;
 		<script>
@@ -285,11 +289,12 @@ EOJS
 							left:expression(
 								coord_h (0, $i, 'Left')
 								- document.getElementById (scrollable_table_ids [0]).offsetParent.scrollLeft
-								- 1
+								- 2
 							);
-							height:44;
-							top:expression(document.getElementById (scrollable_table_ids [0]).offsetParent.scrollTop);
+							height:46;
+							top:expression(1 + document.getElementById (scrollable_table_ids [0]).offsetParent.scrollTop);
 							width:2;
+							z-index:100;
 					"
 					><img src="/i/0.gif" width=1 height=1></div>
 EOH
@@ -305,8 +310,8 @@ EOH
 		
 		if ($from > -1) {
 						
-			my $top     = 44 + 22 * $from;
-			my $height  = 22 * ($j - $from);
+			my $top     = 47 + 23 * $from;
+			my $height  = 1  + 23 * ($j - $from);
 			my $height1 = $height + 1;
 			
 			$data -> {users} -> [$from] -> {span} = $j - $from;
@@ -322,7 +327,7 @@ EOH
 							left:expression(
 								coord_h (0, $i, 'Left')
 								- document.getElementById (scrollable_table_ids [0]).offsetParent.scrollLeft
-								- 1
+								- 2
 							);
 							height:$height;
 							top:$top;
@@ -354,8 +359,8 @@ EOH
 				position:absolute;
 				background-image: url(/i/stripes.gif);
 				display:expression(document.getElementById (scrollable_table_ids [0]).offsetParent.scrollTop > coord ($$off_period{row}, $$off_period{col_start}, 'Top') - 45 ? 'none' : 'block');
-				top:expression(coord ($$off_period{row}, $$off_period{col_start}, 'Top'));
-				left:expression( 	coord ($$off_period{row}, $$off_period{col_start}, 'Left') - document.getElementById (scrollable_table_ids [0]).offsetParent.scrollLeft);				
+				top:expression(coord ($$off_period{row}, $$off_period{col_start}, 'Top') - 1);
+				left:expression( 	coord ($$off_period{row}, $$off_period{col_start}, 'Left') - document.getElementById (scrollable_table_ids [0]).offsetParent.scrollLeft - 1);				
 				height:expression(	coord ($$off_period{row}, $$off_period{col_start}, 'Height'));
 				width:expression(
 									coord ($$off_period{row}, $$off_period{col_finish}, 'Width') -
