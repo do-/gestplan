@@ -21,6 +21,8 @@ if ($@) {
 
 }
 
+sub get_skin_name {'TurboMilk'}
+
 sub fake_select {
 
 	return  {
