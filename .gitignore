@@ -5,3 +5,17 @@ docroot/dbm/
 docroot/i/_skins/
 docroot/session_access_logs/
 docroot/i/upload
+docroot/i/buttons/
+docroot/i/css/
+docroot/i/images/
+docroot/i/js/
+docroot/i/jscalendar/
+docroot/i/rte/_docs/
+docroot/i/rte/_test/
+docroot/i/rte/fckeditor.html
+docroot/i/rte/fckeditor.php
+docroot/i/rte/filemanager/
+docroot/i/toolbars/
+docroot/index.pl
+run.pl
+snapshots/
