@@ -11,15 +11,7 @@ use Date::Calc qw(
 );
 use URI::Escape;
 use Digest::MD5 'md5_hex';
-#use LockFile::Simple qw(lock trylock unlock);
-
-eval 'use LockFile::Simple';
-
-if ($@) {
-
-	eval 'sub lock {}; sub trylock {}; sub unlock {}; ';
-
-}
+use LockFile::Simple qw(lock trylock unlock);
 
 sub get_skin_name {'TurboMilk'}
 
@@ -244,9 +236,14 @@ sub iframe_alerts {
 	my $salt = rand * time;
 
 	return <<EOH;
-		<iframe style="display:none" name="alerts" src="/?sid=$_REQUEST{sid}&type=alerts&_salt=$salt">
+		<iframe style="display:none" name="alerts" src="/i/0.html">
 		</iframe>
 EOH
+
+#	return <<EOH;
+#		<iframe style="display:none" name="alerts" src="/?sid=$_REQUEST{sid}&type=alerts&_salt=$salt">
+#		</iframe>
+#EOH
 
 }
 
