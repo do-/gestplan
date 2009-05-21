@@ -643,7 +643,36 @@ sub select_inscriptions {
 
 	($_REQUEST {_week}, $_REQUEST {_year}) = Week_of_Year ($3, $2, $1);	
 	
-	my $id_absent_users = sql_select_ids ('SELECT id_user FROM off_periods WHERE dt_start <= ? AND dt_finish >= ? AND fake = 0', $dt, $dt);
+	my $id_absent_users_1 = -1;
+	my $id_absent_users_2 = -1;
+	
+	sql_select_loop (
+	
+		'SELECT * FROM off_periods WHERE dt_start <= ? AND dt_finish >= ? AND fake = 0',
+		
+		sub {
+		
+			if ("$i->{dt_start} $i->{half_start}" le "$dt 1") {
+			
+				$id_absent_users_1 .= ",$i->{id_user}";
+			
+			}
+		
+			if ("$i->{dt_finish} $i->{half_finish}" ge "$dt 2") {
+			
+				$id_absent_users_2 .= ",$i->{id_user}";
+			
+			}
+
+		},
+		
+		$dt,
+		
+		$dt,
+		
+	);
+	
+#	my $id_absent_users = sql_select_ids ('SELECT id_user FROM off_periods WHERE dt_start <= ? AND dt_finish >= ? AND fake = 0', $dt, $dt);
 
 	my $prestation_1 = sql_select_hash (<<EOS, $_REQUEST {id_user}, '%,' . $_REQUEST {id_user} . ',%', $dt . 1, $dt . 1);
 		SELECT
@@ -672,7 +701,7 @@ EOS
 			;
 			
 		my $id_users = join ',', grep {$_ > 0} ($prestation_1 -> {id_users}, $prestation_1 -> {id_user});						
-		$prestation_1 -> {present_users} = sql_select_scalar ("SELECT COUNT(*) FROM users WHERE id IN ($id_users) AND id NOT IN ($id_absent_users)");
+		$prestation_1 -> {present_users} = sql_select_scalar ("SELECT COUNT(*) FROM users WHERE id IN ($id_users) AND id NOT IN ($id_absent_users_1)");
 		
 		$prestation_1 -> {ext_fields} = sql_select_all (<<EOS,  $prestation_1 -> {type} -> {id});
 			SELECT
@@ -770,7 +799,7 @@ EOS
 			;
 
 		my $id_users = join ',', grep {$_ > 0} ($prestation_2 -> {id_users}, $prestation_2 -> {id_user});						
-		$prestation_2 -> {present_users} = sql_select_scalar ("SELECT COUNT(*) FROM users WHERE id IN ($id_users) AND id NOT IN ($id_absent_users)");
+		$prestation_2 -> {present_users} = sql_select_scalar ("SELECT COUNT(*) FROM users WHERE id IN ($id_users) AND id NOT IN ($id_absent_users_2)");
 
 		$prestation_2 -> {ext_fields} = sql_select_all (<<EOS,  $prestation_2 -> {type} -> {id});
 			SELECT
