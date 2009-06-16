@@ -534,7 +534,7 @@ EOS
 EOS
 
 
-		];
+		] if $parent -> {id};
 
 	
 	}

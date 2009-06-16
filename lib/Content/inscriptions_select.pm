@@ -30,17 +30,32 @@ sub do_add_inscriptions_select {
 	
 	my $id_inscriptions = sql_select_ids ('SELECT id FROM inscriptions WHERE parent = ?', $item -> {parent});
 	
-	$id_inscriptions = sql_select_ids (<<EOS, $item -> {parent}, $item -> {parent}, $_USER -> {id});
-		SELECT
-			inscriptions.id
-		FROM
-			inscriptions
-			LEFT JOIN prestations ON inscriptions.id_prestation = prestations.id
-		WHERE
-			(inscriptions.id = ? OR inscriptions.parent = ?)
-			AND prestations.id_user = ?
-EOS
+	$id_inscriptions =
 	
+		sql_select_ids (<<EOS, $item -> {parent}, $_USER -> {id})
+			SELECT
+				inscriptions.id
+			FROM
+				inscriptions
+				LEFT JOIN prestations ON inscriptions.id_prestation = prestations.id
+			WHERE
+				inscriptions.id = ?
+				AND prestations.id_user = ?
+EOS
+
+		. ',' .
+	
+		sql_select_ids (<<EOS, $item -> {parent}, $_USER -> {id});
+			SELECT
+				inscriptions.id
+			FROM
+				inscriptions
+				LEFT JOIN prestations ON inscriptions.id_prestation = prestations.id
+			WHERE
+				inscriptions.parent = ?
+				AND prestations.id_user = ?
+EOS
+
 	sql_do ("UPDATE inscriptions SET is_unseen = 0 WHERE id IN ($id_inscriptions)");
 
 	esc ();
