@@ -242,7 +242,9 @@ sub do_delete_inscriptions {
 	
 	if (!$item -> {parent} && $item -> {id_author} == $_USER -> {id}) {
 			
-		my $ids = sql_select_ids ('SELECT id FROM inscriptions WHERE id = ? OR parent = ?', $item -> {id}, $item -> {id});
+		my $ids = sql_select_ids ('SELECT id FROM inscriptions WHERE parent = ?', $item -> {id});
+		
+		$ids .= ",$item->{id}";
 		
 		sql_select_loop ("SELECT file_path FROM ext_field_values WHERE file_path IS NOT NULL AND id_inscription IN ($ids)", sub {
 		
@@ -269,7 +271,8 @@ sub do_delete_inscriptions {
 	
 		if (!$item -> {parent} && $item -> {id_author} == $_USER -> {id}) {
 								
-			sql_do ('DELETE FROM inscriptions WHERE id = ? OR parent = ?', $item -> {id}, $item -> {id});
+			sql_do ('DELETE FROM inscriptions WHERE id     = ?', $item -> {id});
+			sql_do ('DELETE FROM inscriptions WHERE parent = ?', $item -> {id});
 		
 		}
 		else {
@@ -386,8 +389,8 @@ EOS
 		$i -> {is_mandatory} or next;
 		
 		my $name = '_field_' . $i -> {id};
-		
-		defined $_REQUEST {$name} or return "#$name#:Vous avez oublié de remplir le champ \"$i->{label}\"";
+
+		defined $_REQUEST {$name} and $_REQUEST {$name} ne '' or return "#$name#:Vous avez oublié de remplir le champ \"$i->{label}\"";
 		
 	}
 
@@ -531,7 +534,7 @@ EOS
 EOS
 
 
-		];
+		] if $parent -> {id};
 
 	
 	}
@@ -643,7 +646,36 @@ sub select_inscriptions {
 
 	($_REQUEST {_week}, $_REQUEST {_year}) = Week_of_Year ($3, $2, $1);	
 	
-	my $id_absent_users = sql_select_ids ('SELECT id_user FROM off_periods WHERE dt_start <= ? AND dt_finish >= ? AND fake = 0', $dt, $dt);
+	my $id_absent_users_1 = -1;
+	my $id_absent_users_2 = -1;
+	
+	sql_select_loop (
+	
+		'SELECT * FROM off_periods WHERE dt_start <= ? AND dt_finish >= ? AND fake = 0',
+		
+		sub {
+		
+			if ("$i->{dt_start} $i->{half_start}" le "$dt 1") {
+			
+				$id_absent_users_1 .= ",$i->{id_user}";
+			
+			}
+		
+			if ("$i->{dt_finish} $i->{half_finish}" ge "$dt 2") {
+			
+				$id_absent_users_2 .= ",$i->{id_user}";
+			
+			}
+
+		},
+		
+		$dt,
+		
+		$dt,
+		
+	);
+	
+#	my $id_absent_users = sql_select_ids ('SELECT id_user FROM off_periods WHERE dt_start <= ? AND dt_finish >= ? AND fake = 0', $dt, $dt);
 
 	my $prestation_1 = sql_select_hash (<<EOS, $_REQUEST {id_user}, '%,' . $_REQUEST {id_user} . ',%', $dt . 1, $dt . 1);
 		SELECT
@@ -672,7 +704,7 @@ EOS
 			;
 			
 		my $id_users = join ',', grep {$_ > 0} ($prestation_1 -> {id_users}, $prestation_1 -> {id_user});						
-		$prestation_1 -> {present_users} = sql_select_scalar ("SELECT COUNT(*) FROM users WHERE id IN ($id_users) AND id NOT IN ($id_absent_users)");
+		$prestation_1 -> {present_users} = sql_select_scalar ("SELECT COUNT(*) FROM users WHERE id IN ($id_users) AND id NOT IN ($id_absent_users_1)");
 		
 		$prestation_1 -> {ext_fields} = sql_select_all (<<EOS,  $prestation_1 -> {type} -> {id});
 			SELECT
@@ -770,7 +802,7 @@ EOS
 			;
 
 		my $id_users = join ',', grep {$_ > 0} ($prestation_2 -> {id_users}, $prestation_2 -> {id_user});						
-		$prestation_2 -> {present_users} = sql_select_scalar ("SELECT COUNT(*) FROM users WHERE id IN ($id_users) AND id NOT IN ($id_absent_users)");
+		$prestation_2 -> {present_users} = sql_select_scalar ("SELECT COUNT(*) FROM users WHERE id IN ($id_users) AND id NOT IN ($id_absent_users_2)");
 
 		$prestation_2 -> {ext_fields} = sql_select_all (<<EOS,  $prestation_2 -> {type} -> {id});
 			SELECT
