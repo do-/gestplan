@@ -229,7 +229,7 @@ sub del {
 
 ################################################################################
 
-sub iframe_alerts {
+sub iframe_alerts { return '';
 	
 	my $salt = rand * time;
 

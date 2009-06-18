@@ -83,34 +83,29 @@ sub do_create_inscriptions {
 
 ################################################################################
 
-sub _refresh_alerts {
+sub recalculate_inscriptions {
 
-	my $dead_ids = sql_select_ids (<<EOS, sprintf ('%04d-%02d-%02d', Today ()));
-		SELECT
-			alerts.id
-		FROM
-			alerts
-			INNER JOIN inscriptions ON alerts.id_inscription = inscriptions.id
-			INNER JOIN prestations  ON inscriptions.id_prestation = prestations.id
-		WHERE
-			prestations.dt_start < ?
-EOS
+	$_REQUEST {id} or return;
+
+	my $data = sql (inscriptions => $_REQUEST {id}, 'prestations(id_user, id_users, dt_start)');
 	
-	sql_do ("DELETE FROM alerts WHERE id IN ($dead_ids)");
+	$data -> {hour} or return;
 
-	my $item = sql_select_hash ('inscriptions');
+	$_REQUEST {__old_hour} != $data -> {hour} or $_REQUEST {__old_minute} != $item -> {minute} or return;
+	
+	my @today = Today ();
+	
+	dt_iso (@today) eq $data -> {prestation} -> {dt_start} or return;
 
-	my $prestation = sql_select_hash ('prestations', $item -> {id_prestation});
-
-	foreach my $id_user (grep {$_ > 0 && $_ != $_USER -> {id}} ($prestation -> {id_user}, split /\,/, $prestation -> {id_users})) {
+	js_im (
+	
+		[grep {$_ > 0 && $_ != $_USER -> {id}} ($data -> {prestation} -> {id_user}, split /\,/, $data -> {prestation} -> {id_users})],
 		
-		sql_do_insert ('alerts', {
-			fake    => 0,
-			id_user => $id_user,
-			id_inscription => $_REQUEST {id},
-		});
+		"alert ('$data->{nom} $data->{prenom} est arrivé(e) à $data->{hour}h$data->{minute}.\\n')",
 		
-	}
+		{expires => [@today, 23, 59, 59]},
+		
+	);
 
 }
 
@@ -172,16 +167,15 @@ sub do_update_inscriptions {
 
 	sql_do ('DELETE FROM ext_field_values WHERE id_inscription = ? AND fake = -1', $_REQUEST {id});
 
-	do_update_DEFAULT ();
-	
 	my $item = sql_select_hash ('inscriptions');
-	
+
 	$item -> {id_author} or sql_do ('UPDATE inscriptions SET id_author = ? WHERE id = ?', $_USER -> {id}, $item -> {id});
 	
-	$_REQUEST {_hour} or return;
-	
-	_refresh_alerts ();
+	$_REQUEST {__old_hour}   = $item -> {hour};
+	$_REQUEST {__old_minute} = $item -> {minute};
 
+	do_update_DEFAULT ();
+		
 }
 
 ################################################################################
@@ -211,9 +205,7 @@ sub do_mark_inscriptions {
 		WHERE
 			inscriptions.id IN ($_REQUEST{id},$id_inscriptions)
 EOS
-	
-	_refresh_alerts ();
-	
+		
 	esc ();
 	
 }
