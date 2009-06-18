@@ -36,7 +36,7 @@ sub select_menu_for_superadmin {
 
 sub select_menu_for_admin {
 
-	$_REQUEST {__im_delay} = 1 * 1000;
+	$_REQUEST {__im_delay} = 60 * 1000;
 
 	return [
 
