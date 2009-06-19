@@ -1515,53 +1515,55 @@ EOS
 	    for (my $i = 0; $i < @$users; $i++) { $user2ord -> {$users -> [$i] -> {id}} = $i };
 
 		my $day2ord = {};	
+		
 	    for (my $i = 0; $i < @days; $i++) { $day2ord -> {$days [$i] -> {iso_dt}} = $i };
 	
 	    	foreach my $off_period (@$off_periods) {
 
-			my $span = 0;
+			my %hdays = ();
 	
 			for (my $i = 0; $i < @days; $i++) {
 				$days [$i] -> {by_user} -> {$off_period -> {id_user}} -> {rowspan} ||= ($holydays -> {$days [$i] -> {iso_dt}} ? 2 : 1);
 			}
-			
+						
 			for (my $i = 0; $i < @days; $i++) {
-	
-				if ($days [$i] -> {iso_dt} lt $off_period -> {dt_start}) {
-					$span += ($days [$i] -> {by_user} -> {$off_period -> {id_user}} -> {rowspan} - 1);
+
+				my $day = $days [$i];
+				
+				my $dt = $day -> {iso_dt};				
+								
+
+				if ($dt lt $off_period -> {dt_start}) {
+					$hdays {$dt} ||= 1 if $holydays -> {$dt};
 					next;
 				}
-	
+
 				$off_period -> {col_start} =
 					$i
 					+ $off_period -> {half_start}
-					- $span
+					- %hdays
 					;
-
 				last;
 
 			};
 	
-			for (my $i = @days - 1; $i >= 0; $i--) {
-				next if $days [$i] -> {iso_dt} gt $off_period -> {dt_finish};		
-				next if $days [$i] -> {by_user} -> {$off_period -> {id_user}} -> {is_hidden};
-				$off_period -> {col_finish} = $i + $off_period -> {half_finish} - 1;
-				last;
-			};
-
-			my $span = 0;
+			my %hdays = ();
 
 			for (my $i = 0; $i < @days; $i++) {
 	
-				if ($days [$i] -> {iso_dt} lt $off_period -> {dt_finish}) {
-					$span += ($days [$i] -> {by_user} -> {$off_period -> {id_user}} -> {rowspan} - 1);
+				my $day = $days [$i];
+
+				my $dt = $day -> {iso_dt};
+				
+				if ($dt lt $off_period -> {dt_finish}) {
+					$hdays {$dt} ||= 1 if $holydays -> {$dt};
 					next;
 				}
 	
 				$off_period -> {col_finish} =
 					$i
 					+ $off_period -> {half_finish}
-					- $span
+					- %hdays
 					;
 
 				last;
@@ -1569,11 +1571,10 @@ EOS
 			};
 
 			$off_period -> {row}        = 0 + $user2ord -> {$off_period -> {id_user}};
-						
+
 		};
 	
 	}
-
 	
 	if ($_USER -> {role} eq 'admin') {
 	
