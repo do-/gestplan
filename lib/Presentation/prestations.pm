@@ -353,13 +353,13 @@ EOH
 				position:absolute;
 				background-image: url(/i/stripes.gif);
 				display:expression(document.getElementById (scrollable_table_ids [0]).offsetParent.scrollTop > coord ($$off_period{row}, $$off_period{col_start}, 'Top') - 45 ? 'none' : 'block');
-				top:expression(coord ($$off_period{row}, $$off_period{col_start}, 'Top') - 1);
-				left:expression( 	coord ($$off_period{row}, $$off_period{col_start}, 'Left') - document.getElementById (scrollable_table_ids [0]).offsetParent.scrollLeft - 1);				
-				height:expression(	coord ($$off_period{row}, $$off_period{col_start}, 'Height'));
+				top:expression(coord ($$off_period{row}, 0, 'Top') - 1);
+				left:expression( 	coord_h (1, $$off_period{col_start} - 1, 'Left') - document.getElementById (scrollable_table_ids [0]).offsetParent.scrollLeft - 1);
+				height:expression(	coord ($$off_period{row}, 0, 'Height'));
 				width:expression(
-									coord ($$off_period{row}, $$off_period{col_finish}, 'Width') -
-									coord ($$off_period{row}, $$off_period{col_start},  'Left') +
-									coord ($$off_period{row}, $$off_period{col_finish}, 'Left')
+									coord_h (1, $$off_period{col_finish} - 1, 'Width') -
+									coord_h (1, $$off_period{col_start}  - 1, 'Left') +
+									coord_h (1, $$off_period{col_finish} - 1, 'Left')
 				);				
 			"
 			>
