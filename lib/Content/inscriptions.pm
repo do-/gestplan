@@ -96,16 +96,30 @@ sub recalculate_inscriptions {
 	my @today = Today ();
 	
 	dt_iso (@today) eq $data -> {prestation} -> {dt_start} or return;
-
-	js_im (
 	
-		[grep {$_ > 0 && $_ != $_USER -> {id}} ($data -> {prestation} -> {id_user}, split /\,/, $data -> {prestation} -> {id_users})],
+	my @ids_users = grep {$_ > 0 && $_ != $_USER -> {id}} ($data -> {prestation} -> {id_user}, split /\,/, $data -> {prestation} -> {id_users});
+	
+	@ids_users > 0 or return;
+	
+	my @js;
+	
+	$js [1] = "alert ('$data->{nom} $data->{prenom} est arrivé(e) à $data->{hour}h$data->{minute}.\\n')";
+	
+	$js [0] = "showModalDialog ('/i/close.html?$_REQUEST{salt}', window); $js[1]";
+	
+	sql (users => [[id => \@ids_users]], sub {
+	
+		js_im (
 		
-		"alert ('$data->{nom} $data->{prenom} est arrivé(e) à $data->{hour}h$data->{minute}.\\n')",
-		
-		{expires => [@today, 23, 59, 59]},
-		
-	);
+			$i -> {id},
+			
+			$js [$i -> {no_popup}],
+			
+			{expires => [@today, 23, 59, 59]},
+			
+		);
+	
+	})
 
 }
 
