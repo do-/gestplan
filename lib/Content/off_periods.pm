@@ -1,5 +1,13 @@
 ################################################################################
 
+sub recalculate_off_periods {
+
+	send_refresh_messages ();
+
+}
+
+################################################################################
+
 sub validate_update_off_periods {
 	
 	my @start  = vld_date ('dt_start');

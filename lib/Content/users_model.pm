@@ -1,5 +1,13 @@
 ################################################################################
 
+sub recalculate_users_model {
+
+	send_refresh_messages ();
+
+}
+
+################################################################################
+
 sub get_item_of_users_model {
 
 	my $item = sql_select_hash ("users");

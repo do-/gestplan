@@ -1,5 +1,13 @@
 ################################################################################
 
+sub recalculate_users {
+
+	send_refresh_messages ();
+
+}
+
+################################################################################
+
 sub do_transfer_users {
 		
 	sql_do ('UPDATE log      SET id_user = ? WHERE id_user = ?', $_REQUEST {id_new}, $_REQUEST {id});

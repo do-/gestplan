@@ -1,5 +1,13 @@
 ################################################################################
 
+sub recalculate_voc_items {
+
+	send_refresh_messages ();
+
+}
+
+################################################################################
+
 sub do_undelete_voc_items {
 	
 	sql_do ("UPDATE voc_$_REQUEST{id_voc} SET fake = 0 WHERE id = ?", $_REQUEST {id});	

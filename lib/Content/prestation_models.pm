@@ -1,5 +1,13 @@
 ################################################################################
 
+sub recalculate_prestation_models {
+
+	send_refresh_messages ();
+
+}
+
+################################################################################
+
 sub do_create_prestation_models {
 	
 	do_create_DEFAULT ();

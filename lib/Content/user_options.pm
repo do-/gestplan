@@ -1,5 +1,13 @@
 ################################################################################
 
+sub recalculate_user_options {
+
+	send_refresh_messages ();
+
+}
+
+################################################################################
+
 sub do_update_user_options {
 	
 	sql_do_update ('users', [qw(login refresh_period no_popup)]);

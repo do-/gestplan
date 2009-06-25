@@ -1,5 +1,13 @@
 ################################################################################
 
+sub recalculate_prestation_types {
+
+	send_refresh_messages ();
+
+}
+
+################################################################################
+
 sub do_create_prestation_types {
 
 	$_REQUEST {id} = sql_do_insert ('prestation_types', {

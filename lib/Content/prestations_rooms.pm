@@ -1,5 +1,13 @@
 ################################################################################
 
+sub recalculate_prestations_rooms {
+
+	send_refresh_messages ();
+
+}
+
+################################################################################
+
 sub do_update_prestations_rooms {
 
 	sql_do_update ('prestations_rooms', [qw(
