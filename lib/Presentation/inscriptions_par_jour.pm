@@ -4,6 +4,8 @@ sub draw_inscriptions_par_jour {
 	
 	my ($data) = @_;
 
+	$_REQUEST {__script} .= "; var _md5_refresh_local = '$data->{__md5}'; ";
+
 	return
 
 	    draw_form (

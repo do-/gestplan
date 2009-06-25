@@ -28,11 +28,11 @@ sub draw_user_options {
 				type  => 'password',
 				size  => 40,
 			},
-			{
-				label  => 'Période de rafraîchissement',
-				name => 'refresh_period',
-				size  => 4,
-			},
+#			{
+#				label  => 'Période de rafraîchissement',
+#				name => 'refresh_period',
+#				size  => 4,
+#			},
 			{
 			
 				name  => 'no_popup',

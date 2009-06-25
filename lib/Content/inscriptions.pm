@@ -89,6 +89,8 @@ sub recalculate_inscriptions {
 
 	my $data = sql (inscriptions => $_REQUEST {id}, 'prestations(id_user, id_users, dt_start)');
 	
+	send_refresh_messages ($data -> {id_organisation});
+	
 	$data -> {hour} or return;
 
 	$_REQUEST {__old_hour} != $data -> {hour} or $_REQUEST {__old_minute} != $item -> {minute} or return;
@@ -576,7 +578,7 @@ EOS
 
 sub select_inscriptions {
 
-	$_REQUEST {__meta_refresh} = $_USER -> {refresh_period} || 300;
+#	$_REQUEST {__meta_refresh} = $_USER -> {refresh_period} || 300;
 
 	$_REQUEST {id_user} ||= $_USER -> {id};
 	$_REQUEST {id_day_period} ||= 3;
@@ -876,7 +878,7 @@ EOS
 
 	}
 
-	return {
+	return_md5_checked {
 		id_absent_users => $id_absent_users,
 		prestation_1 => $prestation_1,
 		prestation_2 => $prestation_2,

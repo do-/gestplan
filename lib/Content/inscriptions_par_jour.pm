@@ -12,7 +12,7 @@ sub select_inscriptions_par_jour {
 
 	my $site_filter = $_REQUEST {id_site} ? " AND IFNULL(id_site, 0) IN ($_REQUEST{id_site}, 0) " : '';
 
-	$_REQUEST {__meta_refresh} = $_USER -> {refresh_period} || 300;
+#	$_REQUEST {__meta_refresh} = $_USER -> {refresh_period} || 300;
 	
 	unless ($_REQUEST {year}) {	
 		($_REQUEST {week}, $_REQUEST {year}) = Week_of_Year (Today ());	
@@ -249,7 +249,7 @@ EOS
 		
 #	$_REQUEST {__suicide} = 1;
 		
-	return {
+	return_md5_checked {
 		inscriptions_par_conseiller => $inscriptions_par_conseiller,
 		cnt                         => $cnt,
 		portion                     => $portion,

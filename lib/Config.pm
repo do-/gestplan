@@ -434,5 +434,71 @@ EOH
 
 }
 
+################################################################################
+
+sub send_refresh_messages {
+
+	my ($id_organisation) = @_;
+
+	$id_organisation ||= $_USER -> {id_organisation} or return;
+	
+	foreach my $kind (
+
+		[	
+			
+			refresh_local    => [
+		
+				map {$_ -> {id}}
+				
+				@{sql (users => [[id_organisation => $id_organisation]])}
+				
+			]
+				
+		],
+
+		[
+			refresh_partners => [
+			
+				map {$_ -> {user} -> {id}}
+				
+				@{sql (organisations => [['ids_partners LIKE %?%' => ",$id_organisation,"]], ['users'])}
+				
+			],
+			
+		],
+
+	) {
+
+	    js_im (
+	
+	    	$kind -> [1],
+	    		    	
+	    	"if (window._md5_$kind->[0]) try_to_reload (window._md5_$kind->[0])",
+	    	
+	    	{session => 1, tag => $kind -> [0]},
+	
+		)
+
+	}
+
+}
+
+################################################################################
+
+sub return_md5_checked ($) {
+
+	my ($data) = @_;
+	
+	$data -> {__md5} = Digest::MD5::md5_hex (Dumper ($data));
+
+	$_REQUEST {__md5} or return $data;
+	
+	out_html ({},
+	
+		$_REQUEST {__md5} == $data -> {__md5} ? 1 : 'window.location = "' . create_url () . '"'
+		
+	);	
+	
+}
 
 1;
