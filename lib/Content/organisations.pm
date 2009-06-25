@@ -1,5 +1,13 @@
 ################################################################################
 
+sub recalculate_organisations {
+
+	send_refresh_messages ();
+
+}
+
+################################################################################
+
 sub do_update_organisations {
 	
 		sql_do_update ('organisations', [qw(label ids_partners href days)]);
