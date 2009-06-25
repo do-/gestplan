@@ -231,6 +231,8 @@ sub draw_item_of_inscriptions {
 sub draw_inscriptions {
 	
 	my ($data) = @_;
+
+	$_REQUEST {__script} .= "; var _md5_refresh_local = '$data->{__md5}'; ";
 	
 	my $title_1 = '';
 	

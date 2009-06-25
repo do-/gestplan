@@ -3,9 +3,9 @@
 sub draw_item_of_prestations {
 
 	my ($data) = @_;
-	
+		
 	$_REQUEST {__read_only} or $_REQUEST {__on_load} .= <<EOH;
-	
+
 		var id_users_0 = document.forms['form'].elements['_id_users_0'];
 		
 		if (id_users_0) {
@@ -221,6 +221,8 @@ EOH
 sub draw_prestations {
 	
 	my ($data) = @_;
+	
+	$_REQUEST {__script} .= '; var _md5_' . ($_REQUEST {aliens} ? 'refresh_partners' : 'refresh_local') . " = '$data->{__md5}'; ";
 	
 	my $shift = $data -> {menu} ? 128 : 111;
 
@@ -617,7 +619,7 @@ EOH
 						)
 					
 					) {
-						$cell -> {attributes} -> {onDblClick} = "nope(\"$$day{create_href}&id_user=$$i{id}\", \"invisible\")";
+						$cell -> {attributes} -> {onDblClick} = "nope(\"$$day{create_href}&id_user=$$i{id}&_salt=$_REQUEST{__salt}&__last_query_string=$_REQUEST{__last_query_string}\", \"invisible\")";
 					}
 					
 					push @cells, $cell;	

@@ -1,5 +1,13 @@
 ################################################################################
 
+sub recalculate_prestations {
+
+	send_refresh_messages ();
+
+}
+
+################################################################################
+
 sub do_erase_prestations {
 
 	my @monday = Monday_of_Week ($_REQUEST {week}, $_REQUEST {year});
@@ -951,7 +959,7 @@ EOS
 
 	my $site_filter = $_REQUEST {id_site} ? " AND IFNULL(id_site, 0) IN ($_REQUEST{id_site}, 0) " : '';
 
-	$_REQUEST {__meta_refresh} = $_USER -> {refresh_period} || 300;
+#	$_REQUEST {__meta_refresh} = $_USER -> {refresh_period} || 300;
 	
 	my $default_color = sql_select_scalar ('SELECT color FROM prestation_type_groups WHERE id = -1');
 	my $busy_color    = sql_select_scalar ('SELECT color FROM prestation_type_groups WHERE id = -2');
@@ -995,6 +1003,8 @@ EOS
 		
 		my $h_create = {href => "/?type=prestations&action=create&dt_start=$iso_dt&half_start=1&dt_finish=$iso_dt&half_finish=1&id_prestation_type=$_REQUEST{id_prestation_type}"};
 		check_href ($h_create);
+		$h_create -> {href} =~ s{salt=[\d\.]+}{salt=1};
+		$h_create -> {href} =~ s{&__last_query_string=\d+}{};
 		
 		push @days, {
 			id => 2 * ($i + 1),
@@ -1013,6 +1023,8 @@ EOS
 
 		my $h_create = {href => "/?type=prestations&action=create&dt_start=$iso_dt&half_start=2&dt_finish=$iso_dt&half_finish=2&id_prestation_type=$_REQUEST{id_prestation_type}"};
 		check_href ($h_create);
+		$h_create -> {href} =~ s{salt=[\d\.]+}{salt=1};
+		$h_create -> {href} =~ s{&__last_query_string=\d+}{};
 
 		push @days, {
 			id => 2 * ($i + 1) + 1,
@@ -1598,7 +1610,7 @@ EOS
 	
 	}
 		
-	return {
+	return_md5_checked {
 	
 		week_status_type => $week_status_type,
 	
@@ -1629,7 +1641,7 @@ EOS
 		%$item,
 			
 	};
-	
+
 }
 
 1;
