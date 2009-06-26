@@ -502,6 +502,8 @@ sub do_create_prestations {
 			
 			do_update_prestations ();
 			
+			recalculate_prestations ();
+			
 			esc ();		
 		}
 	
