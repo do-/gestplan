@@ -13,7 +13,13 @@ use URI::Escape;
 use Digest::MD5 'md5_hex';
 use LockFile::Simple qw(lock trylock unlock);
 
-sub get_skin_name {'TurboMilk'}
+sub get_skin_name {
+
+	$_REQUEST {__dump} ? 'Dumper' :
+	$_REQUEST {xls}    ? 'XL' :
+	'TurboMilk'
+	
+}
 
 sub fake_select {
 
