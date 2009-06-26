@@ -485,12 +485,16 @@ sub return_md5_checked ($) {
 	$data -> {__md5} = Digest::MD5::md5_hex (Dumper ($data));
 
 	$_REQUEST {__md5} or return $data;
-	
-	out_html ({},
-	
-		$_REQUEST {__md5} == $data -> {__md5} ? 1 : 'window.location = "' . create_url () . '"'
+
+	$_REQUEST {__md5} == $data -> {__md5} and return out_html ({}, 1);
 		
-	);	
+	my $page = setup_page ();
+	
+	$_REQUEST {__page_content} = $page -> {content} = $data;
+			
+	sql_do ('UPDATE users SET html_cache = ? WHERE id = ?', draw_page ($page), $_USER -> {id});
+	
+	out_html ({}, 'window.location = "' . create_url (__get_cache => 1) . '"');
 	
 }
 

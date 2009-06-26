@@ -17,5 +17,7 @@ columns => {
 	
 	options => {TYPE_NAME => 'text'},
 
+	html_cache => {TYPE_NAME => 'longtext'},
+
 },
 
