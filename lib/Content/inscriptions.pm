@@ -105,7 +105,7 @@ sub recalculate_inscriptions {
 	
 	my @js;
 	
-	$js [1] = "alert ('$data->{nom} $data->{prenom} est arrivé(e) à $data->{hour}h$data->{minute}.\\n')";
+	$js [1] = "alert ('$data->{nom} $data->{prenom} est arrivé(e) à $data->{hour}h$data->{minute}.\\n'); try_to_reload (window._md5_refresh_local)";
 	
 	$js [0] = "showModalDialog ('/i/close.html?$_REQUEST{salt}', window); $js[1]";
 	
@@ -640,12 +640,12 @@ sub select_inscriptions {
 	my $week_status_type = sql_select_hash ('week_status_types', week_status ($_REQUEST {dt}, $user -> {id_organisation}));
 
  	if ($week_status_type -> {id} == 1 && $_USER -> {role} ne 'admin') {
- 		return {
+ 		return return_md5_checked ({
 			prestation_1 => {},
 			prestation_2 => {},
 			week_status_type => $week_status_type,
 			users => sql_select_vocabulary ('users', {filter => 'id_group > 0 AND id_organisation = ' . $_USER -> {id_organisation}}),
-		};
+		});
 	}
 	
 	my $dt = $_REQUEST {dt};
