@@ -3,6 +3,8 @@
 sub draw_item_of_inscriptions {
 	
 	my ($data) = @_;
+	
+	$_REQUEST {__focused_input} = '_nom';
 
 	draw_form ({
 	
