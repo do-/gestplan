@@ -281,11 +281,21 @@ sub extra_menu {
 
 	my $href = sql_select_scalar ('SELECT href FROM organisations WHERE id = ?', $_USER -> {id_organisation}) or return ();
 	
-    return {
-    	label => 'Intranet',
-    	href => 'http://' . $href . '#',
-    	target => '_blank',
-	}		
+    return (
+    
+		{
+	    	label => 'Intranet',
+	    	href => 'http://' . $href . '#',
+	    	target => '_blank',
+		},
+		{
+	    	label  => 'Déconnexion',
+	    	href   => "type=_logout",
+			side   => 'right_items',
+			target => '_top',
+		},
+		
+	)
 
 }
 
@@ -510,5 +520,13 @@ sub return_md5_checked ($) {
 	out_html ({}, 'window.location = "' . create_url (__get_cache => 1) . '"');
 	
 }
+
+################################################################################
+
+sub draw_auth_toolbar {
+
+	j q {$('#body_table tr:first', top.document).hide ()};
+	
+};
 
 1;
