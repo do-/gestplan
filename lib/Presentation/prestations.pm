@@ -402,7 +402,7 @@ EOH
 			else {
 
 				push @h2, {
-					label => ($day -> {id} % 2 ? 'Après-midi' : 'Matin'),
+					label => ($day -> {id} % 2 ? '<nobr>Après-midi</nobr>' : 'Matin'),
 				};
 
 			}
