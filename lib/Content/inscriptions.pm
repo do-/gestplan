@@ -455,10 +455,17 @@ sub get_item_of_inscriptions {
 	
 	$item -> {id_user} = $item -> {prestation} -> {id_user} if $_REQUEST {__edit};
 
-
-
-
-	$item -> {ext_fields} = sql_select_all ("SELECT * FROM ext_fields WHERE fake = 0 AND id IN (" . $item -> {prestation} -> {type} -> {ids_ext_fields} . ") ORDER BY ord");
+	$item -> {ext_fields} = sql_select_all (qq{
+		SELECT
+			ext_fields.*			
+		FROM
+			prestation_types_ext_fields
+			INNER JOIN ext_fields ON prestation_types_ext_fields.id_ext_field = ext_fields.id
+		WHERE
+			prestation_types_ext_fields.id_prestation_type = ?
+		ORDER BY
+			IFNULL(prestation_types_ext_fields.ord, ext_fields.ord)
+	}, $item -> {prestation} -> {type} -> {id});
 	
 	my $ids_groups = sql_select_ids ("SELECT id FROM groups WHERE id_organisation = ? AND fake = 0 AND IFNULL(is_hidden, 0) = 0", $item -> {prestation} -> {type} -> {id_organisation});
 	$ids_groups .= ',';
