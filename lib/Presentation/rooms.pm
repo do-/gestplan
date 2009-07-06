@@ -78,7 +78,7 @@ sub draw_item_of_rooms {
 			},
 			{
 				name   => 'id_site',
-				label  => 'Site',
+				label  => 'Onglet',
 				type   => 'select',
 				empty  => ' ',
 				values => $data -> {sites},

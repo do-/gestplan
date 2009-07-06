@@ -65,7 +65,7 @@ sub draw_stats_prestations {
 						type   => 'input_select',
 						name   => 'id_site',
 						values => $data -> {sites},
-						empty  => '[Tout site]',
+						empty  => '[Tout onglet]',
 						off    => 0 == @{$data -> {sites}},
 					},
 					{

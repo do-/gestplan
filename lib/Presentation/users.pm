@@ -82,7 +82,7 @@ sub draw_item_of_users {
 
 			{
 				name       => 'id_organisation',
-				label      => 'Mission locale',
+				label      => 'Structure',
 				type       => 'select',
 				values     => $data -> {organisations},
 				empty      => '',
@@ -106,7 +106,7 @@ sub draw_item_of_users {
 			},
 			{
 				name   => 'id_site',
-				label  => 'Site',
+				label  => 'Onglet',
 				type   => 'select',
 				empty  => ' ',
 				values => $data -> {sites},
