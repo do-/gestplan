@@ -42,7 +42,7 @@ sub draw_item_of_organisations {
 				'Profil',
 				'Regroupement',
 				'Login',
-				'Site',
+				'Onglet',
 			],
 
 			sub {
