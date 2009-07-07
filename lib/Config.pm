@@ -458,6 +458,8 @@ sub send_refresh_messages {
 
 	$id_organisation ||= $_USER -> {id_organisation} or return;
 	
+	my $organisation = sql (organisations => $id_organisation);
+		
 	foreach my $kind (
 
 		[	
@@ -478,6 +480,17 @@ sub send_refresh_messages {
 				map {$_ -> {user} -> {id}}
 				
 				@{sql (organisations => [['ids_partners LIKE %?%' => ",$id_organisation,"]], ['users'])}
+				
+			],
+			
+		],
+
+		[
+			refresh_partners => [
+			
+				map {$_ -> {user} -> {id}}
+				
+				@{sql (organisations => [[ id => [grep {$_ > 0} split /\,/, $organisation -> {ids_partners} ]]], ['users'])}
 				
 			],
 			

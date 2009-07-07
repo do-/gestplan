@@ -22,7 +22,7 @@ sub draw_sites {
 
 			{
 			
-				title => {label => 'Sites'},
+				title => {label => 'Onglets'},
 
 				top_toolbar => [{
 						keep_params => ['type'],

@@ -779,7 +779,7 @@ EOS
 
 					next if $i -> {fake};
 
-					$i -> {$key} = ($cache {"table_$i->{$key}"} ||= sql_select_scalar ("SELECT label FROM $table WHERE id = ?", $i -> {$key}));
+					$i -> {$key} = ($cache {"${table}_$i->{$key}"} ||= sql_select_scalar ("SELECT label FROM $table WHERE id = ?", $i -> {$key}));
 
 				}
 				
@@ -891,7 +891,7 @@ EOS
 
 					next if $i -> {fake};
 
-					$i -> {$key} = ($cache {"table_$i->{$key}"} ||= sql_select_scalar ("SELECT label FROM $table WHERE id = ?", $i -> {$key}));
+					$i -> {$key} = ($cache {"${table}_$i->{$key}"} ||= sql_select_scalar ("SELECT label FROM $table WHERE id = ?", $i -> {$key}));
 
 				}
 				
