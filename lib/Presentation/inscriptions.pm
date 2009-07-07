@@ -94,6 +94,7 @@ sub draw_item_of_inscriptions {
 						$_ -> {id_field_type} == 4 ? 'radio' :
 						$_ -> {id_field_type} == 5 ? 'text' :
 						($_ -> {id_field_type} == 6 && !$_REQUEST {__read_only}) ? 'file' :
+						$_ -> {id_field_type} == 7 ? 'checkbox' :
 						'string',
 					rows   => $_ -> {id_field_type} == 5 ? 3 : undef,
 					cols   => 80,
