@@ -27,7 +27,7 @@ sub get_item_of_sites {
 	$_REQUEST {__read_only} ||= !($_REQUEST {__edit} || $item -> {fake} > 0);
 	
 	$item -> {path} = [
-		{type => 'sites', name => 'Sites'},
+		{type => 'sites', name => 'Onglets'},
 		{type => 'sites', name => $item -> {label}, id => $item -> {id}},
 	];
 
