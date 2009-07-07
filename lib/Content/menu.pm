@@ -100,7 +100,7 @@ sub select_menu_for_admin {
 
 				{
 					name  => 'sites',
-					label => "Sites",
+					label => "Onglets",
 				},
 				{
 					name  => 'groups',
