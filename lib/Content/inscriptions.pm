@@ -459,10 +459,13 @@ sub get_item_of_inscriptions {
 		SELECT
 			ext_fields.*			
 		FROM
-			prestation_types_ext_fields
-			INNER JOIN ext_fields ON prestation_types_ext_fields.id_ext_field = ext_fields.id
+			ext_fields
+			LEFT JOIN prestation_types_ext_fields ON (
+				prestation_types_ext_fields.id_ext_field = ext_fields.id
+				AND prestation_types_ext_fields.id_prestation_type = ?
+			)
 		WHERE
-			prestation_types_ext_fields.id_prestation_type = ?
+			ext_fields.id IN ($item->{prestation}->{type}->{ids_ext_fields})
 		ORDER BY
 			IFNULL(prestation_types_ext_fields.ord, ext_fields.ord)
 	}, $item -> {prestation} -> {type} -> {id});
@@ -698,6 +701,8 @@ sub select_inscriptions {
 			and prestations.fake = 0
 EOS
 	
+	my %cache = ();
+	
 	if ($prestation_1 -> {id}) {
 	
 		$prestation_1 -> {type} = sql_select_hash ('prestation_types', $prestation_1 -> {id_prestation_type});
@@ -756,13 +761,18 @@ EOS
 
 		foreach my $field (@{$prestation_1 -> {ext_fields}}) {
 		
+			my $key = 'field_' . $field -> {id_ext_field};
+		
 			if ($field -> {id_field_type} == 1) {
 			
 				my $table = $field -> {id_voc} ? 'voc_' . $field -> {id_voc} : 'users';
 							
 				foreach my $i (@{$prestation_1 -> {inscriptions}}) {
+
 					next if $i -> {fake};
-					$i -> {'field_' . $field -> {id_ext_field}} = sql_select_scalar ("SELECT label FROM $table WHERE id = ?", $i -> {'field_' . $field -> {id_ext_field}});
+
+					$i -> {$key} = ($cache {"table_$i->{$key}"} ||= sql_select_scalar ("SELECT label FROM $table WHERE id = ?", $i -> {$key}));
+
 				}
 				
 			}			
@@ -770,7 +780,16 @@ EOS
 			
 				foreach my $i (@{$prestation_1 -> {inscriptions}}) {
 					next if $i -> {fake};
-					$i -> {'field_' . $field -> {id_ext_field}} = $i -> {'field_' . $field -> {id_ext_field}} ? 'Oui' : 'Non';
+					defined $i -> {$key} or next;
+					$i -> {$key} = $i -> {$key} ? 'Oui' : 'Non';
+				}
+				
+			}			
+			elsif ($field -> {id_field_type} == 7) {
+			
+				foreach my $i (@{$prestation_1 -> {inscriptions}}) {
+					next if $i -> {fake};
+					$i -> {$key} = $i -> {$key} ? 'Oui' : 'Non';
 				}
 				
 			}			
@@ -854,13 +873,18 @@ EOS
 
 		foreach my $field (@{$prestation_2 -> {ext_fields}}) {
 		
+			my $key = 'field_' . $field -> {id_ext_field};
+		
 			if ($field -> {id_field_type} == 1) {
 			
 				my $table = $field -> {id_voc} ? 'voc_' . $field -> {id_voc} : 'users';
 							
 				foreach my $i (@{$prestation_2 -> {inscriptions}}) {
+
 					next if $i -> {fake};
-					$i -> {'field_' . $field -> {id_ext_field}} = sql_select_scalar ("SELECT label FROM $table WHERE id = ?", $i -> {'field_' . $field -> {id_ext_field}});
+
+					$i -> {$key} = ($cache {"table_$i->{$key}"} ||= sql_select_scalar ("SELECT label FROM $table WHERE id = ?", $i -> {$key}));
+
 				}
 				
 			}			
@@ -868,7 +892,16 @@ EOS
 			
 				foreach my $i (@{$prestation_2 -> {inscriptions}}) {
 					next if $i -> {fake};
-					$i -> {'field_' . $field -> {id_ext_field}} = $i -> {'field_' . $field -> {id_ext_field}} ? 'Oui' : 'Non';
+					defined $i -> {$key} or next;
+					$i -> {$key} = $i -> {$key} ? 'Oui' : 'Non';
+				}
+				
+			}			
+			elsif ($field -> {id_field_type} == 7) {
+			
+				foreach my $i (@{$prestation_2 -> {inscriptions}}) {
+					next if $i -> {fake};
+					$i -> {$key} = $i -> {$key} ? 'Oui' : 'Non';
 				}
 				
 			}			

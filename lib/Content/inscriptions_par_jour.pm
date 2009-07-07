@@ -236,6 +236,16 @@ EOS
 			$field -> {type} = 'input_checkbox';
 
 			foreach my $i (@$inscriptions_par_conseiller) {
+				defined $i -> {$field -> {name}} or next;
+				$i -> {$field -> {name}} = $i -> {$field -> {name}} ? 'Oui' : 'Non';
+			}
+			
+		}
+		elsif ($field -> {id_field_type} == 7) {
+			
+			$field -> {type} = 'input_checkbox';
+
+			foreach my $i (@$inscriptions_par_conseiller) {
 				$i -> {$field -> {name}} = $i -> {$field -> {name}} ? 'Oui' : 'Non';
 			}
 			
