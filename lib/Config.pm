@@ -486,7 +486,7 @@ sub send_refresh_messages {
 		],
 
 		[
-			refresh_partners => [
+			refresh_local => [
 			
 				map {$_ -> {user} -> {id}}
 				
