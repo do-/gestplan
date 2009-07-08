@@ -87,9 +87,9 @@ sub recalculate_inscriptions {
 
 	$_REQUEST {id} or return;
 
-	my $data = sql (inscriptions => $_REQUEST {id}, 'prestations(id_user, id_users, dt_start)');
+	my $data = sql (inscriptions => $_REQUEST {id}, 'prestations(id_user, id_users, dt_start)', 'prestation_types(id_organisation)');
 	
-	send_refresh_messages ($data -> {id_organisation});
+	send_refresh_messages ($data -> {prestation_type} -> {id_organisation});
 	
 	$data -> {hour} or return;
 
