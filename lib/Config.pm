@@ -490,7 +490,7 @@ sub send_refresh_messages {
 			
 				map {$_ -> {user} -> {id}}
 				
-				@{sql (organisations => [[ id => [grep {/\d/} split /\,/, $organisation -> {ids_partners} ]]], ['users'])}
+				@{sql (organisations => [[ id => [grep {/\d/} split /\,/, ($organisation -> {ids_partners} || -1) ]]], ['users'])}
 				
 			],
 			
