@@ -220,7 +220,39 @@ EOH
 
 sub draw_prestations {
 	
-	my ($data) = @_;
+	my ($data) = @_;	
+	
+	my $banner =
+			"Planning activités de la semaine $_REQUEST{week} du " .
+			$data -> {days} -> [0] -> {date} -> [2] .
+			' ' .
+			($data -> {days} -> [0] -> {date} -> [1] == $data -> {days} -> [-1] -> {date} -> [1] ? '' : $month_names_1 [$data -> {days} -> [0] -> {date} -> [1]]) .
+			' à ' .
+			$data -> {days} -> [-1] -> {date} -> [2] .
+			' ' .
+			$month_names_1 [$data -> {days} -> [-1] -> {date} -> [1]] .
+			' ' .
+			$data -> {days} -> [-1] -> {date} -> [0] .
+			': ' .
+			$data -> {week_status_type} -> {label}
+			. ($_REQUEST {id_inscription_to_clone} ? ' (Déplacement)' : '')
+	;
+	
+	$banner =~ s{\s+}{ }gsm;
+	
+	$banner = chr (160) . $banner;
+		
+	j qq {
+	
+		if (name != '_body_iframe') return;
+		
+		var td = \$('#body_table table:first tr:last td');
+		
+		td.text (' $banner');
+				
+		td.attr ('class', 'row-cell');
+		
+	};
 	
 	$_REQUEST {__script} .= '; var _md5_' . ($_REQUEST {aliens} ? 'refresh_partners' : 'refresh_local') . " = '$data->{__md5}'; ";
 	
