@@ -17,7 +17,8 @@ sub select_subset {
 
 	$_REQUEST {__im_delay} = 60 * 1000;
 	
-	$_REQUEST {__page_title} = $_USER -> {label};
+	$_REQUEST {__page_title} = 'GestPlan - ' . $_USER -> {label} . ' - ' . sql_select_scalar ('SELECT label FROM organisations WHERE id = ?', $_USER -> {id_organisation});
+	
 	$_REQUEST {__page_title} =~ s{'}{\\'}g;
 
 	my $href = create_url (); undef $_REQUEST_TO_INHERIT;
