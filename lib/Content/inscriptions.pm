@@ -85,19 +85,23 @@ sub do_create_inscriptions {
 
 sub recalculate_inscriptions {
 
-	$_REQUEST {id} or return;
-
-	my $data = sql (inscriptions => $_REQUEST {id}, 'prestations(id_user, id_users, dt_start)', 'prestation_types(id_organisation)');
-	
-	send_refresh_messages ($data -> {prestation_type} -> {id_organisation} || $_REQUEST {__id_organisation});
-	
-	$data -> {hour} or return;
-
-	$_REQUEST {__old_hour} != $data -> {hour} or $_REQUEST {__old_minute} != $item -> {minute} or return;
-	
 	my @today = Today ();
+
+	if ($_REQUEST {id}) {
+
+		my $data = sql (inscriptions => $_REQUEST {id}, 'prestations(id_user, id_users, dt_start)', 'prestation_types(id_organisation)');
+		
+		$data -> {hour} or return;
+
+		$_REQUEST {__old_hour} != $data -> {hour} or $_REQUEST {__old_minute} != $item -> {minute} or return;
 	
-	dt_iso (@today) eq $data -> {prestation} -> {dt_start} or return;
+		dt_iso (@today) eq $data -> {prestation} -> {dt_start} or return;
+		
+		$_REQUEST {__id_organisation} = $data -> {prestation_type} -> {id_organisation};
+
+	}	
+	
+	send_refresh_messages ($_REQUEST {__id_organisation});
 	
 	my @ids_users = grep {$_ > 0 && $_ != $_USER -> {id}} ($data -> {prestation} -> {id_user}, split /\,/, $data -> {prestation} -> {id_users});
 	
