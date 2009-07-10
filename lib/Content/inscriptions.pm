@@ -89,7 +89,7 @@ sub recalculate_inscriptions {
 
 	my $data = sql (inscriptions => $_REQUEST {id}, 'prestations(id_user, id_users, dt_start)', 'prestation_types(id_organisation)');
 	
-	send_refresh_messages ($data -> {prestation_type} -> {id_organisation});
+	send_refresh_messages ($data -> {prestation_type} -> {id_organisation} || $_REQUEST {__id_organisation});
 	
 	$data -> {hour} or return;
 
@@ -237,6 +237,8 @@ sub do_delete_inscriptions {
 	$item -> {prestation} -> {type} = sql_select_hash ('prestation_types', $item -> {prestation} -> {id_prestation_type});
 	
 	$item -> {prestation} -> {type} -> {ids_ext_fields} ||= -1;
+	
+	$_REQUEST {__id_organisation} = $item -> {prestation} -> {id_organisation};
 
 	$item -> {ext_fields} = sql_select_all ("SELECT * FROM ext_fields WHERE fake = 0 AND id IN (" . $item -> {prestation} -> {type} -> {ids_ext_fields} . ") ORDER BY ord");
 	
