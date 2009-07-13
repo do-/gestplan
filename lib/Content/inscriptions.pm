@@ -190,8 +190,8 @@ sub do_update_inscriptions {
 	sql_do ('DELETE FROM ext_field_values WHERE id_inscription = ? AND fake = -1', $_REQUEST {id});
 
 	my $item = sql_select_hash ('inscriptions');
-
-	$item -> {id_author} or sql_do ('UPDATE inscriptions SET id_author = ? WHERE id = ?', $_USER -> {id}, $item -> {id});
+	
+	($item -> {id_author} == $_USER -> {id}) or sql_do ('UPDATE inscriptions SET id_author = ? WHERE id = ?', $_USER -> {id}, $item -> {id});
 	
 	$_REQUEST {__old_hour}   = $item -> {hour};
 	$_REQUEST {__old_minute} = $item -> {minute};
