@@ -176,7 +176,7 @@ sub do_update_inscriptions {
 	
 	my $item = sql_select_hash ('inscriptions');
 	
-	$item -> {id_author} or sql_do ('UPDATE inscriptions SET id_author = ? WHERE id = ?', $_USER -> {id}, $item -> {id});
+	($item -> {id_author} == $_USER -> {id}) or sql_do ('UPDATE inscriptions SET id_author = ? WHERE id = ?', $_USER -> {id}, $item -> {id});
 	
 	$_REQUEST {_hour} or return;
 	
