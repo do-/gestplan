@@ -235,7 +235,7 @@ sub draw_prestations {
 			$data -> {days} -> [-1] -> {date} -> [0] .
 			': ' .
 			$data -> {week_status_type} -> {label}
-			. ($_REQUEST {id_inscription_to_clone} ? ' (Déplacement)' : '')
+			. ($_REQUEST {id_inscription_to_clone} || $_REQUEST {id_prestation_to_clone} ? ' (Déplacement)' : '')
 	;
 	
 	$banner =~ s{\s+}{ }gsm;
@@ -586,6 +586,7 @@ EOH
 								$_USER -> {role} eq 'admin'
 								&& !$i -> {is_alien}
 								&& !$_REQUEST {id_inscription_to_clone}
+								&& !$_REQUEST {id_prestation_to_clone}
 							)
 							
 							|| (
@@ -721,7 +722,10 @@ EOH
 						icon    => 'cancel',
 						label   => 'retour (Echap)',
 						href    => esc_href (),
-						off     => !$_REQUEST {id_inscription_to_clone},
+						off     =>
+							!$_REQUEST {id_inscription_to_clone}
+							&& !$_REQUEST {id_prestation_to_clone}
+						,
 						hotkey  => {code => ESC},
 					},
 
@@ -754,7 +758,8 @@ EOH
 						empty  => '',
 						off    =>
 							$_USER -> {role} eq 'accueil'
-							|| $_REQUEST {id_inscription_to_clone},
+							|| $_REQUEST {id_inscription_to_clone}
+							|| $_REQUEST {id_prestation_to_clone}
 						,
 					},
 					
@@ -765,7 +770,8 @@ EOH
 						href    => {action => 'switch_status', id_week_status_type => $data -> {week_status_type} -> {switch} -> {id}},
 						off     =>
 							$_USER -> {role} ne 'admin'
-							|| $_REQUEST {id_inscription_to_clone},
+							|| $_REQUEST {id_inscription_to_clone}
+							|| $_REQUEST {id_prestation_to_clone}
 						,
 					},
 			
@@ -778,7 +784,8 @@ EOH
 							$data -> {have_models}
 							|| $_USER -> {role} ne 'admin'
 							|| $data -> {week_status_type} -> {id} != 1
-							|| $_REQUEST {id_inscription_to_clone},
+							|| $_REQUEST {id_inscription_to_clone}
+							|| $_REQUEST {id_prestation_to_clone}
 						,
 					},
 					
@@ -790,7 +797,8 @@ EOH
 						off     =>
 							$_USER -> {role} ne 'admin'
 							|| $data -> {week_status_type} -> {id} != 1
-							|| $_REQUEST {id_inscription_to_clone},
+							|| $_REQUEST {id_inscription_to_clone}
+							|| $_REQUEST {id_prestation_to_clone}
 						,
 					},
 
