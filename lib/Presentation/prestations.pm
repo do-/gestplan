@@ -4,6 +4,12 @@ sub draw_item_of_prestations {
 
 	my ($data) = @_;
 	
+	my $url = "/?sid=$_REQUEST{sid}&type=prestations&id=$data->{id}&__last_query_string=$_REQUEST{__last_last_query_string}&__last_scrollable_table_row=$_REQUEST{__last_scrollable_table_row}";
+		
+	my $__last_query_string = session_access_log_set ($url);
+	
+	my $clone_url = check_href ({href => "/?type=prestations&id_prestation_to_clone=$data->{id}&__last_query_string=$__last_query_string"});
+		
 	$_REQUEST {__read_only} or $_REQUEST {__on_load} .= <<EOH;
 
 		var id_users_0 = document.forms['form'].elements['_id_users_0'];
@@ -34,8 +40,17 @@ EOH
 
 	draw_form ({
 	
+		additional_buttons => [
+			{
+				icon  => 'create',
+				label => 'Dupliquer...',
+				href  => $clone_url,
+				keep_esc => 1,
+			},
+		],
+
 		right_buttons => [ del ($data) ],
-		
+				
 	}, $data,
 		[
 			{
