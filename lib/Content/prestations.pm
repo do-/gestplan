@@ -934,6 +934,8 @@ sub select_prestations {
 			inscriptions.id = ?
 EOS
 
+	$item -> {prestation_to_clone} = sql (prestations => $_REQUEST {id_prestation_to_clone}) if $_REQUEST {id_prestation_to_clone};
+
 	my $sites = sql_select_vocabulary (sites => {filter => "id_organisation = $_USER->{id_organisation}"});
 	
 	my @menu = ({
@@ -1228,7 +1230,7 @@ EOS
 	
 	}
 	
-	if (!$_REQUEST {aliens} && !$item -> {inscription_to_clone}) {
+	if (!$_REQUEST {aliens} && !$item -> {inscription_to_clone} && !$item -> {prestation_to_clone}) {
 	
 		push @users, {label => 'Ressources'};
 		push @users, @{ sql_select_all ("SELECT -id AS id, label FROM rooms WHERE fake = 0 $site_filter AND id_organisation = ? ORDER BY label", $_USER -> {id_organisation})};
