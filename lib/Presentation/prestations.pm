@@ -601,7 +601,6 @@ EOH
 								$_USER -> {role} eq 'admin'
 								&& !$i -> {is_alien}
 								&& !$_REQUEST {id_inscription_to_clone}
-								&& !$_REQUEST {id_prestation_to_clone}
 							)
 							
 							|| (

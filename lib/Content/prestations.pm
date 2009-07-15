@@ -1,5 +1,66 @@
 ################################################################################
 
+sub do_clone_prestations { # duplication
+
+	my $data = sql (prestations => $_REQUEST {id});
+	
+	my $type = sql (prestation_types => $data -> {id_prestation_type});
+	
+	$_REQUEST {fake} = '0,-1';
+	
+	my $inscriptions = sql (inscriptions => [[id_prestation => $data -> {id}]]);
+
+	my $delta_minutes =
+		!$type -> {is_half_hour}                        ? 0 :
+		$data -> {half_start} == $_REQUEST {half_start} ? 0 :
+		60 * ($type -> {"half_$_REQUEST{half_start}_h"} - $type -> {"half_$data->{half_start}_h"})
+		   + ($type -> {"half_$_REQUEST{half_start}_m"} - $type -> {"half_$data->{half_start}_m"})
+	;
+
+	delete $data -> {$_}           foreach qw (id id_users);
+	
+	$data -> {$_} = $_REQUEST {$_} foreach qw (dt_start half_start dt_finish half_finish id_user);
+	
+	$data -> {id} = sql_do_insert (prestations => $data);
+	
+	foreach my $inscription (@$inscriptions) {
+	
+		my $id = delete $inscription -> {id};
+	
+		delete $inscription -> {$_} foreach qw (parent id_user hour minute id_log);
+		
+		$inscription -> {id_author}     = $_USER -> {id};
+		
+		$inscription -> {id_prestation} = $data  -> {id};
+		
+		if ($delta_minutes && $inscription -> {label} =~ /^\s*(\d+)h(\d+)/) {
+		
+			my $m = 60 * $1 + $2 + $delta_minutes;
+			
+			$inscription -> {label} = sprintf ('%2dh%02d', int ($m / 60), $m % 60);
+		
+		}
+		
+		$inscription -> {id} = sql_do_insert (inscriptions => $inscription);
+		
+		sql (ext_field_values => [[id_inscription => $id]], sub {
+		
+			delete $i -> {id};
+			
+			$i -> {id_inscription} = $inscription -> {id};
+			
+			sql_do_insert (ext_field_values => $i);
+		
+		})
+	
+	}
+	
+	esc ();
+
+}
+
+################################################################################
+
 sub recalculate_prestations {
 
 	send_refresh_messages ();
@@ -1010,6 +1071,12 @@ EOS
 		$h_create -> {href} =~ s{salt=[\d\.]+}{salt=1};
 		$h_create -> {href} =~ s{&__last_query_string=\d+}{};
 		
+		if ($_REQUEST {id_prestation_to_clone}) {
+
+			$h_create -> {href} =~ s{action=create}{action=clone&id=$_REQUEST{id_prestation_to_clone}};
+
+		}
+
 		push @days, {
 			id => 2 * ($i + 1),
 			iso_dt => $iso_dt,
@@ -1029,6 +1096,12 @@ EOS
 		check_href ($h_create);
 		$h_create -> {href} =~ s{salt=[\d\.]+}{salt=1};
 		$h_create -> {href} =~ s{&__last_query_string=\d+}{};
+
+		if ($_REQUEST {id_prestation_to_clone}) {
+
+			$h_create -> {href} =~ s{action=create}{action=clone&id=$_REQUEST{id_prestation_to_clone}};
+
+		}
 
 		push @days, {
 			id => 2 * ($i + 1) + 1,
