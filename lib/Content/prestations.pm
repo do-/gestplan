@@ -2,6 +2,29 @@
 
 sub validate_clone_prestations {
 
+	my $id = sql ('prestations(id)' => ['id_user', 'dt_start', 'half_start', ['1 ']]);
+
+	if ($id) {
+	
+		redirect (
+			
+			check_href ({
+			
+				href => "/?type=prestations&id=$id",
+				
+			}),
+					
+			{
+				kind   => 'js',
+				target => '_parent',
+			}
+			
+		);
+		
+		return undef;
+	
+	}
+
 	my $data = sql (prestations => $_REQUEST {id}, 'prestation_types', 'organisations');
 
 	if ($data -> {prestation_type} -> {id_day_period} == 1) {
@@ -120,6 +143,8 @@ sub validate_clone_prestations {
 ################################################################################
 
 sub do_clone_prestations { # duplication
+
+	return if $_REQUEST {__response_sent};
 
 	my $data = sql (prestations => $_REQUEST {id});
 	
