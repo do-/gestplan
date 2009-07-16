@@ -42,6 +42,36 @@ sub validate_clone_prestations {
 	
 	}
 	
+	my $user = sql (users => $_REQUEST {id_user});
+
+	$data -> {prestation_type} -> {ids_roles} =~ /\,$user->{id_role}\,/ or return "Désolé, mais $user->{label} ne peut pas assister aux prestations $data->{prestation_type}->{label_short}.";
+			
+	0 == sql_select_scalar (
+	
+		q {
+			SELECT
+				id
+			FROM
+				prestations
+			WHERE
+				id <> ?
+				AND id_user = ?
+				AND fake = 0
+				AND CONCAT(dt_start,  half_start)  <= ?
+				AND CONCAT(dt_finish, half_finish) >= ?
+				AND dt_finish >= ?
+			LIMIT
+				1
+		},
+
+        $_REQUEST {id},
+		$user  -> {id},
+		$_REQUEST {dt_finish} . $_REQUEST {half_finish},
+		$_REQUEST {dt_start}  . $_REQUEST {half_start},
+		$_REQUEST {dt_start}
+		
+	) or return "Désolé, mais $user->{label} est occupé(e) pendant cette période.";
+	
 	undef;
 
 }
