@@ -54,7 +54,7 @@ sub validate_clone_prestations {
 			FROM
 				prestations
 			WHERE
-				id <> ?
+				1=1
 				AND id_user = ?
 				AND fake = 0
 				AND CONCAT(dt_start,  half_start)  <= ?
@@ -64,14 +64,55 @@ sub validate_clone_prestations {
 				1
 		},
 
-        $_REQUEST {id},
 		$user  -> {id},
 		$_REQUEST {dt_finish} . $_REQUEST {half_finish},
 		$_REQUEST {dt_start}  . $_REQUEST {half_start},
 		$_REQUEST {dt_start}
 		
 	) or return "Désolé, mais $user->{label} est occupé(e) pendant cette période.";
+		
+	my @id_prestations_rooms = sql_select_col ('SELECT id_room FROM prestations_rooms WHERE id_prestation = ? AND id_room > 0', $_REQUEST {id});
 	
+	if (@id_prestations_rooms) {
+	
+		my $ids = join ',', @id_prestations_rooms;
+		
+		my $conflict = sql_select_hash (qq {
+				SELECT
+					prestations_rooms.id
+					, rooms.label
+					, prestations_rooms.dt_start
+					, prestations_rooms.dt_finish
+				FROM
+					prestations_rooms
+					LEFT JOIN prestations ON prestations_rooms.id_prestation = prestations.id
+					LEFT JOIN rooms ON prestations_rooms.id_room = rooms.id
+				WHERE
+					prestations_rooms.fake = 0
+					AND prestations.fake = 0
+					AND prestations_rooms.id_room IN ($ids)
+					AND CONCAT(prestations_rooms.dt_start, prestations_rooms.half_start) <= ?
+					AND CONCAT(prestations_rooms.dt_finish, prestations_rooms.half_finish) >= ?
+					AND prestations_rooms.dt_finish >= ?
+				LIMIT
+					1
+			},
+			$_REQUEST {dt_finish} . $_REQUEST {half_finish},
+			$_REQUEST {dt_start}  . $_REQUEST {half_start},
+			$_REQUEST {dt_start},
+			
+		);		
+	
+		if ($conflict -> {id}) {
+		
+			__d ($conflict, 'dt_start', 'dt_finish');
+			
+			return "Conflit de réservation pour $conflict->{label}";
+			
+		}
+	
+	}
+		
 	undef;
 
 }
@@ -132,6 +173,18 @@ sub do_clone_prestations { # duplication
 		})
 	
 	}
+	
+	sql (prestations_rooms => [[id_prestation => $_REQUEST {id}]], sub {
+	
+		delete $i -> {id};
+		
+		$i -> {id_prestation} = $data -> {id};
+		
+		$i -> {$_} = $_REQUEST {$_} foreach qw (dt_start half_start dt_finish half_finish);
+		
+		sql_do_insert (prestations_rooms => $i);
+	
+	});
 	
 	esc ();
 
