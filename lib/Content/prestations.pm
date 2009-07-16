@@ -12,6 +12,36 @@ sub validate_clone_prestations {
 		$_REQUEST {half_start} == 2 or return "Ce type de prestation ne peut pas commencer le matin";
 	}
 	
+	if ($data -> {dt_start} . $data -> {half_start} ne $data -> {dt_finish} . $data -> {half_finish}) {
+	
+		my $delta_half_days =
+			2 * Delta_Days (dt_y_m_d ($data -> {dt_start}), dt_y_m_d ($data -> {dt_finish}))
+			  + $data -> {half_finish} - $data -> {half_start}
+		;
+
+		my @dt   = dt_y_m_d ($_REQUEST {dt_start});
+		my $half = $_REQUEST {half_start};
+		
+		if ($half == 2) {
+		
+			@dt = Add_Delta_Days (@dt, 1);
+			
+			$half = 1;
+			
+			$delta_half_days --;
+		
+		}
+		
+		@dt = Add_Delta_Days (@dt, int ($delta_half_days / 2));
+		
+		$half += ($delta_half_days % 2);
+		
+		$_REQUEST {dt_finish}   = dt_iso (@dt);
+
+		$_REQUEST {half_finish} = $half;
+	
+	}
+	
 	undef;
 
 }
@@ -34,11 +64,11 @@ sub do_clone_prestations { # duplication
 		60 * ($type -> {"half_$_REQUEST{half_start}_h"} - $type -> {"half_$data->{half_start}_h"})
 		   + ($type -> {"half_$_REQUEST{half_start}_m"} - $type -> {"half_$data->{half_start}_m"})
 	;
-
+	
 	delete $data -> {$_}           foreach qw (id id_users);
 	
 	$data -> {$_} = $_REQUEST {$_} foreach qw (dt_start half_start dt_finish half_finish id_user);
-	
+
 	$data -> {id} = sql_do_insert (prestations => $data);
 	
 	foreach my $inscription (@$inscriptions) {
