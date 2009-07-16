@@ -427,6 +427,15 @@ sub draw_inscriptions {
 							$data -> {week_status_type} -> {id} == 3 ||
 							$data -> {user} -> {id_organisation} != $_USER -> {id_organisation}
 					},
+					{
+						icon     => 'create',
+						href     => "/?type=prestations&id_prestation_to_clone=" . $data -> {prestation_1} -> {id},
+						label    => 'Dupliquer...',
+						keep_esc => 0,
+						off      =>
+							$_USER -> {role} ne 'admin' ||
+							$data -> {user} -> {id_organisation} != $_USER -> {id_organisation}
+					},
 				
 				)
 				
@@ -579,6 +588,15 @@ qq {
 						off =>
 							$_USER -> {role} ne 'admin' ||
 							$data -> {week_status_type} -> {id} == 3 ||
+							$data -> {user} -> {id_organisation} != $_USER -> {id_organisation}
+					},
+					{
+						icon     => 'create',
+						href     => "/?type=prestations&id_prestation_to_clone=" . $data -> {prestation_2} -> {id},
+						label    => 'Dupliquer...',
+						keep_esc => 0,
+						off      =>
+							$_USER -> {role} ne 'admin' ||
 							$data -> {user} -> {id_organisation} != $_USER -> {id_organisation}
 					},
 				
