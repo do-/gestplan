@@ -1,5 +1,23 @@
 ################################################################################
 
+sub validate_clone_prestations {
+
+	my $data = sql (prestations => $_REQUEST {id}, 'prestation_types', 'organisations');
+
+	if ($data -> {prestation_type} -> {id_day_period} == 1) {
+		$_REQUEST {half_start} == 1 or return "Ce type de prestation ne peut pas commencer l'après-midi";
+	}
+
+	if ($data -> {prestation_type} -> {id_day_period} == 2) {
+		$_REQUEST {half_start} == 2 or return "Ce type de prestation ne peut pas commencer le matin";
+	}
+	
+	undef;
+
+}
+
+################################################################################
+
 sub do_clone_prestations { # duplication
 
 	my $data = sql (prestations => $_REQUEST {id});
