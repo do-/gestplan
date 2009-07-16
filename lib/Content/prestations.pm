@@ -152,7 +152,7 @@ sub do_clone_prestations { # duplication
 	
 	$_REQUEST {fake} = '0,-1';
 	
-	my $inscriptions = sql (inscriptions => [[id_prestation => $data -> {id}]]);
+	my $inscriptions = sql (inscriptions => [[id_prestation => $data -> {id}], [ORDER => 'id']]);
 
 	my $delta_minutes =
 		!$type -> {is_half_hour}                        ? 0 :
