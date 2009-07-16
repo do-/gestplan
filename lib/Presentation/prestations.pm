@@ -250,7 +250,8 @@ sub draw_prestations {
 			$data -> {days} -> [-1] -> {date} -> [0] .
 			': ' .
 			$data -> {week_status_type} -> {label}
-			. ($_REQUEST {id_inscription_to_clone} || $_REQUEST {id_prestation_to_clone} ? ' (Déplacement)' : '')
+			. ($_REQUEST {id_inscription_to_clone} ? ' (Déplacement)' : '')
+			. ($_REQUEST {id_prestation_to_clone}  ? " (Duplication $data->{prestation_to_clone}->{prestation_type}->{label_short} $data->{prestation_to_clone}->{user}->{label})" : '')
 	;
 	
 	$banner =~ s{\s+}{ }gsm;
