@@ -1,4 +1,41 @@
 
+################################################################################
+
+sub do_print_tasks { # export MS Word
+
+	$_REQUEST {__response_sent} = 1;
+	
+	$r -> status (200);
+	$r -> header_out ('Content-Disposition' => "attachment;filename=TACHE_$_REQUEST{id}.doc");
+	$r -> send_http_header ('application/octet-stream');
+	$r -> print (qq{<html><body>});
+	
+	sql (task_notes => [
+		[id_task => $_REQUEST{id}],
+		[ORDER   => 'id'],
+	],
+		
+		'users',
+	
+	sub {
+	
+		__d ($i, 'dt');
+		
+		my $body = $i -> {label};
+		
+		if ($i -> {body}) {
+		
+			$body .= "\n$i->{body}";
+		
+			$body =~ s{[\n\r]+}{<p>}gsm;
+
+		}
+
+		$r -> print (qq {<p><i>$i->{dt}, <b>$i->{user}->{label}</b></i>:<blockquote>$body</blockquote>});
+	
+	});
+
+}
 
 ################################################################################
 
