@@ -43,7 +43,7 @@ EOH
 		additional_buttons => [
 			{
 				icon  => 'create',
-				label => 'Dupliquer...',
+				label => 'dupliquer...',
 				href  => $clone_url,
 				keep_esc => 1,
 			},
