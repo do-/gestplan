@@ -429,7 +429,7 @@ sub draw_inscriptions {
 					},
 					{
 						icon     => 'create',
-						href     => "/?type=prestations&id_prestation_to_clone=" . $data -> {prestation_1} -> {id},
+						href     => $data -> {prestation_1} -> {clone_href},
 						label    => 'Dupliquer...',
 						keep_esc => 0,
 						off      =>
@@ -592,7 +592,7 @@ qq {
 					},
 					{
 						icon     => 'create',
-						href     => "/?type=prestations&id_prestation_to_clone=" . $data -> {prestation_2} -> {id},
+						href     => $data -> {prestation_2} -> {clone_href},
 						label    => 'Dupliquer...',
 						keep_esc => 0,
 						off      =>

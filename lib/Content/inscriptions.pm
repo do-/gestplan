@@ -721,6 +721,10 @@ EOS
 	
 	if ($prestation_1 -> {id}) {
 	
+		my ($week, $year) = Week_of_Year (dt_y_m_d ($prestation_1 -> {dt_start}));
+		
+		$prestation_1 -> {clone_href} = "/?type=prestations&year=$year&week=$week&id_prestation_to_clone=$prestation_1->{id}",
+	
 		$prestation_1 -> {type} = sql_select_hash ('prestation_types', $prestation_1 -> {id_prestation_type});
 		
 		$prestation_1 -> {read_only} =
@@ -832,6 +836,10 @@ EOS
 
 
 	if ($prestation_2 -> {id}) {
+
+		my ($week, $year) = Week_of_Year (dt_y_m_d ($prestation_2 -> {dt_start}));
+		
+		$prestation_2 -> {clone_href} = "/?type=prestations&year=$year&week=$week&id_prestation_to_clone=$prestation_2->{id}",
 
 		$prestation_2 -> {type} = sql_select_hash ('prestation_types', $prestation_2 -> {id_prestation_type});	
    	

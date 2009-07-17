@@ -4,11 +4,13 @@ sub draw_item_of_prestations {
 
 	my ($data) = @_;
 	
+	my ($week, $year) = Week_of_Year (dt_y_m_d ($data -> {dt_start}));
+	
 	my $url = "/?sid=$_REQUEST{sid}&type=prestations&id=$data->{id}&__last_query_string=$_REQUEST{__last_last_query_string}&__last_scrollable_table_row=$_REQUEST{__last_scrollable_table_row}";
 		
 	my $__last_query_string = session_access_log_set ($url);
 	
-	my $clone_url = check_href ({href => "/?type=prestations&id_prestation_to_clone=$data->{id}&__last_query_string=$__last_query_string"});
+	my $clone_url = check_href ({href => "/?type=prestations&id_prestation_to_clone=$data->{id}&year=$year&week=$week&__last_query_string=$__last_query_string"});
 		
 	$_REQUEST {__read_only} or $_REQUEST {__on_load} .= <<EOH;
 
