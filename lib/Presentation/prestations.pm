@@ -48,6 +48,7 @@ EOH
 				label => 'dupliquer...',
 				href  => $clone_url,
 				keep_esc => 1,
+				off   => !$_REQUEST {__read_only},
 			},
 		],
 
