@@ -16,7 +16,7 @@ sub draw_item_of_tasks {
 			
 				{
 					icon   => 'folder',
-					label  => 'MS Word',
+					label  => 'PDF',
 					href   => {action => 'print'},
 					target => 'invisible',
 				},
