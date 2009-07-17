@@ -732,7 +732,7 @@ EOH
 #				no_scroll => 1,
 
 				top_toolbar => [{
-					keep_params => ['type', 'year', 'id_site'],
+					keep_params => ['type', 'year', 'id_site', 'id_prestation_to_clone', 'id_inscription_to_clone'],
 				},
 
 					{
