@@ -47,6 +47,8 @@ sub do_print_tasks { # export MS Word
 			
 			push @fn_pdf, $fn_pdf . ' ';
 			
+			$ENV{HTMLDOC_NOCGI} = 1;
+			
 			`htmldoc $fn_html --webpage --footer '' --pagelayout one -f $fn_pdf`;
 			
 			unlink $fn_html;
