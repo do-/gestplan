@@ -12,6 +12,17 @@ sub draw_item_of_tasks {
 				
 			no_ok => $data -> {fake} <= 0,
 			
+			additional_buttons => [
+			
+				{
+					icon   => 'folder',
+					label  => 'MS Word',
+					href   => {action => 'print'},
+					target => 'invisible',
+				},
+				
+			],
+			
 			path => [
 				{type => 'tasks', name => 'Support'},
 				{type => 'tasks', name => $data -> {label}, id => $data -> {id}},
