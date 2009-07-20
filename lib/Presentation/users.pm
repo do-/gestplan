@@ -105,14 +105,6 @@ sub draw_item_of_users {
 				off    => 0 == @{$data -> {groups}},
 			},
 			{
-				name   => 'id_site',
-				label  => 'Onglet',
-				type   => 'select',
-				empty  => ' ',
-				values => $data -> {sites},
-				off    => 0 == @{$data -> {sites}},
-			},
-			{
 				name   => 'options',
 				label  => 'Options',
 				type   => 'checkboxes',
@@ -152,6 +144,23 @@ sub draw_item_of_users {
 				
 			},
 			
+			{
+				name   => 'id_default_site',
+				label  => 'Onglet par défaut',
+				type   => 'select',
+				empty  => ' ',
+				values => $data -> {sites},
+				off    => 0 == @{$data -> {sites}},
+			},
+
+			{
+				name   => 'id_site',
+				label  => 'Onglets accessibles',
+				type   => 'checkboxes',
+				values => $data -> {sites},				
+				off    => 0 == @{$data -> {sites}},
+			},
+
 		]
 
 	)
