@@ -52,6 +52,7 @@ sub do_update_prestation_types {
 		is_watched
 		is_protedted
 		ids_partners
+		id_site
 	)]);
 	
 	sql_do ('DELETE FROM prestation_types_ext_fields WHERE id_prestation_type = ?', $_REQUEST {id});
@@ -177,6 +178,7 @@ sub get_item_of_prestation_types {
 		prestation_type_groups => {filter => 'id > 0'},
 		'roles',               => {filter => 'id IN (1,2,3)'},
 		'rooms'                => {filter => 'id_organisation = ' . $_USER -> {id_organisation}},
+		'sites'                => {filter => 'id_organisation = ' . $_USER -> {id_organisation}},
 		'users'                => {filter => "
 			id_role = 2
 			AND id_organisation = $_USER->{id_organisation}

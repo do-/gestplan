@@ -412,6 +412,15 @@ sub draw_item_of_prestation_types {
 				type  => 'checkbox',
 			},
 			{
+				name   => 'id_site',
+				label  => 'Onglet',
+				type   => 'select',
+				empty  => ' ',
+				values => $data -> {sites},
+				off    => 0 == @{$data -> {sites}},
+			},
+
+			{
 				label  => 'Ordre des données',
 				type   => 'banner',
 				off    => 0 == @{$data -> {ids_ext_fields}},
