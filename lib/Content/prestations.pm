@@ -1156,7 +1156,7 @@ EOS
 	my $sites = sql_select_vocabulary (sites => {filter => "id_organisation = $_USER->{id_organisation}"});
 	
 	my @menu = ({
-		label     => 'Tous sites',
+		label     => 'Tous',
 		href      => {id_site => '', aliens => ''},
 		is_active => !$_REQUEST {id_site} && !$_REQUEST {aliens},
 	});
