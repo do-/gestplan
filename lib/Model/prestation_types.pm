@@ -19,6 +19,7 @@ columns => {
 	id_people_number           => {TYPE_NAME => 'int'},
 	is_to_edit                 => {TYPE_NAME => 'tinyint'},
 	id_organisation            => {TYPE_NAME => 'int'},
+	id_site                    => {TYPE_NAME => 'int'},
 	is_open                    => {TYPE_NAME => 'tinyint'},
 	no_stats                   => {TYPE_NAME => 'tinyint'},
 	time_step                  => {TYPE_NAME => 'int'},
