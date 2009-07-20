@@ -1400,6 +1400,16 @@ EOS
 		$filter .= ' AND (IFNULL(roles.is_hidden, 0) = 0 OR users.id_group = ?)';
 		push @params, 0 + $_USER -> {id_group};
 	}
+	
+	my $users_site_filter = '';
+	
+	if ($_REQUEST {id_site}) {
+	
+		my $ids = sql ('users_sites(id_user)' => [[ id_site => $_REQUEST {id_site} ]]);
+		
+		$users_site_filter = " AND users.id IN ($$ids)";
+
+	}
 
 	my $users = sql_select_all (<<EOS, $days [-1] -> {iso_dt}, $days [0] -> {iso_dt}, $_USER -> {id_organisation}, @params);
 		SELECT
@@ -1416,7 +1426,7 @@ EOS
 			INNER JOIN organisations ON users.id_organisation = organisations.id
 		WHERE
 			users.fake = 0
-			$site_filter
+			$users_site_filter
 			AND (dt_start  IS NULL OR dt_start  <= ?)
 			AND (dt_finish IS NULL OR dt_finish >= ?)
 			AND (users.id_organisation = ? OR (users.id IN ($alien_id_users) AND users.id_role < 3))
