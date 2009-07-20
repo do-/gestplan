@@ -1705,7 +1705,9 @@ EOS
 		
 	}
 	
-	my $off_periods = sql_select_all (<<EOS, $_USER -> {id_organisation});
+	my $ids_users = ids ($users);
+	
+	my $off_periods = sql_select_all (<<EOS);
 		SELECT
 			off_periods.id
 			, off_periods.id_user
@@ -1715,13 +1717,11 @@ EOS
 			, IF(off_periods.dt_finish > '$dt_finish', 2,            off_periods.half_finish) AS half_finish
 		FROM
 			off_periods
-			INNER JOIN users ON off_periods.id_user = users.id
 		WHERE
 			off_periods.fake = 0
 			AND off_periods.dt_start  <= '$dt_finish'
 			AND off_periods.dt_finish >= '$dt_start'
-			AND users.id_organisation = ?
-			$site_filter
+			AND off_periods.id_user IN ($ids_users)
 EOS
 
 	foreach my $user (@$users) {
