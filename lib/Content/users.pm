@@ -125,7 +125,7 @@ sub validate_update_users {
 		delete $_REQUEST {_password};
 	}
 
-	!$_REQUEST {__checkboxes_id_site} or $_REQUEST {_id_default_site} or return "#_id_default_site#:Vous avez oublié de choisir l'onglet par défaut";
+#	!$_REQUEST {__checkboxes_id_site} or $_REQUEST {_id_default_site} or return "#_id_default_site#:Vous avez oublié de choisir l'onglet par défaut";
 	
 	$_REQUEST {_id_site} = delete $_REQUEST {_id_default_site};
 	
