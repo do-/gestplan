@@ -887,6 +887,11 @@ sub do_update_prestations {
 sub validate_update_prestations {
 	
 	$_REQUEST {_id_site} or return "#_id_site#:Veuillez choisir l'onglet";
+	
+	@{sql (users_sites => [
+		[id_user => $_REQUEST {_id_user}],
+		[id_site => $_REQUEST {_id_site}],
+	])} or return "#_id_site#:Cet onglet n'est pas disponible pour l'utilisateur choisi";
 
 	$_REQUEST {_id_prestation_type} or return "#_id_prestation_type#:Veuillez choisir le type de prestation";	
 
