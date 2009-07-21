@@ -602,7 +602,7 @@ sub do_delete_prestations {
 sub validate_create_prestations {
 
 	if ($_REQUEST {id_user} > 0) {
-
+	
 		$_REQUEST {id} = sql_select_scalar (
 			'SELECT id FROM prestations WHERE fake = 0 AND (id_user = ? OR id_users LIKE ?) AND CONCAT(dt_start,half_start) <= ? AND CONCAT(dt_finish,half_finish) >= ?',
 			$_REQUEST {id_user},
@@ -612,7 +612,7 @@ sub validate_create_prestations {
 		);	
 
 	}
-	else {
+	elsif ($_REQUEST {id_user} < 0) {
 
 		$_REQUEST {id} = sql_select_scalar (<<EOS, -1 * $_REQUEST {id_user}, $_REQUEST {dt_start} . $_REQUEST {half_start}, $_REQUEST {dt_start} . $_REQUEST {half_start});
 			SELECT
@@ -632,6 +632,8 @@ EOS
 	if (!$_REQUEST {id} && $_REQUEST {id_prestation_type} && $_REQUEST {id_user} > 0) {
 		
 		my $prestation_type = sql_select_hash ('prestation_types', $_REQUEST {id_prestation_type});
+		
+		$_REQUEST {id_site} ||= $prestation_type -> {id_site};
 		
 		if ($prestation_type -> {id_day_period} < 3) {		
 			if ($prestation_type -> {id_day_period} == 1 && $_REQUEST {half_start} == 2) { return "Les $$prestation_type{label_short} ne peuvent être affectés que les matins"; };
@@ -664,6 +666,12 @@ EOS
 		}
 	
 	}
+	
+	if (!$_REQUEST {id_site} && $_REQUEST {id_user}) {
+	
+		$_REQUEST {id_site} = sql ('users(id_site)' => $_REQUEST {id_user});
+	
+	}
 
 	return undef;
 	
@@ -687,6 +695,7 @@ sub do_create_prestations {
 			dt_finish => $_REQUEST {dt_finish},
 			half_finish => $_REQUEST {half_finish},
 			id_prestation_type => $_REQUEST {id_prestation_type},
+			id_site => $_REQUEST {id_site},
 		});
 				
 		foreach my $id_room (@ids_rooms) {
@@ -705,23 +714,29 @@ sub do_create_prestations {
 			&& !$prestation_type -> {is_multiday}
 			&& !$prestation_type -> {is_to_edit}
 			&&  $prestation_type -> {id_people_number} < 3
+			&&  $_REQUEST {id_site}
 		) {
 		
 			sql_do ('UPDATE prestations SET id_prestation_type = 0 WHERE id = ?', $_REQUEST {id});
 			
-			$_REQUEST {_id_user} =            $_REQUEST {id_user};
-			$_REQUEST {_dt_start} =           $_REQUEST {dt_start};
-			$_REQUEST {_half_start} =         $_REQUEST {half_start};
-			$_REQUEST {_dt_finish} =          $_REQUEST {dt_finish};
-			$_REQUEST {_half_finish} =        $_REQUEST {half_finish};
-			$_REQUEST {_id_prestation_type} = $_REQUEST {id_prestation_type};
+			$_REQUEST {"_$_"} = delete $_REQUEST {$_} foreach qw (
+				id_user
+				dt_start
+				half_start
+				dt_finish
+				half_finish
+				id_prestation_type
+				id_site
+			);
+			
 			$_REQUEST {_cnt} = 1;
 			
 			do_update_prestations ();
 			
 			recalculate_prestations ();
 			
-			esc ();		
+			esc ();	
+				
 		}
 	
 	}	
@@ -1228,7 +1243,7 @@ EOS
 	
 		my $label = $day_names [$day_index] . '&nbsp;' . $day [2];
 		
-		my $h_create = {href => "/?type=prestations&action=create&dt_start=$iso_dt&half_start=1&dt_finish=$iso_dt&half_finish=1&id_prestation_type=$_REQUEST{id_prestation_type}"};
+		my $h_create = {href => "/?type=prestations&action=create&dt_start=$iso_dt&half_start=1&dt_finish=$iso_dt&half_finish=1&id_prestation_type=$_REQUEST{id_prestation_type}&id_site=$_REQUEST{id_site}"};
 		check_href ($h_create);
 		$h_create -> {href} =~ s{salt=[\d\.]+}{salt=1};
 		$h_create -> {href} =~ s{&__last_query_string=\d+}{};
@@ -1254,7 +1269,7 @@ EOS
 			$days [-2] -> {next} = $days [-1];
 		}
 
-		my $h_create = {href => "/?type=prestations&action=create&dt_start=$iso_dt&half_start=2&dt_finish=$iso_dt&half_finish=2&id_prestation_type=$_REQUEST{id_prestation_type}"};
+		my $h_create = {href => "/?type=prestations&action=create&dt_start=$iso_dt&half_start=2&dt_finish=$iso_dt&half_finish=2&id_prestation_type=$_REQUEST{id_prestation_type}&id_site=$_REQUEST{id_site}"};
 		check_href ($h_create);
 		$h_create -> {href} =~ s{salt=[\d\.]+}{salt=1};
 		$h_create -> {href} =~ s{&__last_query_string=\d+}{};
