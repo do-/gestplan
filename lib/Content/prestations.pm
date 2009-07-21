@@ -1155,6 +1155,8 @@ EOS
 
 	my $sites = sql_select_vocabulary (sites => {filter => "id_organisation = $_USER->{id_organisation}", order => 'ord,label'});
 	
+	!@$sites or defined $_REQUEST {id_site} or $_REQUEST {id_site} = $_USER -> {id_site};
+	
 	my @menu = ({
 		label     => 'Tous',
 		href      => {id_site => '', aliens => ''},
