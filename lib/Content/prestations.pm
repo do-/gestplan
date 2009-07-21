@@ -1513,6 +1513,7 @@ EOS
 				, prestations.id_prestation_model
 				, prestations.id_prestation_type
 				, prestations.cnt
+				, prestations.id_site
 				, prestation_types.label_short AS label
 				, prestation_types.is_half_hour
 				, prestation_types.is_placeable_by_conseiller
@@ -1664,6 +1665,12 @@ EOS
 		my @id_users = grep {$_ > 0} split /\,/, $prestation -> {id_users};
 		push @id_users, $prestation -> {id_user};
 		
+		if ($_REQUEST {id_site} > 1 && $_REQUEST {id_site} != $prestation -> {id_site}) {
+		
+			$prestation -> {label} = 'Occupé(e)';
+			$prestation -> {color} = 'ffffff';
+		
+		}
 		if ($prestation -> {is_half_hour} != -1) {
 
 			if (
