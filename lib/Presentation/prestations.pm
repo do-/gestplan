@@ -56,6 +56,7 @@ EOH
 				
 	}, $data,
 		[
+			[
 			{
 				name   => 'id_user',
 				label  => 'Utilisateur',
@@ -65,6 +66,15 @@ EOH
 				add_hidden => 1,
 				off    => $data -> {id_user} <= 0,
 			},
+			{
+				name   => 'id_site',
+				label  => 'Onglet',
+				type   => 'select',
+				values => $data -> {sites},
+				add_hidden => 1,
+				empty  => "Veuillez choisir l'onglet",
+			},
+			],
 			{
 				name   => 'id_users',
 				label  => 'Co-animateurs',

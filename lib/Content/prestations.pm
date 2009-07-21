@@ -758,6 +758,7 @@ sub do_update_prestations {
 		id_prestation_type
 		note
 		cnt
+		id_site
 	)]);
 		
 	my $item = sql_select_hash ('prestations');
@@ -870,8 +871,10 @@ sub do_update_prestations {
 
 sub validate_update_prestations {
 	
-	$_REQUEST {_id_prestation_type} or return "#_id_prestation_type#:Veuillez choisir le type de prestation";
-	
+	$_REQUEST {_id_site} or return "#_id_site#:Veuillez choisir l'onglet";
+
+	$_REQUEST {_id_prestation_type} or return "#_id_prestation_type#:Veuillez choisir le type de prestation";	
+
 	my $prestation_type = sql_select_hash ('prestation_types', $_REQUEST {_id_prestation_type});
 
 	my $organisation = sql_select_hash ('organisations', $prestation_type -> {id_organisation});
@@ -1087,6 +1090,7 @@ EOS
 	add_vocabularies ($item,
 		'users'            => {filter => "((id in ($ids_users)) OR (id_group IN ($ids_groups) AND (dt_finish IS NULL OR dt_finish > '$item->{_dt_finish}')))"},
 		'prestation_types' => {filter => $filter},
+		'sites'            => {filter => "id_organisation = $_USER->{id_organisation}"},
 	);
 
 	$item -> {day_periods} = [
