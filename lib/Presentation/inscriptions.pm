@@ -262,7 +262,7 @@ sub draw_inscriptions {
 	}
 	else {
 		
-		$title_1 = "$_REQUEST{_day_name} $_REQUEST{dt} matin: ";
+		$title_1 = "$_REQUEST{_day_name} $_REQUEST{dt} matin sur $data->{prestation_1}->{site_label}: ";
 		$title_1 .= $data -> {prestation_1} -> {type} -> {label} || 'Libre';
 	
 	}
@@ -557,7 +557,7 @@ qq {
 
 			{
 				
-				title => {label => "$_REQUEST{_day_name} $_REQUEST{dt}" . ' après-midi : ' . ($data -> {prestation_2} -> {type} -> {label} || 'libre') . " pour $data->{user}->{label}"},
+				title => {label => "$_REQUEST{_day_name} $_REQUEST{dt} après-midi sur $data->{prestation_2}->{site_label}: " . ($data -> {prestation_2} -> {type} -> {label} || 'libre') . " pour $data->{user}->{label}"},
 				
 				off => $data -> {prestation_1} -> {id} == $data -> {prestation_2} -> {id} || $_REQUEST {id_day_period} == 1,
 

@@ -707,9 +707,11 @@ sub select_inscriptions {
 		SELECT
 			prestations.*
 			, prestation_types.id_organisation
+			, sites.label AS site_label
 		FROM
 			prestations
 			LEFT JOIN prestation_types ON prestations.id_prestation_type = prestation_types.id
+			LEFT JOIN sites ON prestations.id_site = sites.id
 		WHERE
 			(prestations.id_user = ? OR prestations.id_users LIKE ?)
 			AND CONCAT(prestations.dt_start,  prestations.half_start)  <= ?
@@ -822,9 +824,11 @@ EOS
 		SELECT
 			prestations.*
 			, prestation_types.id_organisation
+			, sites.label AS site_label
 		FROM
 			prestations
 			LEFT JOIN prestation_types ON prestations.id_prestation_type = prestation_types.id
+			LEFT JOIN sites ON prestations.id_site = sites.id
 		WHERE
 			(prestations.id_user = ? OR prestations.id_users LIKE ?)
 			AND CONCAT(prestations.dt_start,  prestations.half_start)  <= ?
