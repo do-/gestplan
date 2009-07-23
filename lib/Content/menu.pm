@@ -28,6 +28,13 @@ sub select_menu_for_superadmin {
 	
 		support_menu (),
 
+		{
+	    	label  => 'Déconnexion',
+	    	href   => "type=_logout",
+			side   => 'right_items',
+			target => '_top',
+		},
+
 	];
 
 }
