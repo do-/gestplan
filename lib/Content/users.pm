@@ -2,7 +2,9 @@
 
 sub do_change_organisation_users { # navigation vers une autre structure
 
-	sql_do ('UPDATE users SET ');
+	sql_do ('UPDATE users SET id_organisation = ? WHERE id = ?', $_REQUEST {_id_organisation}, $_USER -> {id});
+	
+	delete $_REQUEST {type};
 
 }
 
