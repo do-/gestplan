@@ -10,7 +10,7 @@ sub select_inscriptions_par_jour {
 		is_active => $_REQUEST {id_site} == $_ -> {id},
 	}} ({label => 'Tous sites'}, @$sites)];
 
-	my $site_filter = $_REQUEST {id_site} ? " AND IFNULL(id_site, 0) IN ($_REQUEST{id_site}, 0) " : '';
+	my $site_filter = $_REQUEST {id_site} ? " AND IFNULL(users.id_site, 0) IN ($_REQUEST{id_site}, 0) " : '';
 
 	$_REQUEST {__meta_refresh} = $_USER -> {refresh_period} || 300;
 	
