@@ -272,7 +272,7 @@ sub draw_users {
 				'Profil',
 				'Regroupement',
 				'Login',
-				'Site',
+				'Onglet principal',
 			],
 
 			sub {
