@@ -1690,7 +1690,7 @@ EOS
 
 		$prestation -> {color} ||= $default_color;
 								
-		if ($_REQUEST {id_site} > 1 && $_REQUEST {id_site} != $prestation -> {id_site}) {
+		if ($_REQUEST {id_site} > 1 && $_REQUEST {id_site} != $prestation -> {id_site} && $prestation -> {id_user} > 0) {
 		
 			$prestation -> {note}  = "$prestation->{label} sur $prestation->{site_label}";
 			$prestation -> {label} = 'Occupé(e)';
