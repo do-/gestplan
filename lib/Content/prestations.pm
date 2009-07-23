@@ -1412,7 +1412,7 @@ EOS
 	my @alien_id_users = (-1);	
 	foreach my $alien_prestation (@$alien_prestations) {	
 		push @alien_id_users, $alien_prestation -> {id_user};
-		push @alien_id_users, (split /\,/, $alien_prestation -> {id_users});	
+		push @alien_id_users, grep {$_ > 0} (split /\,/, $alien_prestation -> {id_users});	
 	}
 
 	my $alien_id_users = join ',', grep {$_} @alien_id_users;	
@@ -1433,7 +1433,7 @@ EOS
 	
 		my $ids = sql ('users_sites(id_user)' => [[ id_site => $_REQUEST {id_site} ]]);
 		
-		$users_site_filter = " AND users.id IN ($$ids)";
+		$users_site_filter = " AND users.id IN ($$ids,$alien_id_users)";
 
 	}
 
@@ -1691,7 +1691,7 @@ EOS
 		$prestation -> {color} ||= $default_color;
 								
 		if ($_REQUEST {id_site} > 1 && $_REQUEST {id_site} != $prestation -> {id_site} && $prestation -> {id_user} > 0) {
-		
+
 			$prestation -> {note}  = "$prestation->{label} sur $prestation->{site_label}";
 			$prestation -> {label} = 'Occupé(e)';
 			$prestation -> {color} = 'ffffff';
