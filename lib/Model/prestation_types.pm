@@ -34,6 +34,10 @@ columns => {
 	ids_partners => {TYPE_NAME => 'varchar', COLUMN_SIZE  => 255},
 },
 
+keys => {
+	id_organisation => 'id_organisation,label',
+},
+
 data => [
 	{
 		id          => -1,

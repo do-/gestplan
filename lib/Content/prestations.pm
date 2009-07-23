@@ -1455,7 +1455,7 @@ EOS
 			$users_site_filter
 			AND (dt_start  IS NULL OR dt_start  <= ?)
 			AND (dt_finish IS NULL OR dt_finish >= ?)
-			AND (users.id_organisation = ? OR (users.id IN ($alien_id_users) AND users.id_role < 3))
+			AND (roles.id_organisation = ? OR (users.id IN ($alien_id_users) AND users.id_role < 3))
 			$filter
 		ORDER BY
 			IF(users.id_organisation = $$_USER{id_organisation}, 0, 1)
@@ -1543,7 +1543,7 @@ EOS
 #				AND users.id_role IN (2,3)
 				AND prestations.dt_start  <= '$dt_finish'
 				AND prestations.dt_finish >= '$dt_start'
-				AND users.id_organisation = ?
+				AND prestation_types.id_organisation = ?
 EOS
 		
 		$prestations_rooms = sql_select_all (<<EOS, $_USER -> {id_organisation});
