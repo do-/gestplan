@@ -81,7 +81,7 @@ sub draw_item_of_users {
 #				},
 
 			{
-				name       => 'id_organisation',
+				name       => 'id_default_organisation',
 				label      => 'Structure',
 				type       => 'select',
 				values     => $data -> {organisations},

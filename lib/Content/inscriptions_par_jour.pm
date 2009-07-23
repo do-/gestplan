@@ -12,6 +12,10 @@ sub select_inscriptions_par_jour {
 		href      => {id_site => $_ -> {id}},
 		is_active => $_REQUEST {id_site} == $_ -> {id},
 	}} ({label => 'Tous'}, @$sites)];
+
+
+
+
 	
 	unless ($_REQUEST {year}) {	
 		($_REQUEST {week}, $_REQUEST {year}) = Week_of_Year (Today ());	

@@ -38,6 +38,22 @@ sub select_menu_for_admin {
 
 	$_REQUEST {__im_delay} = 60 * 1000;
 
+	my $organisations = sql_select_all (q {
+		SELECT
+			organisations.*
+		FROM
+			users_organisations
+			LEFT JOIN organisations ON (
+				users_organisations.id_organisation = organisations.id
+				AND organisations.fake = 0
+			)
+		WHERE
+			users_organisations.fake = 0
+			AND users_organisations.id_user = ?
+			AND users_organisations.id_organisation <> ?
+		
+	}, $_USER -> {id}, $_USER -> {id_organisation});
+
 	return [
 
 		{
@@ -118,6 +134,26 @@ sub select_menu_for_admin {
 		support_menu (),
 
 		extra_menu (),
+	
+		{
+			label   => 'Structures',
+			no_page => 1,
+			off     => 0 == @$organisations,
+			
+			items   => [
+			
+				map {{
+				
+					label  => $_ -> {label},
+					href   => "/?type=users&action=change_organisation&_id_organisation=$_->{id}",
+					target => '_top',
+				
+				}} @$organisations
+			
+			],
+			
+		},
+		
 	
 	];
 
