@@ -50,6 +50,8 @@ sub select_menu_for_admin {
 			users_organisations.fake = 0
 			AND users_organisations.id_user = ?
 			AND users_organisations.id_organisation <> ?
+		ORDER BY
+			organisations.label
 		
 	}, $_USER -> {id}, $_USER -> {id_organisation});
 
