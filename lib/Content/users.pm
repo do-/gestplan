@@ -1,5 +1,13 @@
 ################################################################################
 
+sub do_change_organisation_users { # navigation vers une autre structure
+
+	sql_do ('UPDATE users SET ');
+
+}
+
+################################################################################
+
 sub do_transfer_users {
 		
 	sql_do ('UPDATE log      SET id_user = ? WHERE id_user = ?', $_REQUEST {id_new}, $_REQUEST {id});
@@ -33,11 +41,15 @@ sub get_item_of_users {
 
 	my $item = sql_select_hash ("users");
 	
+	$item -> {id_default_organisation} = delete $item -> {id_organisation};
+	
 	__d ($item, 'dt_birth', 'dt_start', 'dt_finish');
 	
 	$_REQUEST {__read_only} ||= !($_REQUEST {__edit} || $item -> {fake} > 0);	
 
-	add_vocabularies ($item, 'organisations',
+	add_vocabularies ($item,
+
+		organisations => $_USER -> {role} eq 'superadmin' ? {ids => 'users_organisations'} : {},
 
 		roles => {
 			order  => 'id',
@@ -48,6 +60,28 @@ sub get_item_of_users {
 		groups => {filter => "id_organisation = $_USER->{id_organisation}"},
 
 	);
+	
+	if ($_USER -> {role} eq 'superadmin' && (!$_REQUEST {__read_only} || @{$item -> {id_organisation}} > 0)) {
+	
+		$item -> {roles} -> [0] -> {type} = 'hgroup';
+		
+		$item -> {roles} -> [0] -> {items} = [
+		
+			{
+			
+				type      => 'checkboxes',
+				label     => '<b>Structures à naviguer</b>',
+				values    => $item -> {organisations},
+				name      => 'id_organisation',
+				height    => 150,
+				separator => ' ; ',
+				cols      => 3,
+			
+			},
+		
+		];
+	
+	}
 
 	$item -> {path} = [
 		{type => 'users', name => 'Utilisateurs'},
@@ -107,8 +141,8 @@ sub validate_update_users {
 	}
 
 	$_REQUEST {_id_role} or return "#_id_role#:Vous avez oublié d'indiquer le profil";
-			
-	delete $_REQUEST {_id_organisation} if $_REQUEST {_id_role} == 4;
+				
+	delete $_REQUEST {_id_default_organisation} if $_REQUEST {_id_role} == 4;
 	
 	$_REQUEST {_options} = '';
 	
@@ -123,6 +157,10 @@ sub validate_update_users {
 	else {
 		delete $_REQUEST {_password};
 	}
+
+	$_REQUEST {_id_organisation} = delete $_REQUEST {_id_default_organisation};
+	
+	$_REQUEST {'_id_organisation_' . $_REQUEST {_id_organisation}} = 1;
 
 	return undef;
 	
