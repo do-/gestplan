@@ -1529,6 +1529,7 @@ EOS
 				, IF(prestations.dt_finish > '$dt_finish', '$dt_finish', prestations.dt_finish) AS dt_finish
 				, IF(prestations.dt_finish > '$dt_finish', 2, prestations.half_finish) AS half_finish
 				, IFNULL(prestation_type_group_colors.color, prestation_type_groups.color) AS color
+				, sites.label AS site_label
 			FROM
 				prestations
 				INNER JOIN users ON prestations.id_user = users.id
@@ -1538,6 +1539,7 @@ EOS
 					prestation_type_group_colors.id_prestation_type_group = prestation_type_groups.id
 					AND prestation_type_group_colors.id_organisation = ?
 				)
+				LEFT  JOIN sites ON prestations.id_site = sites.id
 			WHERE
 				prestations.fake = 0
 #				AND users.id_role IN (2,3)
@@ -1670,12 +1672,6 @@ EOS
 		my @id_users = grep {$_ > 0} split /\,/, $prestation -> {id_users};
 		push @id_users, $prestation -> {id_user};
 		
-		if ($_REQUEST {id_site} > 1 && $_REQUEST {id_site} != $prestation -> {id_site}) {
-		
-			$prestation -> {label} = 'Occupé(e)';
-			$prestation -> {color} = 'ffffff';
-		
-		}
 		if ($prestation -> {is_half_hour} != -1) {
 
 			if (
@@ -1685,16 +1681,23 @@ EOS
 				$prestation -> {color} = $busy_color;
 			}		
 			elsif ($prestation -> {is_half_hour}) {
-#				$bgcolor = sql_select_scalar ('SELECT COUNT(*) FROM inscriptions WHERE fake <> 0 AND id_prestation = ?', $prestation -> {id}) ? '#ddffdd' : '#ffdddd',
+
 				$bgcolor = $prestation -> {cnt_fake} ? '#ddffdd' : '#ffdddd',
+
 			}
 
 		}		
 
 		$prestation -> {color} ||= $default_color;
+								
+		if ($_REQUEST {id_site} > 1 && $_REQUEST {id_site} != $prestation -> {id_site}) {
 		
-		my $bgcolor = '#ffffd0';
-						
+			$prestation -> {note}  = "$prestation->{label} sur $prestation->{site_label}";
+			$prestation -> {label} = 'Occupé(e)';
+			$prestation -> {color} = 'ffffff';
+		
+		}
+
 		my $day = $ix_days -> {$prestation -> {dt_start} . '-' . $prestation -> {half_start}};
 
 		my $rowspan =
