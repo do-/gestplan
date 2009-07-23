@@ -121,7 +121,24 @@ sub draw_item_of_users {
 					},
 				],
 			},
-			
+						
+			{
+				name   => 'id_site',
+				label  => 'Appartient aux onglets',
+				type   => 'checkboxes',
+				values => Storable::dclone $data -> {sites},
+				off    => 0 == @{$data -> {sites}},
+			},
+
+			{
+				name   => 'id_default_site',
+				label  => 'Onglet principal',
+				type   => 'select',
+				empty  => ' ',
+				values => $data -> {sites},
+				off    => 0 == @{$data -> {sites}},
+			},
+
 			{
 				
 				type  => 'hgroup',
@@ -142,23 +159,6 @@ sub draw_item_of_users {
 					},
 				],
 				
-			},
-			
-			{
-				name   => 'id_default_site',
-				label  => 'Onglet par défaut',
-				type   => 'select',
-				empty  => ' ',
-				values => $data -> {sites},
-				off    => 0 == @{$data -> {sites}},
-			},
-
-			{
-				name   => 'id_site',
-				label  => 'Onglets accessibles',
-				type   => 'checkboxes',
-				values => $data -> {sites},				
-				off    => 0 == @{$data -> {sites}},
 			},
 
 		]
