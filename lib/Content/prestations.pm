@@ -886,7 +886,7 @@ sub do_update_prestations {
 
 sub validate_update_prestations {
 	
-	$_REQUEST {_id_site} or return "#_id_site#:Veuillez choisir l'onglet";
+	$_REQUEST {_id_site} or !sql ('sites(COUNT(*))' => [[id_organisation => $_USER -> {id_organisation}]]) or return "#_id_site#:Veuillez choisir l'onglet";
 	
 	@{sql (users_sites => [
 		[id_user => $_REQUEST {_id_user}],
@@ -1180,6 +1180,8 @@ EOS
 	my $sites = sql_select_vocabulary (sites => {filter => "id_organisation = $_USER->{id_organisation}", order => 'ord,label'});
 	
 	!@$sites or defined $_REQUEST {id_site} or $_REQUEST {id_site} = $_USER -> {id_site};
+
+	my $organisation = sql_select_hash (organisations => $_USER -> {id_organisation});
 	
 	my @menu = ({
 		label     => 'Tous',
@@ -1199,7 +1201,7 @@ EOS
 	
 	if (@menu == 1) {
 		
-		$menu [0] -> {label} = 'Prestations locales',
+		$menu [0] -> {label} = $organisation -> {empty_site_label},
 		
 	}
 
@@ -1232,9 +1234,7 @@ EOS
 	my @days = ();
 	
 	my $ix_days = {};
-	
-	my $organisation = sql_select_hash (organisations => $_USER -> {id_organisation});
-	
+		
 	$organisation -> {days} = [sort split ',', $organisation -> {days}];
 		
 	for (my $i = 0; $i < @{$organisation -> {days}}; $i++) {

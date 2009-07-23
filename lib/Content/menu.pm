@@ -135,6 +135,10 @@ sub select_menu_for_admin {
 					name  => 'rooms',
 					label => "Ressources",
 				},
+				{
+					href  => "/?type=organisations_local&id=$_USER->{id_organisation}",
+					label => "Structure",
+				},
 			],
 		},
 			

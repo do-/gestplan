@@ -73,6 +73,9 @@ EOH
 				values => $data -> {sites},
 				add_hidden => 1,
 				empty  => "Veuillez choisir l'onglet",
+				off    =>
+					0 == @{$data -> {sites}}
+				,
 			},
 			],
 			{
