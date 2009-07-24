@@ -261,9 +261,15 @@ sub draw_users {
 					hidden => $_USER -> {role} ne 'superadmin',
 				},
 				'Profil',
-				'Regroupement',
+				{
+					label  => 'Regroupement',
+					hidden => $_USER -> {role} eq 'superadmin',
+				},
 				'Login',
-				'Site',
+				{
+					label  => 'Site',
+					hidden => $_USER -> {role} eq 'superadmin',
+				},
 			],
 
 			sub {
@@ -277,9 +283,15 @@ sub draw_users {
 						hidden => $_USER -> {role} ne 'superadmin',
 					},
 					$i -> {role_label},
-					$i -> {group_label},
+					{
+						label  => $i -> {group_label},
+						hidden => $_USER -> {role} eq 'superadmin',
+					},
 					$i -> {login},
-					$i -> {site_label},
+					{
+						label  => $i -> {site_label},
+						hidden => $_USER -> {role} eq 'superadmin',
+					},
 				])
 								
 			},
