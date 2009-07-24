@@ -279,7 +279,7 @@ sub support_menu {
 
 sub extra_menu {
 
-	my $href = sql_select_scalar ('SELECT href FROM organisations WHERE id = ?', $_USER -> {id_organisation}) or return ();
+	my $href = sql_select_scalar ('SELECT href FROM organisations WHERE id = ?', $_USER -> {id_organisation});
 	
     return (
     
@@ -287,6 +287,7 @@ sub extra_menu {
 	    	label => 'Intranet',
 	    	href => 'http://' . $href . '#',
 	    	target => '_blank',
+	    	off    => !$href,
 		},
 		{
 	    	label  => 'Déconnexion',
