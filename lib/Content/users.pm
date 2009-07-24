@@ -147,8 +147,17 @@ sub validate_update_users {
 	}
 
 	$_REQUEST {_id_role} or return "#_id_role#:Vous avez oublié d'indiquer le profil";
-			
-	delete $_REQUEST {_id_default_organisation} if $_REQUEST {_id_role} == 4;
+				
+	if ($_REQUEST {_id_role} == 4) {
+	
+		delete $_REQUEST {_id_default_organisation}
+	
+	}
+	else {
+	
+		$_REQUEST {_id_default_organisation} or return "#_id_default_organisation#:Vous avez oublié d'indiquer la structure";
+	
+	}
 	
 	$_REQUEST {_options} = '';
 	
@@ -213,13 +222,13 @@ sub select_users {
 	my $filter = '';
 	
 	if ($_USER -> {role} eq 'superadmin') {	
-		$filter = ' AND users.id_role IN (1,4) ';	
+		$filter .= ' AND users.id_role IN (1,4) ';	
 	}
 	else {
-		$filter = ' AND users.id_organisation = ' . $_USER -> {id_organisation};	
+		$filter .= ' AND users.id_organisation = ' . $_USER -> {id_organisation};	
 	}
 	
-	my ($users, $cnt)= sql_select_all_cnt (<<EOS, $q, $q, {fake => 'users'});
+	my ($users, $cnt)= sql_select_all_cnt (<<EOS, $_USER -> {id_organisation}, $_USER -> {id_organisation}, $q, $q, {fake => 'users'});
 		SELECT
 			users.*
 			, roles.label  AS role_label
@@ -229,8 +238,14 @@ sub select_users {
 		FROM
 			users
 			LEFT JOIN roles  ON users.id_role = roles.id
-			LEFT JOIN sites  ON users.id_site = sites.id
-			LEFT JOIN groups ON users.id_group = groups.id
+			LEFT JOIN sites  ON (
+				users.id_site = sites.id
+				AND sites.id_organisation = ?
+			)
+			LEFT JOIN groups ON (
+				users.id_group = groups.id
+				AND groups.id_organisation = ?
+			)
 			LEFT JOIN organisations on users.id_organisation = organisations.id
 		WHERE
 			(users.label LIKE ? or users.login LIKE ?)
