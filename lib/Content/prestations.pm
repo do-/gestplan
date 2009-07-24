@@ -667,9 +667,18 @@ EOS
 	
 	}
 	
-	if (!$_REQUEST {id_site} && $_REQUEST {id_user}) {
+	if (!$_REQUEST {id_site}) {
 	
-		$_REQUEST {id_site} = sql ('users(id_site)' => $_REQUEST {id_user});
+		if ($_REQUEST {id_user} > 0) {
+
+			$_REQUEST {id_site} = sql ('users(id_site)' => $_REQUEST {id_user});
+
+		}
+		elsif ($_REQUEST {id_user} < 0) {
+
+			$_REQUEST {id_site} = sql ('rooms(id_site)' => - $_REQUEST {id_user});
+
+		}	
 	
 	}
 
