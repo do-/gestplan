@@ -897,7 +897,7 @@ sub validate_update_prestations {
 	
 	$_REQUEST {_id_site} or !sql ('sites(COUNT(*))' => [[id_organisation => $_USER -> {id_organisation}]]) or return "#_id_site#:Veuillez choisir l'onglet";
 	
-	@{sql (users_sites => [
+	$_REQUEST {_id_site} and @{sql (users_sites => [
 		[id_user => $_REQUEST {_id_user}],
 		[id_site => $_REQUEST {_id_site}],
 	])} or return "#_id_site#:Cet onglet n'est pas disponible pour l'utilisateur choisi";
