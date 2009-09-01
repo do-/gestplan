@@ -1194,7 +1194,7 @@ EOS
 	
 	my @menu = ({
 		label     => 'Tous',
-		href      => {id_site => '', aliens => ''},
+		href      => {id_site => 0, aliens => ''},
 		is_active => !$_REQUEST {id_site} && !$_REQUEST {aliens},
 	});
 	
