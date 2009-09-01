@@ -26,7 +26,7 @@ sub validate_update_user_options {
 	
 	$_REQUEST {_login} ||= $_USER -> {login};
 	
-	$_REQUEST {_login} =~ /^\w+$/ or return "#_login#:Désolé, vous avez choisi un login invalide";
+	$_REQUEST {_login} =~ /^[\w\-]+$/ or return "#_login#:Désolé, vous avez choisi un login invalide";
 
 	vld_unique ('users', {field => 'login'}) or return "#_login#:Le login '$_REQUEST{_login}' est déjà occupé, veuillez choisir un autre";
 
