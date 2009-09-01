@@ -284,6 +284,8 @@ sub draw_prestations {
 				
 		td.attr ('class', 'row-cell');
 		
+		tableSlider.cell_on ();
+		
 	};
 	
 	$_REQUEST {__script} .= '; var _md5_' . ($_REQUEST {aliens} ? 'refresh_partners' : 'refresh_local') . " = '$data->{__md5}'; ";
