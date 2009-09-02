@@ -1200,16 +1200,18 @@ EOS
 	
 	my @menu = ({
 		label     => 'Tous',
-		href      => {id_site => 0, aliens => ''},
+		href      => {id_site => 0, aliens => '', __next_query_string => -1},
 		is_active => !$_REQUEST {id_site} && !$_REQUEST {aliens},
+		keep_esc  => 1,
 	});
 	
 	foreach my $site (@$sites) {
 	
 		push @menu, {
 			label     => $site -> {label},
-			href      => {id_site => $site -> {id}, aliens => ''},
+			href      => {id_site => $site -> {id}, aliens => '', __next_query_string => -1},
 			is_active => $_REQUEST {id_site} == $site -> {id} && !$_REQUEST {aliens},
+			keep_esc  => 1,
 		};
 	
 	}
@@ -1504,8 +1506,9 @@ EOS
 	
 		push @menu, {
 			label     => 'Partenaires',
-			href      => {id_site => '', aliens => 1},
+			href      => {id_site => '', aliens => 1, __next_query_string => -1},
 			is_active => $_REQUEST {aliens},
+			keep_esc  => 1,
 		};
 	
 	}
@@ -1926,7 +1929,7 @@ EOS
 		
 		have_models => $have_models,
 
-		menu => @menu > 1 ? \@menu : undef,
+		menu => @menu > 1 && !$_REQUEST {id_prestation_to_clone} ? \@menu : undef,
 		
 		holydays => $holydays,
 		
