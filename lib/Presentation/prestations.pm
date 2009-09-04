@@ -10,7 +10,7 @@ sub draw_item_of_prestations {
 		
 	my $__last_query_string = session_access_log_set ($url);
 	
-	my $clone_url = check_href ({href => "/?type=prestations&id_prestation_to_clone=$data->{id}&year=$year&week=$week&__last_query_string=$__last_query_string"});
+	my $clone_url = check_href ({href => "/?id_site=0&type=prestations&id_prestation_to_clone=$data->{id}&year=$year&week=$week&__last_query_string=$__last_query_string"});
 		
 	$_REQUEST {__read_only} or $_REQUEST {__on_load} .= <<EOH;
 
