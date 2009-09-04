@@ -1891,8 +1891,16 @@ EOS
 	
 	}
 	else {
+	
+		my $sql = 'SELECT COUNT(*) FROM prestation_types WHERE fake = 0 AND is_placeable_by_conseiller IN (2, 4) AND ids_users LIKE ?';
 
-		$_USER -> {cnt_prestation_types} = sql_select_scalar ('SELECT COUNT(*) FROM prestation_types WHERE fake = 0 AND is_placeable_by_conseiller IN (2, 4) AND ids_users LIKE ?', '%,' . $_USER -> {id} . ',%');
+		if ($_REQUEST {id_prestation_to_clone}) {
+		
+			$sql .= " AND id = $item->{prestation_to_clone}->{id_prestation_type}"
+		
+		}
+
+		$_USER -> {cnt_prestation_types} = sql_select_scalar ($sql, '%,' . $_USER -> {id} . ',%');
 
 		$_USER -> {can_dblclick_others_empty} = $_USER -> {cnt_prestation_types} > 0;
 		
