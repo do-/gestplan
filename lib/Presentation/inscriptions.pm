@@ -4,7 +4,7 @@ sub draw_item_of_inscriptions {
 	
 	my ($data) = @_;
 	
-	$_REQUEST {__focused_input} = '_nom';
+	$_REQUEST {__focused_input} = $data -> {prestation} -> {type} -> {is_half_hour} == -1 ? '_label' : '_nom';
 
 	draw_form ({
 	
