@@ -15,7 +15,7 @@ sub validate_update_organisations_local {
 
 sub do_update_organisations_local {
 
-	sql_do_update ('organisations', [qw(days empty_site_label)]);
+	sql_do_update ('organisations', [qw(days empty_site_label partners_site_label)]);
 
 }
 

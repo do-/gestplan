@@ -30,17 +30,28 @@ sub draw_item_of_organisations_local {
 			},
 
 			{
-				name    => 'empty_site_label',
-				label   => "Nom de l'onglet 'Prestations locales'",
-				size    => 80,
-			},
-
-			{
 				name   => 'days',
 				label  => 'Jours travaillés',
 				type   => 'checkboxes',
 				values => [map {{id => ($_ + 1), label => $day_names [$_]}} (0 .. @day_names - 1)],
 			},			
+			
+			{
+				type   => 'banner',
+				label  => 'Onglets spéciaux',
+			},
+
+			{
+				name    => 'empty_site_label',
+				label   => "Prestations locales",
+				size    => 80,
+			},
+
+			{
+				name    => 'partners_site_label',
+				label   => "Partenaires",
+				size    => 80,
+			},
 
 		],
 

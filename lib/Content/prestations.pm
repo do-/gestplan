@@ -1504,7 +1504,7 @@ EOS
 	if ($item -> {has_aliens}) {
 	
 		push @menu, {
-			label     => 'Partenaires',
+			label     => $organisation -> {partners_site_label},
 			href      => {id_site => '', aliens => 1, __next_query_string => -1},
 			is_active => $_REQUEST {aliens},
 			keep_esc  => 1,
