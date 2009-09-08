@@ -1892,26 +1892,23 @@ EOS
 	}
 	else {
 	
-		my $sql = 'SELECT COUNT(*) FROM prestation_types WHERE fake = 0 AND is_placeable_by_conseiller IN (2, 4) AND ids_users LIKE ?';
+		my $sql = 'SELECT COUNT(*) FROM prestation_types WHERE fake = 0 AND is_placeable_by_conseiller IN (2, 3) AND ids_users LIKE ?';
 
 		if ($_REQUEST {id_prestation_to_clone}) {
 		
-			$sql .= " AND id = $item->{prestation_to_clone}->{id_prestation_type}"
+			$_REQUEST {id_prestation_type} = $item -> {prestation_to_clone} -> {id_prestation_type};
+		
+		}
+
+		if ($_REQUEST {id_prestation_type}) {
+		
+			$sql .= " AND id = $_REQUEST{id_prestation_type}";
 		
 		}
 
 		$_USER -> {cnt_prestation_types} = sql_select_scalar ($sql, '%,' . $_USER -> {id} . ',%');
 
 		$_USER -> {can_dblclick_others_empty} = $_USER -> {cnt_prestation_types} > 0;
-		
-		if ($_REQUEST {id_prestation_type}) {
-		
-			my $prestation_type = sql_select_hash ('prestation_types', $_REQUEST {id_prestation_type});
-	
-			$_USER -> {can_dblclick_others_empty} &&= ($prestation_type -> {is_placeable_by_conseiller} != 4);
-			$_USER -> {can_dblclick_others_empty} &&= $prestation_type -> {ids_users} =~ /\,$_USER->{id}\,/
-		
-		}
 	
 	}
 		
