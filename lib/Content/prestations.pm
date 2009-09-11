@@ -830,7 +830,7 @@ sub get_item_of_prestations {
 		if ($item -> {id_user} == $_USER -> {id}) {
 		
 			$filter = <<EOS;
-					is_placeable_by_conseiller IN (1, 3, 4)
+					is_placeable_by_conseiller IN (1, 3)
 					OR ids_users LIKE '%,$$_USER{id},%'
 					OR id=$$item{id_prestation_type}
 EOS
@@ -848,7 +848,7 @@ EOS
 	}
 	
 	$filter = "($filter) AND id_organisation = $_USER->{id_organisation}";
-
+darn $filter;
 	my $ids_groups = sql_select_ids ("SELECT id FROM groups WHERE id_organisation = ? AND fake = 0 AND (IFNULL(is_hidden, 0) = 0 OR id = ?)", $_USER -> {id_organisation}, 0 + $_USER -> {id_group});
 #	$ids_groups .= ',';
 #	$ids_groups .= (0 + $_USER -> {id_group});
