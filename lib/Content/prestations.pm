@@ -733,7 +733,7 @@ sub validate_update_prestations {
 	}
 	
 	my @id_users = grep {$_ > 0} grep {$_ != $_REQUEST {_id_user}} get_ids ('id_users');
-	$_REQUEST {_id_users} ||= join ',', (-1, @id_users, -1);
+	$_REQUEST {_id_users} = join ',', (-1, @id_users, -1);
 		
 	foreach my $id_user ($_REQUEST {_id_user}, @id_users) {
 	
