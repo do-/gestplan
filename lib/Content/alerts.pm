@@ -12,6 +12,8 @@ sub select_alerts {
 
 	$_REQUEST {__no_focus}     = 1;	
 	$_REQUEST {__meta_refresh} = 60;
+	
+	my $meta_refresh = qq {<META HTTP-EQUIV=Refresh CONTENT="$_REQUEST{__meta_refresh}; URL=@{[create_url()]}&__no_focus=1">};
 
 	my $alerts = sql_select_all (<<EOS, $_USER -> {id}, sprintf ('%04d-%02d-%02d', Today ()));
 		SELECT
@@ -29,7 +31,7 @@ sub select_alerts {
 			, inscriptions.prenom
 EOS
 
-	@$alerts or return out_html ({}, '<html></html>');
+	@$alerts or return out_html ({}, qq{<html><head>$meta_refresh</head></html>'});
 	
 	my $ids = ids ($alerts);	
 
@@ -59,6 +61,9 @@ EOS
 	out_html ({}, <<EOH);
 <html>
 	<head>
+		
+		$meta_refresh
+		
 		<script>
 		
 			function l () {
