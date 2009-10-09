@@ -89,18 +89,19 @@ sub draw_item_of_inscriptions {
 			(
 				map {{
 					type   =>
-						$_ -> {id_voc} ? 'select' :
 						$_ -> {id_field_type} == 1 ? 'select' :
+						$_ -> {id_field_type} == 8 ? 'checkboxes' :
 						$_ -> {id_field_type} == 4 ? 'radio' :
 						$_ -> {id_field_type} == 5 ? 'text' :
 						($_ -> {id_field_type} == 6 && !$_REQUEST {__read_only}) ? 'file' :
 						$_ -> {id_field_type} == 7 ? 'checkbox' :
 						'string',
 					rows   => $_ -> {id_field_type} == 5 ? 3 : undef,
-					cols   => 80,
+					cols   => $_ -> {id_field_type} == 8 ? 1 : 80,
 					href   => $_ -> {id_field_type} == 6 ?
 						qq{/?type=ext_field_values&id=$data->{"field_$_->{id}_id"}&action=download} :
 						undef,
+					height => 150,
 					target => 'invisible',
 					label  => $_ -> {label},
 					name   => 'field_' . $_ -> {id},
@@ -376,9 +377,10 @@ sub draw_inscriptions {
 					},
 					map {
 						{
-							label  => $i -> {'field_' . $_ -> {id_ext_field}},
-							href   => $_ -> {id_field_type} == 6 ? "/?type=ext_field_values&action=download&id=" . $i -> {'field_' . $_ -> {id_ext_field} . '_id'} : undef,
-							target => $_ -> {id_field_type} == 6 ? 'invisible' : undef,
+							label   => $i -> {'field_' . $_ -> {id_ext_field}},
+							href    => $_ -> {id_field_type} == 6 ? "/?type=ext_field_values&action=download&id=" . $i -> {'field_' . $_ -> {id_ext_field} . '_id'} : undef,
+							target  => $_ -> {id_field_type} == 6 ? 'invisible' : undef,
+							max_len => 1000,
 						},
 					} @{$data -> {prestation_1} -> {ext_fields}},
 				])
@@ -532,6 +534,7 @@ qq {
 							label  => $i -> {'field_' . $_ -> {id_ext_field}},
 							href   => $_ -> {id_field_type} == 6 ? "/?type=ext_field_values&action=download&id=" . $i -> {'field_' . $_ -> {id_ext_field} . '_id'} : undef,
 							target => $_ -> {id_field_type} == 6 ? 'invisible' : undef,
+							max_len => 1000,
 						},
 					} @{$data -> {prestation_2} -> {ext_fields}},
 

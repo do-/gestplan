@@ -73,7 +73,12 @@ sub draw_inscriptions_par_jour {
 						label => $i -> {recu_par},
 #						off   => !$i -> {hour},
 					},
-					map {$i -> {'field_' . $_ -> {id}}}  grep {$_ -> {type} ne 'break'} @{$data -> {ext_fields}},
+					map {
+						{
+							label   => $i -> {'field_' . $_ -> {id}},
+							max_len => 100000,
+						}
+					}  grep {$_ -> {type} ne 'break'} @{$data -> {ext_fields}},
 				])
 
 			},
