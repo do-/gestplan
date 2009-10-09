@@ -397,8 +397,10 @@ EOS
 		}
 
 		$i -> {is_mandatory} or next;
+
+		my $vide = $i -> {id_field_type} == 1 ? '0' : '';
 		
-		$_REQUEST {$name} ne '' or return "#$name#:Vous avez oublié de remplir le champ \"$i->{label}\"";
+		$_REQUEST {$name} ne $vide or return "#$name#:Vous avez oublié de remplir le champ \"$i->{label}\"";
 		
 	}
 
