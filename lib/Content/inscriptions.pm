@@ -176,7 +176,7 @@ sub do_update_inscriptions {
 	
 	my $item = sql_select_hash ('inscriptions');
 	
-	($item -> {id_author} == $_USER -> {id}) or sql_do ('UPDATE inscriptions SET id_author = ? WHERE id = ?', $_USER -> {id}, $item -> {id});
+	$item -> {id_author} or sql_do ('UPDATE inscriptions SET id_author = ? WHERE id = ?', $_USER -> {id}, $item -> {id});
 	
 	$_REQUEST {_hour} or return;
 	
@@ -232,7 +232,7 @@ sub do_delete_inscriptions {
 
 	$item -> {ext_fields} = sql_select_all ("SELECT * FROM ext_fields WHERE fake = 0 AND id IN (" . $item -> {prestation} -> {type} -> {ids_ext_fields} . ") ORDER BY ord");
 	
-	my $fields = 'nom = NULL, prenom = NULL, id_user = NULL, hour = NULL, minute = NULL, fake = -1';
+	my $fields = 'nom = NULL, prenom = NULL, id_user = NULL, hour = NULL, minute = NULL, id_author = NULL, fake = -1';
 	
 #	foreach my $field (@{$item -> {ext_fields}}) {
 #		$fields .= ', field_' . $field -> {id} . ' = NULL';
