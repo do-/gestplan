@@ -105,7 +105,7 @@ sub draw_item_of_inscriptions {
 						$_ -> {id_field_type} == 7 ? 'checkbox' :
 						'string',
 					rows   => $_ -> {id_field_type} == 5 ? 3 : undef,
-					cols   => $_ -> {id_field_type} == 8 ? 1 : 80,
+					cols   => $_ -> {id_field_type} == 8 ? 3 : 80,
 					href   => $_ -> {id_field_type} == 6 ?
 						qq{/?type=ext_field_values&id=$data->{"field_$_->{id}_id"}&action=download} :
 						undef,
