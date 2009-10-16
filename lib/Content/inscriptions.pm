@@ -307,7 +307,31 @@ sub do_delete_inscriptions {
 		elsif (!$item -> {parent} && $item -> {id_author} == $_USER -> {id}) {
 								
 			sql_do ('DELETE FROM inscriptions WHERE id     = ?', $item -> {id});
-
+			
+			my $ids = sql_select_ids (q {
+			
+				SELECT
+					inscriptions.id_prestation
+				FROM
+					inscriptions
+					LEFT JOIN prestations_invitations ON inscriptions.id_prestation = prestations_invitations.id_prestation
+					LEFT JOIN inscriptions AS i ON (
+						inscriptions.id_prestation = i.id_prestation
+						AND inscriptions.id <> i.id
+						AND i.fake = 0
+					)
+				WHERE
+					inscriptions.parent = ?
+					AND prestations_invitations.id > 0
+				GROUP BY
+					1
+				HAVING
+					COUNT(i.id) = 0
+					
+			}, $item -> {id});
+			
+			sql_do ("DELETE FROM prestations  WHERE id IN ($ids)");
+			
 			sql_do ('DELETE FROM inscriptions WHERE parent = ?', $item -> {id});
 		
 		}
