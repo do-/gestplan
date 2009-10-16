@@ -285,9 +285,29 @@ sub do_delete_inscriptions {
 
 	if ($item -> {prestation} -> {type} -> {is_half_hour} == -1) {
 	
-		if (!$item -> {parent} && $item -> {id_author} == $_USER -> {id}) {
+		my $prestation_invitation = sql_select_hash ('SELECT * FROM prestations_invitations WHERE id_prestation = ?', $item -> {prestation} -> {id});
+		
+		if (
+			
+			$prestation_invitation -> {id}
+			
+			&& $prestation_invitation -> {id_inscription} == $item -> {id}
+			
+			&& 0 == sql_select_scalar ('SELECT COUNT(*) FROM inscriptions WHERE fake = 0 AND id_prestation = ?', $item -> {prestation} -> {id})
+				
+		) {
+			
+			sql_do ('DELETE FROM prestations_invitations WHERE id = ?', $prestation_invitation -> {id});
+
+			sql_do ('DELETE FROM inscriptions WHERE id_prestation = ?', $item -> {prestation} -> {id});
+
+			sql_do ('DELETE FROM prestations  WHERE id            = ?', $item -> {prestation} -> {id});
+			
+		}
+		elsif (!$item -> {parent} && $item -> {id_author} == $_USER -> {id}) {
 								
 			sql_do ('DELETE FROM inscriptions WHERE id     = ?', $item -> {id});
+
 			sql_do ('DELETE FROM inscriptions WHERE parent = ?', $item -> {id});
 		
 		}
@@ -296,8 +316,11 @@ sub do_delete_inscriptions {
 			my $new_parent = sql_select_scalar ('SELECT MIN(id) FROM inscriptions WHERE parent = ?', $item -> {id});
 			
 			if ($new_parent) {
+			
 				sql_do ('UPDATE inscriptions SET parent = 0 WHERE     id = ?', $new_parent);
+			
 				sql_do ('UPDATE inscriptions SET parent = ? WHERE parent = ?', $new_parent, $item -> {id});
+			
 			}
 	
 			sql_do_delete ('inscriptions');

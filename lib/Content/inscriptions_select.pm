@@ -22,16 +22,43 @@ sub do_add_inscriptions_select {
 	$prestation -> {fake} = 0;
 	
 	@ids_prestations = get_ids ('prestation');
+	
+	my %prestations_invitations = ();
 
 	foreach my $id_user (get_ids ('user')) {
-        	$prestation -> {id_user} = $id_user;
-		push @ids_prestations, sql_do_insert ('prestations', $prestation);
+	
+       	$prestation -> {id_user} = $id_user;
+       	
+       	my $id_prestation = sql_do_insert ('prestations', $prestation);
+       	
+       	$prestations_invitations {$id_prestation} = 1;
+		
+		push @ids_prestations, $id_prestation;
+		
 	}
 
+	delete $item -> {id};
+
 	foreach my $id_prestation (@ids_prestations) {
-		delete $item -> {id};
-        	$item -> {id_prestation} = $id_prestation;
-		sql_do_insert ('inscriptions', $item);
+		
+        $item -> {id_prestation} = $id_prestation;
+        
+		my $id_inscription = sql_do_insert ('inscriptions', $item);
+		
+		if ($prestations_invitations {$id_prestation}) {
+		
+			sql_do_insert (prestations_invitations => {
+			
+				fake           => 0,
+			
+				id_prestation  => $id_prestation,
+			
+				id_inscription => $id_inscription,
+					
+			});
+		
+		}
+		
 	}
 	
 	my $id_inscriptions = sql_select_ids ('SELECT id FROM inscriptions WHERE parent = ?', $item -> {parent});
