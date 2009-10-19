@@ -577,7 +577,7 @@ EOH
 										$i -> {id} == $_USER -> {id}
 										
 										&& (
-											$p -> {is_placeable_by_conseiller} == 1
+											$p -> {is_placeable_by_conseiller} =~ /[13]/
 											|| !$p -> {label}
 										)
 									)
