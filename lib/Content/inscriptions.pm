@@ -9,7 +9,6 @@ sub do_copy_from_inscriptions {
 	foreach (qw(
 		hour
 		minute
-		id_user
 	)) {
 		delete $item_to_clone -> {$_}
 	}
