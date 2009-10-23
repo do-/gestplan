@@ -402,11 +402,21 @@ EOS
 	
 	foreach my $i (@{$item -> {ext_fields}}) {
 		
-		$i -> {is_mandatory} or next;
-		
 		my $name = '_field_' . $i -> {id};
 
-		defined $_REQUEST {$name} and $_REQUEST {$name} ne '' or return "#$name#:Vous avez oublié de remplir le champ \"$i->{label}\"";
+		if ($i -> {id_field_type} == 8) {
+
+        	$_REQUEST {$name} = $_REQUEST {$name . ',-1'};
+        	
+        	$_REQUEST {$name} = '' if $_REQUEST {$name} eq '-1'
+
+		}
+
+		$i -> {is_mandatory} or next;
+
+		my $vide = $i -> {id_field_type} == 1 ? '0' : '';
+		
+		$_REQUEST {$name} ne $vide or return "#$name#:Vous avez oublié de remplir le champ \"$i->{label}\"";
 		
 	}
 
@@ -473,7 +483,7 @@ sub get_item_of_inscriptions {
 
 	$item -> {ext_fields} = sql_select_all (qq{
 		SELECT
-			ext_fields.*			
+			ext_fields.*
 		FROM
 			ext_fields
 			LEFT JOIN prestation_types_ext_fields ON (
@@ -498,6 +508,12 @@ sub get_item_of_inscriptions {
 		
 		push @vocs, 'voc_' . $field -> {id_voc}, {order => 'ord'};
 		
+		if ($field -> {id_field_type} == 8) {
+
+			$item -> {"field_$field->{id}"} = [split /,/, $item -> {"field_$field->{id}"}];
+
+		}
+
 	}
 	
 	$item -> {prestation} -> {id_users} ||= -1;
@@ -798,6 +814,31 @@ EOS
 				}
 				
 			}			
+			elsif ($field -> {id_field_type} == 8) {
+			
+				my $table = $field -> {id_voc} ? 'voc_' . $field -> {id_voc} : 'users';
+							
+				foreach my $i (@{$prestation_1 -> {inscriptions}}) {
+
+					next if $i -> {fake};
+
+					$i -> {$key} =
+						
+						join ', ',
+						
+							sort grep {$_} map {
+							
+								$cache {"${table}_$_"} ||=
+								
+								sql_select_scalar ("SELECT label FROM $table WHERE id = ?", $_)
+							
+							}
+							
+								split /\,/, $i -> {$key}
+
+				}
+				
+			}			
 			elsif ($field -> {id_field_type} == 4) {
 			
 				foreach my $i (@{$prestation_1 -> {inscriptions}}) {
@@ -912,6 +953,31 @@ EOS
 					next if $i -> {fake};
 
 					$i -> {$key} = ($cache {"${table}_$i->{$key}"} ||= sql_select_scalar ("SELECT label FROM $table WHERE id = ?", $i -> {$key}));
+
+				}
+				
+			}			
+			elsif ($field -> {id_field_type} == 8) {
+			
+				my $table = $field -> {id_voc} ? 'voc_' . $field -> {id_voc} : 'users';
+							
+				foreach my $i (@{$prestation_2 -> {inscriptions}}) {
+
+					next if $i -> {fake};
+
+					$i -> {$key} =
+						
+						join ', ',
+						
+							sort grep {$_} map {
+							
+								$cache {"${table}_$_"} ||=
+								
+								sql_select_scalar ("SELECT label FROM $table WHERE id = ?", $_)
+							
+							}
+							
+								split /\,/, $i -> {$key}
 
 				}
 				

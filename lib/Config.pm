@@ -188,6 +188,8 @@ sub is_past {
 ################################################################################
 
 sub get_page {
+
+	push @{$_REQUEST {__include_js}}, 'clock';
 	
 	sql_do ('SET NAMES latin1');
 	

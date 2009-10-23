@@ -135,7 +135,11 @@ EOS
 		
 		$join .= " LEFT JOIN ext_field_values AS t_$field->{name} ON (t_$field->{name}.id_inscription = inscriptions.id AND t_$field->{name}.id_ext_field = $field->{id})";
 
-		if ($field -> {id_field_type} !~ /^[35]$/) {
+		if ($field -> {id_field_type} == 8) {
+			$filter .= " AND CONCAT(',', t_$field->{name}.value, ',') LIKE ?";
+			push @params, "\%,$_REQUEST{$field->{name}},\%";
+        }
+		elsif ($field -> {id_field_type} !~ /^[35]$/) {
 			$filter .= " AND t_$field->{name}.value = ?";
 			push @params, $_REQUEST {$field -> {name}};
         }
@@ -235,6 +239,34 @@ EOS
 			}
 
 		}			
+		elsif ($field -> {id_field_type} == 8) {
+		
+			$field -> {type} = 'input_select';
+			
+			$field -> {empty} = '[Tout ' . lc $field -> {label} . ']';
+			
+			if ($field -> {id_voc}) {
+				$field -> {values} = sql_select_vocabulary ('voc_' . $field -> {id_voc});
+			}
+			else {
+				$field -> {values} = sql_select_vocabulary ('users', {filter => "id_organisation = $_USER->{id_organisation}"});
+			}			
+			
+			my %v = map {$_ -> {id} => $_ -> {label}} @{$field -> {values}};
+							
+			foreach my $i (@$inscriptions_par_conseiller) {
+			
+				$i -> {$field -> {name}} =
+				
+					join ', ',
+					
+						sort grep {$_}
+						
+							@v {split /,/, $i -> {$field -> {name}}}
+
+			}
+
+		}
 		elsif ($field -> {id_field_type} == 4) {
 			
 			$field -> {type} = 'input_checkbox';

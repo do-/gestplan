@@ -79,6 +79,8 @@ sub validate_update_ext_fields {
 	
 	$_REQUEST {_is_mandatory} += 0;
 
+    $_REQUEST {_id_voc} = $_REQUEST {"_id_voc_$_REQUEST{_id_field_type}"};
+
 	return undef;
 	
 }
@@ -105,13 +107,13 @@ sub get_item_of_ext_fields {
 			$type -> {value} = $item -> {length};
 			
 		}
-		elsif ($type -> {id} == 1) {
+		elsif ($type -> {id} =~ /[18]/) {
 
 			$type -> {type}   = 'select';
-			$type -> {name}   = 'id_voc';
-#			$type -> {empty}  = 'Utilisateurs';
+			$type -> {value}  = $item -> {id_voc};
+			$type -> {name}   = "id_voc_$type->{id}";
 			$type -> {other}  = '/?type=vocs';
-			$type -> {values} = [{id => 0, label => 'Utilisateurs'}, @{sql_select_vocabulary ('vocs', {filter => 'id_organisation = ' . $_USER -> {id_organisation}})}];			
+			$type -> {values} = [{id => 0, label => 'Utilisateurs'}, @{sql_select_vocabulary ('vocs', {filter => 'id_organisation = ' . $_USER -> {id_organisation}})}];
 
 		}
 		
