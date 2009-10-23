@@ -50,6 +50,7 @@ our $conf = {
 	core_hide_row_buttons => 2,
 	core_recycle_ids => 0,
 	core_unlimit_xls => 1,
+	core_skip_boot   => 1,
 	
 #	db_temporality => ['workbook', 'vacations'],
 	

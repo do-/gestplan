@@ -10,6 +10,8 @@ sub do_erase_prestations {
 	my $sql = <<EOS;
 		SELECT
 			prestations.id
+			, prestations.id_user
+			, prestations.id_users
 		FROM
 			prestations
 			INNER JOIN prestation_types ON prestations.id_prestation_type = prestation_types.id
@@ -23,28 +25,31 @@ EOS
 	my $ids = -1;
 	
 	foreach my $i (@{sql_select_all ($sql, $to, $from, $_REQUEST {id_user}, '%,' . $_REQUEST {id_user} . ',%')}) {
-	
-		$ids .= ", $i->{id}";
-		
+
 		my @ids_users = grep {$_ != $_REQUEST {id_user}} grep {$_ > 0} ($i -> {id_user}, split /\,/, $i -> {id_users});
-	
+
 		if (@ids_users) {
 		
 			my $id_user = shift @ids_users;
 			
-			sql_do ('UPDATE prestations SET id_user = ?, ids_users = ? WHERE id = ?', $id_user, (join ',', (-1, @ids_users, -1)), $i -> {id});
+			sql_do ('UPDATE prestations SET id_user = ?, id_users = ? WHERE id = ?', $id_user, (join ',', (-1, @ids_users, -1)), $i -> {id});
 		
 		}
 		else {
 
-			sql_do ('DELETE FROM prestations WHERE id = ?', $i -> {id});
+			$ids .= ",$i->{id}";
 
 		}
 	
-	}	
-		
-	sql_do ("DELETE FROM inscriptions WHERE id_prestation IN ($ids)");
-	sql_do ("DELETE FROM prestations_rooms WHERE id_prestation IN ($ids)");
+	}
+
+	if ($ids ne '-1') {
+
+		sql_do ("DELETE FROM prestations WHERE id IN ($ids)");
+		sql_do ("DELETE FROM inscriptions WHERE id_prestation IN ($ids)");
+		sql_do ("DELETE FROM prestations_rooms WHERE id_prestation IN ($ids)");
+
+	}
 	
 	delete $_REQUEST {id_user};
 	
@@ -1583,19 +1588,18 @@ EOS
 	}
 	else {
 
-		$_USER -> {cnt_prestation_types} = sql_select_scalar ('SELECT COUNT(*) FROM prestation_types WHERE fake = 0 AND is_placeable_by_conseiller IN (2, 4) AND ids_users LIKE ?', '%,' . $_USER -> {id} . ',%');
-
-		$_USER -> {can_dblclick_others_empty} = $_USER -> {cnt_prestation_types} > 0;
+		my $sql = 'SELECT COUNT(*) FROM prestation_types WHERE fake = 0 AND is_placeable_by_conseiller IN (2, 3) AND ids_users LIKE ?';
 		
 		if ($_REQUEST {id_prestation_type}) {
 		
-			my $prestation_type = sql_select_hash ('prestation_types', $_REQUEST {id_prestation_type});
-	
-			$_USER -> {can_dblclick_others_empty} &&= ($prestation_type -> {is_placeable_by_conseiller} != 4);
-			$_USER -> {can_dblclick_others_empty} &&= $prestation_type -> {ids_users} =~ /\,$_USER->{id}\,/
+			$sql .= " AND id = $_REQUEST{id_prestation_type}";
 		
 		}
-	
+		
+		$_USER -> {cnt_prestation_types} = sql_select_scalar ($sql, '%,' . $_USER -> {id} . ',%');
+		
+		$_USER -> {can_dblclick_others_empty} = $_USER -> {cnt_prestation_types} > 0;
+
 	}
 		
 	return {

@@ -87,7 +87,13 @@ sub draw_item_of_inscriptions {
 			},
 			
 			(
-				map {{
+			
+			
+				map {
+				
+					my $values = $data -> {'voc_' . $_ -> {id_voc}} || $data -> {users};
+				
+				{
 					type   =>
 						$_ -> {id_field_type} == 1 ? 'select' :
 						$_ -> {id_field_type} == 8 ? 'checkboxes' :
@@ -97,18 +103,18 @@ sub draw_item_of_inscriptions {
 						$_ -> {id_field_type} == 7 ? 'checkbox' :
 						'string',
 					rows   => $_ -> {id_field_type} == 5 ? 3 : undef,
-					cols   => $_ -> {id_field_type} == 8 ? 1 : 80,
+					cols   => $_ -> {id_field_type} == 8 ? 3 : 80,
 					href   => $_ -> {id_field_type} == 6 ?
 						qq{/?type=ext_field_values&id=$data->{"field_$_->{id}_id"}&action=download} :
 						undef,
-					height => 150,
+					height => @$values > 7 ? 150 : undef,
 					target => 'invisible',
 					label  => $_ -> {label},
 					name   => 'field_' . $_ -> {id},
 					size   => $_ -> {length},
 					values =>
 						$_ -> {id_field_type} == 4 ? [{id => 1, label => 'Oui'}, {id => 0, label => 'Non'}] :
-						($_ -> {id_field_type} == 1 || $_ -> {id_voc})? ($data -> {'voc_' . $_ -> {id_voc}} || $data -> {users}) :
+						($_ -> {id_field_type} == 1 || $_ -> {id_voc})? $values :
 						undef,
 					empty  => ' ',
 				}} @{$data -> {ext_fields}},
