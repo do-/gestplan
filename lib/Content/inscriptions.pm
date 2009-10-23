@@ -9,7 +9,6 @@ sub do_copy_from_inscriptions {
 	foreach (qw(
 		hour
 		minute
-		id_user
 	)) {
 		delete $item_to_clone -> {$_}
 	}
@@ -83,34 +82,51 @@ sub do_create_inscriptions {
 
 ################################################################################
 
-sub _refresh_alerts {
+sub recalculate_inscriptions {
 
-	my $dead_ids = sql_select_ids (<<EOS, sprintf ('%04d-%02d-%02d', Today ()));
-		SELECT
-			alerts.id
-		FROM
-			alerts
-			INNER JOIN inscriptions ON alerts.id_inscription = inscriptions.id
-			INNER JOIN prestations  ON inscriptions.id_prestation = prestations.id
-		WHERE
-			prestations.dt_start < ?
-EOS
+	my @today = Today ();
 	
-	sql_do ("DELETE FROM alerts WHERE id IN ($dead_ids)");
+	my $data;
 
-	my $item = sql_select_hash ('inscriptions');
+	if ($_REQUEST {id}) {
 
-	my $prestation = sql_select_hash ('prestations', $item -> {id_prestation});
+		$data = sql (inscriptions => $_REQUEST {id}, 'prestations(id_user, id_users, dt_start)', 'prestation_types(id_organisation)');
+				
+		$_REQUEST {__id_organisation} = $data -> {prestation_type} -> {id_organisation};
 
-	foreach my $id_user (grep {$_ > 0 && $_ != $_USER -> {id}} ($prestation -> {id_user}, split /\,/, $prestation -> {id_users})) {
+	}	
+	
+	send_refresh_messages ($_REQUEST {__id_organisation});
 		
-		sql_do_insert ('alerts', {
-			fake    => 0,
-			id_user => $id_user,
-			id_inscription => $_REQUEST {id},
-		});
+	$data -> {hour} or return;
+
+	$_REQUEST {__old_hour} != $data -> {hour} or $_REQUEST {__old_minute} != $item -> {minute} or return;
+	
+	dt_iso (@today) eq $data -> {prestation} -> {dt_start} or return;
+
+	my @ids_users = grep {$_ > 0 && $_ != $_USER -> {id}} ($data -> {prestation} -> {id_user}, split /\,/, $data -> {prestation} -> {id_users});
+	
+	@ids_users > 0 or return;
+	
+	my @js;
+	
+	$js [1] = "alert ('$data->{nom} $data->{prenom} est arrivé(e) à $data->{hour}h$data->{minute}.\\n'); try_to_reload (window._md5_refresh_local)";
+	
+	$js [0] = "showModalDialog ('/i/close.html?$_REQUEST{salt}', window); $js[1]";
+	
+	sql (users => [[id => \@ids_users]], sub {
+	
+		js_im (
 		
-	}
+			$i -> {id},
+			
+			$js [$i -> {no_popup}],
+			
+			{expires => [@today, 23, 59, 59]},
+			
+		);
+	
+	})
 
 }
 
@@ -172,16 +188,15 @@ sub do_update_inscriptions {
 
 	sql_do ('DELETE FROM ext_field_values WHERE id_inscription = ? AND fake = -1', $_REQUEST {id});
 
-	do_update_DEFAULT ();
-	
 	my $item = sql_select_hash ('inscriptions');
 	
 	$item -> {id_author} or sql_do ('UPDATE inscriptions SET id_author = ? WHERE id = ?', $_USER -> {id}, $item -> {id});
 	
-	$_REQUEST {_hour} or return;
-	
-	_refresh_alerts ();
+	$_REQUEST {__old_hour}   = $item -> {hour};
+	$_REQUEST {__old_minute} = $item -> {minute};
 
+	do_update_DEFAULT ();
+		
 }
 
 ################################################################################
@@ -211,9 +226,7 @@ sub do_mark_inscriptions {
 		WHERE
 			inscriptions.id IN ($_REQUEST{id},$id_inscriptions)
 EOS
-	
-	_refresh_alerts ();
-	
+		
 	esc ();
 	
 }
@@ -229,6 +242,8 @@ sub do_delete_inscriptions {
 	$item -> {prestation} -> {type} = sql_select_hash ('prestation_types', $item -> {prestation} -> {id_prestation_type});
 	
 	$item -> {prestation} -> {type} -> {ids_ext_fields} ||= -1;
+	
+	$_REQUEST {__id_organisation} = $item -> {prestation} -> {id_organisation};
 
 	$item -> {ext_fields} = sql_select_all ("SELECT * FROM ext_fields WHERE fake = 0 AND id IN (" . $item -> {prestation} -> {type} -> {ids_ext_fields} . ") ORDER BY ord");
 	
@@ -269,9 +284,53 @@ sub do_delete_inscriptions {
 
 	if ($item -> {prestation} -> {type} -> {is_half_hour} == -1) {
 	
-		if (!$item -> {parent} && $item -> {id_author} == $_USER -> {id}) {
+		my $prestation_invitation = sql_select_hash ('SELECT * FROM prestations_invitations WHERE id_prestation = ?', $item -> {prestation} -> {id});
+		
+		if (
+			
+			$prestation_invitation -> {id}
+			
+			&& $prestation_invitation -> {id_inscription} == $item -> {id}
+			
+			&& 0 == sql_select_scalar ('SELECT COUNT(*) FROM inscriptions WHERE fake = 0 AND id_prestation = ?', $item -> {prestation} -> {id})
+				
+		) {
+			
+			sql_do ('DELETE FROM prestations_invitations WHERE id = ?', $prestation_invitation -> {id});
+
+			sql_do ('DELETE FROM inscriptions WHERE id_prestation = ?', $item -> {prestation} -> {id});
+
+			sql_do ('DELETE FROM prestations  WHERE id            = ?', $item -> {prestation} -> {id});
+			
+		}
+		elsif (!$item -> {parent} && $item -> {id_author} == $_USER -> {id}) {
 								
 			sql_do ('DELETE FROM inscriptions WHERE id     = ?', $item -> {id});
+			
+			my $ids = sql_select_ids (q {
+			
+				SELECT
+					inscriptions.id_prestation
+				FROM
+					inscriptions
+					LEFT JOIN prestations_invitations ON inscriptions.id_prestation = prestations_invitations.id_prestation
+					LEFT JOIN inscriptions AS i ON (
+						inscriptions.id_prestation = i.id_prestation
+						AND inscriptions.id <> i.id
+						AND i.fake = 0
+					)
+				WHERE
+					inscriptions.parent = ?
+					AND prestations_invitations.id > 0
+				GROUP BY
+					1
+				HAVING
+					COUNT(i.id) = 0
+					
+			}, $item -> {id});
+			
+			sql_do ("DELETE FROM prestations  WHERE id IN ($ids)");
+			
 			sql_do ('DELETE FROM inscriptions WHERE parent = ?', $item -> {id});
 		
 		}
@@ -280,8 +339,11 @@ sub do_delete_inscriptions {
 			my $new_parent = sql_select_scalar ('SELECT MIN(id) FROM inscriptions WHERE parent = ?', $item -> {id});
 			
 			if ($new_parent) {
+			
 				sql_do ('UPDATE inscriptions SET parent = 0 WHERE     id = ?', $new_parent);
+			
 				sql_do ('UPDATE inscriptions SET parent = ? WHERE parent = ?', $new_parent, $item -> {id});
+			
 			}
 	
 			sql_do_delete ('inscriptions');
@@ -596,7 +658,7 @@ EOS
 
 sub select_inscriptions {
 
-	$_REQUEST {__meta_refresh} = $_USER -> {refresh_period} || 300;
+#	$_REQUEST {__meta_refresh} = $_USER -> {refresh_period} || 300;
 
 	$_REQUEST {id_user} ||= $_USER -> {id};
 	$_REQUEST {id_day_period} ||= 3;
@@ -658,12 +720,12 @@ sub select_inscriptions {
 	my $week_status_type = sql_select_hash ('week_status_types', week_status ($_REQUEST {dt}, $user -> {id_organisation}));
 
  	if ($week_status_type -> {id} == 1 && $_USER -> {role} ne 'admin') {
- 		return {
+ 		return return_md5_checked ({
 			prestation_1 => {},
 			prestation_2 => {},
 			week_status_type => $week_status_type,
 			users => sql_select_vocabulary ('users', {filter => 'id_group > 0 AND id_organisation = ' . $_USER -> {id_organisation}}),
-		};
+		});
 	}
 	
 	my $dt = $_REQUEST {dt};
@@ -707,9 +769,11 @@ sub select_inscriptions {
 		SELECT
 			prestations.*
 			, prestation_types.id_organisation
+			, sites.label AS site_label
 		FROM
 			prestations
 			LEFT JOIN prestation_types ON prestations.id_prestation_type = prestation_types.id
+			LEFT JOIN sites ON prestations.id_site = sites.id
 		WHERE
 			(prestations.id_user = ? OR prestations.id_users LIKE ?)
 			AND CONCAT(prestations.dt_start,  prestations.half_start)  <= ?
@@ -720,6 +784,10 @@ EOS
 	my %cache = ();
 	
 	if ($prestation_1 -> {id}) {
+	
+		my ($week, $year) = Week_of_Year (dt_y_m_d ($prestation_1 -> {dt_start}));
+		
+		$prestation_1 -> {clone_href} = "/?type=prestations&year=$year&week=$week&id_prestation_to_clone=$prestation_1->{id}",
 	
 		$prestation_1 -> {type} = sql_select_hash ('prestation_types', $prestation_1 -> {id_prestation_type});
 		
@@ -843,9 +911,11 @@ EOS
 		SELECT
 			prestations.*
 			, prestation_types.id_organisation
+			, sites.label AS site_label
 		FROM
 			prestations
 			LEFT JOIN prestation_types ON prestations.id_prestation_type = prestation_types.id
+			LEFT JOIN sites ON prestations.id_site = sites.id
 		WHERE
 			(prestations.id_user = ? OR prestations.id_users LIKE ?)
 			AND CONCAT(prestations.dt_start,  prestations.half_start)  <= ?
@@ -857,6 +927,10 @@ EOS
 
 
 	if ($prestation_2 -> {id}) {
+
+		my ($week, $year) = Week_of_Year (dt_y_m_d ($prestation_2 -> {dt_start}));
+		
+		$prestation_2 -> {clone_href} = "/?type=prestations&year=$year&week=$week&id_prestation_to_clone=$prestation_2->{id}",
 
 		$prestation_2 -> {type} = sql_select_hash ('prestation_types', $prestation_2 -> {id_prestation_type});	
    	
@@ -976,7 +1050,7 @@ EOS
 
 	}
 
-	return {
+	return_md5_checked {
 		id_absent_users => $id_absent_users,
 		prestation_1 => $prestation_1,
 		prestation_2 => $prestation_2,

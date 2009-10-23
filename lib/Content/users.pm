@@ -1,5 +1,15 @@
 ################################################################################
 
+sub recalculate_users {
+
+	send_refresh_messages ();
+
+}
+
+################################################################################
+
+
+
 sub do_change_organisation_users { # navigation vers une autre structure
 
 	sql_do ('UPDATE users SET id_organisation = ? WHERE id = ?', $_REQUEST {_id_organisation}, $_USER -> {id});
@@ -43,7 +53,10 @@ sub get_item_of_users {
 
 	my $item = sql_select_hash ("users");
 	
+	$item -> {id_default_site} = $item -> {id_site};
+	
 	$item -> {id_default_organisation} = delete $item -> {id_organisation};
+
 	
 	__d ($item, 'dt_birth', 'dt_start', 'dt_finish');
 	
@@ -58,8 +71,9 @@ sub get_item_of_users {
 			filter => $_USER -> {role} eq 'superadmin' ? 'id IN (1,4)' : 'id < 4',
 		},
 
-		sites  => {filter => "id_organisation = $_USER->{id_organisation}"},
-		groups => {filter => "id_organisation = $_USER->{id_organisation}"},
+		sites  => {filter => "id_organisation = $_USER->{id_organisation}", ids => 'users_sites'},
+		
+		groups => {filter => "id_organisation = $_USER->{id_organisation}"},	
 
 	);
 	
@@ -89,16 +103,6 @@ sub get_item_of_users {
 		{type => 'users', name => 'Utilisateurs'},
 		{type => 'users', name => $item -> {label}, id => $item -> {id}},
 	];
-	
-#	$item -> {clones} = sql_select_all (<<EOS, $item -> {id}, $item -> {label});
-#		SELECT
-#			users.*
-#		FROM
-#			users
-#		WHERE	
-#			users.id <> ?
-#			AND users.label = ?
-#EOS
 
 	$item -> {off_periods} = sql_select_all (<<EOS, $item -> {id}, {fake => 'off_periods'});
 		SELECT
@@ -169,10 +173,16 @@ sub validate_update_users {
 		delete $_REQUEST {_password};
 	}
 
+#	!$_REQUEST {__checkboxes_id_site} or $_REQUEST {_id_default_site} or return "#_id_default_site#:Vous avez oublié de choisir l'onglet par défaut";
+	
+	$_REQUEST {_id_site} = delete $_REQUEST {_id_default_site};
+	
 	$_REQUEST {_id_organisation} = delete $_REQUEST {_id_default_organisation};
 	
 	$_REQUEST {'_id_organisation_' . $_REQUEST {_id_organisation}} = 1;
 
+	$_REQUEST {'_id_site_' . $_REQUEST {_id_site}} ||= 1;
+	
 	return undef;
 	
 }

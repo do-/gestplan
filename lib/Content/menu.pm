@@ -28,6 +28,13 @@ sub select_menu_for_superadmin {
 	
 		support_menu (),
 
+		{
+	    	label  => 'Déconnexion',
+	    	href   => "type=_logout",
+			side   => 'right_items',
+			target => '_top',
+		},
+
 	];
 
 }
@@ -36,8 +43,9 @@ sub select_menu_for_superadmin {
 
 sub select_menu_for_admin {
 
+	$_REQUEST {__im_delay} = 60 * 1000;
+
 	my $organisations = sql_select_all (q {
-	
 		SELECT
 			organisations.*
 		FROM
@@ -59,7 +67,7 @@ sub select_menu_for_admin {
 
 		{
 			name  => 'prestations',
-			label => 'Planning activités',
+			label => 'Planning',
 		},
 		{
 			name  => 'inscriptions',
@@ -127,6 +135,10 @@ sub select_menu_for_admin {
 					name  => 'rooms',
 					label => "Ressources",
 				},
+				{
+					href  => "/?type=organisations_local&id=$_USER->{id_organisation}",
+					label => "Structure",
+				},
 			],
 		},
 			
@@ -135,7 +147,7 @@ sub select_menu_for_admin {
 		support_menu (),
 
 		extra_menu (),
-		
+	
 		{
 			label   => 'Structures',
 			no_page => 1,
@@ -164,6 +176,8 @@ sub select_menu_for_admin {
 
 sub select_menu_for_conseiller {
 
+	$_REQUEST {__im_delay} = 60 * 1000;
+
 	return [
 
 		{
@@ -172,7 +186,7 @@ sub select_menu_for_conseiller {
 		},
 		{
 			name  => 'prestations',
-			label => 'Planning activités',
+			label => 'Planning',
 		},
 		{			
 			name  => 'user_options',
@@ -193,11 +207,13 @@ sub select_menu_for_conseiller {
 
 sub select_menu_for_accueil {
 
+	$_REQUEST {__im_delay} = 60 * 1000;
+
 	return [
 
 		{
 			name  => 'prestations',
-			label => 'Planning activités',
+			label => 'Planning',
 		},
 		{			
 			name  => 'user_options',

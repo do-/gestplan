@@ -4,6 +4,8 @@ sub draw_inscriptions_par_jour {
 	
 	my ($data) = @_;
 
+	$_REQUEST {__script} .= "; var _md5_refresh_local = '$data->{__md5}'; ";
+
 	return
 
 	    draw_form (
@@ -39,6 +41,13 @@ sub draw_inscriptions_par_jour {
 				'Utilisateur',
 				'Date',
 				'Type',
+				{
+					label  => 'Onglet',
+					hidden =>
+						!$data -> {menu}
+						|| $_REQUEST {id_site}
+					,
+				},
 				'No / temps',
 				'Arrivé',
 				'Reçu par',
@@ -59,6 +68,13 @@ sub draw_inscriptions_par_jour {
 					$i -> {user_label},
 					$i -> {dt_start},
 					$i -> {label_short},
+					{
+						label  => $i -> {site_label},,
+						hidden =>
+							!$data -> {menu}
+							|| $_REQUEST {id_site}
+						,
+					},
 					$i -> {label},
 					{
 						label => sprintf ('%02dh%02d', $i -> {hour}, $i -> {minute}),
@@ -92,7 +108,7 @@ sub draw_inscriptions_par_jour {
 				lpt => 1,
 
 				top_toolbar => [{
-					keep_params => ['type', 'year', 'week'],
+					keep_params => ['type', 'year', 'week', 'id_site'],
 				},
 	
 					{

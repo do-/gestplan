@@ -2,17 +2,20 @@
 
 sub select_inscriptions_par_jour {
 
-	my $sites = sql_select_vocabulary (sites => {filter => "id_organisation = $_USER->{id_organisation}"});
+	my $sites = sql (sites => [
+		[id_organisation => $_USER->{id_organisation}],
+		[ORDER           => 'ord, label'],
+	]);
 	
 	my $menu = @$sites == 0 ? undef : [map {{
 		label     => $_ -> {label},
 		href      => {id_site => $_ -> {id}},
 		is_active => $_REQUEST {id_site} == $_ -> {id},
-	}} ({label => 'Tous sites'}, @$sites)];
+	}} ({label => 'Tous'}, @$sites)];
 
-	my $site_filter = $_REQUEST {id_site} ? " AND IFNULL(users.id_site, 0) IN ($_REQUEST{id_site}, 0) " : '';
 
-	$_REQUEST {__meta_refresh} = $_USER -> {refresh_period} || 300;
+
+
 	
 	unless ($_REQUEST {year}) {	
 		($_REQUEST {week}, $_REQUEST {year}) = Week_of_Year (Today ());	
@@ -32,13 +35,10 @@ sub select_inscriptions_par_jour {
 		AND IFNULL(users.dt_finish, '9999-99-99') >= '$dt_from'
 	"});
 	
-	my $prestation_types = sql_select_vocabulary ('prestation_types', {filter => "id_organisation = $_USER->{id_organisation}"}),
-	
-	my $id_prestation_types = -1;
-	foreach (@$prestation_types) {	$id_prestation_types .= ",$$_{id}" }
-		
-#	($_REQUEST {_week}, $_REQUEST {_year}) = Week_of_Year (reverse split /\//, $_REQUEST {dt_from});
-	
+	my $prestation_types = sql (prestation_types => [[id_organisation => $_USER -> {id_organisation} ]]);
+
+	my $id_prestation_types = ids ($prestation_types);
+
 	my $filter = $_REQUEST {id_user} ? "AND (id_user = $_REQUEST{id_user} OR id_users LIKE ',%$_REQUEST{id_user}%,')" : '';
 	
 	if ($_REQUEST {half_start}) {
@@ -47,6 +47,10 @@ sub select_inscriptions_par_jour {
 
 	if ($_REQUEST {id_prestation_type}) {
 		$filter .= " AND prestations.id_prestation_type = " . $_REQUEST {id_prestation_type};
+	}
+
+	if ($_REQUEST {id_site} > 0) {
+		$filter .= " AND prestations.id_site = " . $_REQUEST {id_site};
 	}
 
 	my ($id_users, $idx_users) = ids ($users);
@@ -76,7 +80,7 @@ sub select_inscriptions_par_jour {
 		$id_prestations .= ",$i->{id}";
 	
 	};
-	
+
 	sql_select_loop (<<EOS, $collect, $dt_to, $dt_from);
 		SELECT
 			*
@@ -89,7 +93,7 @@ sub select_inscriptions_par_jour {
 			AND id_prestation_type IN ($id_prestation_types)
 			$filter
 EOS
-	
+
 	my %ids_ext_fields = (-1 => 1);
 
 	sql_select_loop (<<EOS, sub {foreach (split /\,/, $i -> {ids_ext_fields}) {$ids_ext_fields {$_} ||= 1}});
@@ -103,7 +107,6 @@ EOS
 	 	WHERE
 	 		inscriptions.fake = 0
 	 		AND prestations.id IN ($id_prestations)
-	 		$site_filter
 EOS
 		
 	my $ids_ext_fields = join ',', keys %ids_ext_fields;
@@ -170,7 +173,6 @@ EOS
 	 	WHERE
 	 		inscriptions.fake = 0
 	 		AND prestations.id IN ($id_prestations)
-	 		$site_filter
 	 		$filter
 EOS
 
@@ -190,12 +192,14 @@ EOS
 	 		, users.label AS user_label
 	 		, prestation_types.label_short
 	 		, reception.label AS recu_par
+	 		, sites.label AS site_label
 	 	FROM
 	 		inscriptions
 	 		INNER JOIN prestations ON inscriptions.id_prestation = prestations.id
 	 		INNER JOIN users ON prestations.id_user = users.id
 	 		INNER JOIN prestation_types ON prestations.id_prestation_type = prestation_types.id
 	 		LEFT  JOIN users AS reception ON inscriptions.id_user = reception.id
+	 		LEFT  JOIN sites ON prestations.id_site = sites.id
 	 	WHERE
 	 		inscriptions.id IN ($ids_inscriptions_par_conseiller)
 	 	ORDER BY
@@ -291,7 +295,7 @@ EOS
 		
 #	$_REQUEST {__suicide} = 1;
 		
-	return {
+	return_md5_checked {
 		inscriptions_par_conseiller => $inscriptions_par_conseiller,
 		cnt                         => $cnt,
 		portion                     => $portion,

@@ -4,8 +4,16 @@ sub draw_item_of_prestations {
 
 	my ($data) = @_;
 	
-	$_REQUEST {__read_only} or $_REQUEST {__on_load} .= <<EOH;
+	my ($week, $year) = Week_of_Year (dt_y_m_d ($data -> {dt_start}));
 	
+	my $url = "/?sid=$_REQUEST{sid}&type=prestations&id=$data->{id}&__last_query_string=$_REQUEST{__last_last_query_string}&__last_scrollable_table_row=$_REQUEST{__last_scrollable_table_row}";
+		
+	my $__last_query_string = session_access_log_set ($url);
+	
+	my $clone_url = check_href ({href => "/?id_site=0&type=prestations&id_prestation_to_clone=$data->{id}&year=$year&week=$week&__last_query_string=$__last_query_string"});
+		
+	$_REQUEST {__read_only} or $_REQUEST {__on_load} .= <<EOH;
+
 		var id_users_0 = document.forms['form'].elements['_id_users_0'];
 		
 		if (id_users_0) {
@@ -34,10 +42,21 @@ EOH
 
 	draw_form ({
 	
+		additional_buttons => [
+			{
+				icon  => 'create',
+				label => 'dupliquer...',
+				href  => $clone_url,
+				keep_esc => 1,
+				off   => !$_REQUEST {__read_only},
+			},
+		],
+
 		right_buttons => [ del ($data) ],
-		
+				
 	}, $data,
 		[
+			[
 			{
 				name   => 'id_user',
 				label  => 'Utilisateur',
@@ -47,6 +66,18 @@ EOH
 				add_hidden => 1,
 				off    => $data -> {id_user} <= 0,
 			},
+			{
+				name   => 'id_site',
+				label  => 'Onglet',
+				type   => 'select',
+				values => $data -> {sites},
+				add_hidden => 1,
+				empty  => "Veuillez choisir l'onglet",
+				off    =>
+					0 == @{$data -> {sites}}
+				,
+			},
+			],
 			{
 				name   => 'id_users',
 				label  => 'Co-animateurs',
@@ -220,7 +251,44 @@ EOH
 
 sub draw_prestations {
 	
-	my ($data) = @_;
+	my ($data) = @_;	
+	
+	my $banner =
+			"Planning activités de la semaine $_REQUEST{week} du " .
+			$data -> {days} -> [0] -> {date} -> [2] .
+			' ' .
+			($data -> {days} -> [0] -> {date} -> [1] == $data -> {days} -> [-1] -> {date} -> [1] ? '' : $month_names_1 [$data -> {days} -> [0] -> {date} -> [1]]) .
+			' à ' .
+			$data -> {days} -> [-1] -> {date} -> [2] .
+			' ' .
+			$month_names_1 [$data -> {days} -> [-1] -> {date} -> [1]] .
+			' ' .
+			$data -> {days} -> [-1] -> {date} -> [0] .
+			': ' .
+			$data -> {week_status_type} -> {label}
+			. ($_REQUEST {id_inscription_to_clone} ? ' (Déplacement)' : '')
+			. ($_REQUEST {id_prestation_to_clone}  ? " (Duplication $data->{prestation_to_clone}->{prestation_type}->{label_short} $data->{prestation_to_clone}->{user}->{label})" : '')
+	;
+	
+	$banner =~ s{\s+}{ }gsm;
+	
+	$banner = chr (160) . $banner;
+		
+	j qq {
+	
+		if (name != '_body_iframe') return;
+		
+		var td = \$('#body_table table:first tr:last td');
+		
+		td.text (' $banner');
+				
+		td.attr ('class', 'row-cell');
+		
+		tableSlider.cell_on ();
+		
+	};
+	
+	$_REQUEST {__script} .= '; var _md5_' . ($_REQUEST {aliens} ? 'refresh_partners' : 'refresh_local') . " = '$data->{__md5}'; ";
 	
 	my $shift = $data -> {menu} ? 128 : 111;
 
@@ -230,7 +298,7 @@ sub draw_prestations {
 			function coord (row, col, what) {
 
 
-				var tbody = document.getElementById ('scrollable_table').tBodies(0);
+				var tbody = document.getElementById (scrollable_table_ids [0]).tBodies(0);
 				var _row = tbody.rows [row];
 			
 				if (!_row) {
@@ -250,7 +318,7 @@ sub draw_prestations {
 			}
 
 			function coord_h (row, col, what) {
-				var thead = document.getElementById ('scrollable_table').tHead;
+				var thead = document.getElementById (scrollable_table_ids [0]).tHead;
 				var _row = thead.rows [row];
 
 				if (!_row) {
@@ -284,12 +352,13 @@ EOJS
 							background: #485F70;
 							left:expression(
 								coord_h (0, $i, 'Left')
-								- document.getElementById ('scrollable_table').offsetParent.scrollLeft
-								- 1
+								- document.getElementById (scrollable_table_ids [0]).offsetParent.scrollLeft
+								- 2
 							);
-							height:44;
-							top:expression(document.getElementById ('scrollable_table').offsetParent.scrollTop);
+							height:46;
+							top:expression(1 + document.getElementById (scrollable_table_ids [0]).offsetParent.scrollTop);
 							width:2;
+							z-index:100;
 					"
 					><img src="/i/0.gif" width=1 height=1></div>
 EOH
@@ -305,8 +374,8 @@ EOH
 		
 		if ($from > -1) {
 						
-			my $top     = 44 + 22 * $from;
-			my $height  = 22 * ($j - $from);
+			my $top     = 47 + 23 * $from;
+			my $height  = 1  + 23 * ($j - $from);
 			my $height1 = $height + 1;
 			
 			$data -> {users} -> [$from] -> {span} = $j - $from;
@@ -321,8 +390,8 @@ EOH
 							background-color: #485F70;
 							left:expression(
 								coord_h (0, $i, 'Left')
-								- document.getElementById ('scrollable_table').offsetParent.scrollLeft
-								- 1
+								- document.getElementById (scrollable_table_ids [0]).offsetParent.scrollLeft
+								- 2
 							);
 							height:$height;
 							top:$top;
@@ -353,9 +422,9 @@ EOH
 				border:solid black 1px;
 				position:absolute;
 				background-image: url(/i/stripes.gif);
-				display:expression(document.getElementById ('scrollable_table').offsetParent.scrollTop > coord ($$off_period{row}, $$off_period{col_start}, 'Top') - 45 ? 'none' : 'block');
-				top:expression(coord ($$off_period{row}, 0, 'Top'));
-				left:expression( 	coord_h (1, $$off_period{col_start} - 1, 'Left') - document.getElementById ('scrollable_table').offsetParent.scrollLeft);
+				display:expression(document.getElementById (scrollable_table_ids [0]).offsetParent.scrollTop > coord ($$off_period{row}, $$off_period{col_start}, 'Top') - 45 ? 'none' : 'block');
+				top:expression(coord ($$off_period{row}, 0, 'Top') - 1);
+				left:expression( 	coord_h (1, $$off_period{col_start} - 1, 'Left') - document.getElementById (scrollable_table_ids [0]).offsetParent.scrollLeft - 1);
 				height:expression(	coord ($$off_period{row}, 0, 'Height'));
 				width:expression(
 									coord_h (1, $$off_period{col_finish} - 1, 'Width') -
@@ -399,7 +468,7 @@ EOH
 			else {
 
 				push @h2, {
-					label => ($day -> {id} % 2 ? 'Après-midi' : 'Matin'),
+					label => ($day -> {id} % 2 ? '<nobr>Après-midi</nobr>' : 'Matin'),
 				};
 
 			}
@@ -438,22 +507,22 @@ EOH
 			
 			
 			{
-				path => [{
-					name => "Planning activités de la semaine $_REQUEST{week} du " .
-					$data -> {days} -> [0] -> {date} -> [2] .
-					' ' .
-					($data -> {days} -> [0] -> {date} -> [1] == $data -> {days} -> [-1] -> {date} -> [1] ? '' : $month_names_1 [$data -> {days} -> [0] -> {date} -> [1]]) .
-					' à ' .
-					$data -> {days} -> [-1] -> {date} -> [2] .
-					' ' .
-					$month_names_1 [$data -> {days} -> [-1] -> {date} -> [1]] .
-					' ' .
-					$data -> {days} -> [-1] -> {date} -> [0] .
-					': ' .
-					$data -> {week_status_type} -> {label}
-					. ($_REQUEST {id_inscription_to_clone} ? ' (Déplacement)' : '')
-					,					
-				}],
+#				path => [{
+#					name => "Planning activités de la semaine $_REQUEST{week} du " .
+#					$data -> {days} -> [0] -> {date} -> [2] .
+#					' ' .
+#					($data -> {days} -> [0] -> {date} -> [1] == $data -> {days} -> [-1] -> {date} -> [1] ? '' : $month_names_1 [$data -> {days} -> [0] -> {date} -> [1]]) .
+#					' à ' .
+#					$data -> {days} -> [-1] -> {date} -> [2] .
+#					' ' .
+#					$month_names_1 [$data -> {days} -> [-1] -> {date} -> [1]] .
+#					' ' .
+#					$data -> {days} -> [-1] -> {date} -> [0] .
+#					': ' .
+#					$data -> {week_status_type} -> {label}
+#					. ($_REQUEST {id_inscription_to_clone} ? ' (Déplacement)' : '')
+#					,					
+#				}],
 			},
 		
 			[],
@@ -577,7 +646,9 @@ EOH
 										$i -> {id} == $_USER -> {id}
 										
 										&& (
+
 											$p -> {is_placeable_by_conseiller} =~ /[13]/
+
 											|| !$p -> {label}
 										)
 									)
@@ -617,7 +688,7 @@ EOH
 						)
 					
 					) {
-						$cell -> {attributes} -> {onDblClick} = "nope(\"$$day{create_href}&id_user=$$i{id}\", \"invisible\")";
+						$cell -> {attributes} -> {onDblClick} = "nope(\"$$day{create_href}&id_user=$$i{id}&_salt=$_REQUEST{__salt}&__last_query_string=$_REQUEST{__last_query_string}\", \"invisible\")";
 					}
 					
 					push @cells, $cell;	
@@ -679,14 +750,17 @@ EOH
 #				no_scroll => 1,
 
 				top_toolbar => [{
-					keep_params => ['type', 'year', 'id_site'],
+					keep_params => ['type', 'year', 'id_site', 'id_prestation_to_clone', 'id_inscription_to_clone'],
 				},
 
 					{
 						icon    => 'cancel',
 						label   => 'retour (Echap)',
 						href    => esc_href (),
-						off     => !$_REQUEST {id_inscription_to_clone},
+						off     =>
+							!$_REQUEST {id_inscription_to_clone}
+							&& !$_REQUEST {id_prestation_to_clone}
+						,
 						hotkey  => {code => ESC},
 					},
 
@@ -719,7 +793,8 @@ EOH
 						empty  => '',
 						off    =>
 							$_USER -> {role} eq 'accueil'
-							|| $_REQUEST {id_inscription_to_clone},
+							|| $_REQUEST {id_inscription_to_clone}
+							|| $_REQUEST {id_prestation_to_clone}
 						,
 					},
 					
@@ -730,7 +805,8 @@ EOH
 						href    => {action => 'switch_status', id_week_status_type => $data -> {week_status_type} -> {switch} -> {id}},
 						off     =>
 							$_USER -> {role} ne 'admin'
-							|| $_REQUEST {id_inscription_to_clone},
+							|| $_REQUEST {id_inscription_to_clone}
+							|| $_REQUEST {id_prestation_to_clone}
 						,
 					},
 			
@@ -743,7 +819,8 @@ EOH
 							$data -> {have_models}
 							|| $_USER -> {role} ne 'admin'
 							|| $data -> {week_status_type} -> {id} != 1
-							|| $_REQUEST {id_inscription_to_clone},
+							|| $_REQUEST {id_inscription_to_clone}
+							|| $_REQUEST {id_prestation_to_clone}
 						,
 					},
 					
@@ -755,7 +832,8 @@ EOH
 						off     =>
 							$_USER -> {role} ne 'admin'
 							|| $data -> {week_status_type} -> {id} != 1
-							|| $_REQUEST {id_inscription_to_clone},
+							|| $_REQUEST {id_inscription_to_clone}
+							|| $_REQUEST {id_prestation_to_clone}
 						,
 					},
 

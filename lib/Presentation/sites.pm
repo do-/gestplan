@@ -13,6 +13,11 @@ sub draw_sites {
 				draw_cells ({
 					href  => "/?type=sites&id=$$i{id}",
 				}, [
+					{
+						label   => $i -> {ord},
+						picture => '#####',
+						attributes => {width => 1},
+					},
 					$i -> {label},
 				])
 
@@ -64,6 +69,8 @@ sub draw_sites {
 sub draw_item_of_sites {
 	
 	my ($data) = @_;
+	
+	$_REQUEST {__focused_input} = '_label';
 
 	draw_form ({
 	
@@ -72,8 +79,14 @@ sub draw_item_of_sites {
 	}, $data,
 		[
 			{
-				name  => 'label',
-				label => 'Désignation',
+				name    => 'ord',
+				label   => 'Ordre',
+				picture => '#####',
+				size    => 5,
+			},
+			{
+				name    => 'label',
+				label   => 'Désignation',
 			},
 		],
 	);

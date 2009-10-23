@@ -1,9 +1,18 @@
 ################################################################################
 
+sub recalculate_sites {
+
+	send_refresh_messages ();
+
+}
+
+################################################################################
+
 sub do_update_sites {
 	
 	sql_do_update ('sites', [qw(
 		label
+		ord
 	)]);
 
 }
@@ -26,6 +35,8 @@ sub get_item_of_sites {
 
 	$_REQUEST {__read_only} ||= !($_REQUEST {__edit} || $item -> {fake} > 0);
 	
+	$_REQUEST {__read_only} or $item -> {ord} ||= 10 + sql ('sites(MAX(ord))' => [[id_organisation => $_USER -> {id_organisation}]]);
+	
 	$item -> {path} = [
 		{type => 'sites', name => 'Onglets'},
 		{type => 'sites', name => $item -> {label}, id => $item -> {id}},
@@ -39,29 +50,12 @@ sub get_item_of_sites {
 
 sub select_sites {
 
-	my $q = '%' . $_REQUEST {q} . '%';
-
-	my $start = $_REQUEST {start} + 0;
-
-	my ($sites, $cnt) = sql_select_all_cnt (<<EOS, $q, $_USER -> {id_organisation}, {fake => 'sites'});
-		SELECT
-			sites.*
-		FROM
-			sites
-		WHERE
-			(sites.label LIKE ?)
-			AND sites.id_organisation = ?
-		ORDER BY
-			sites.label
-		LIMIT
-			$start, $$conf{portion}
-EOS
-
-	return {
-		sites => $sites,
-		cnt => $cnt,
-		portion => $$conf{portion},
-	};
+	sql ({}, sites => [
+		['label LIKE %?%' => $_REQUEST {q}],
+		[ id_organisation => $_USER -> {id_organisation}],
+		[ ORDER           => 'ord,label'],
+		[ LIMIT           => "start, $conf->{portion}"],
+	])
 	
 }
 

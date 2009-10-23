@@ -3,37 +3,81 @@
 
 sub do_print_tasks { # export MS Word
 
-	$_REQUEST {__response_sent} = 1;
-	
-	$r -> status (200);
-	$r -> header_out ('Content-Disposition' => "attachment;filename=TACHE_$_REQUEST{id}.doc");
-	$r -> send_http_header ('application/octet-stream');
-	$r -> print (qq{<html><body>});
+	my @fn_pdf = ();
 	
 	sql (task_notes => [
-		[id_task => $_REQUEST{id}],
-		[ORDER   => 'id'],
-	],
-		
+
+			[id_task => $_REQUEST {id}],
+
+			[ORDER   => 'id'],
+
+		],
+
 		'users',
+
+		sub {
+		
+			__d ($i, 'dt');
+			
+			my $body = $i -> {label};
+			
+			if ($i -> {body}) {
+			
+				$body .= "\n$i->{body}";
+			
+				$body =~ s{[\n\r]+}{<p>}gsm;
 	
-	sub {
+			}
+			
+			my $path = $i -> {file_path} ? "$preconf->{_}->{docroot}/$i->{file_path}" : '';
+
+			my $is_image = $path =~ /\.(gif|bmp|jpe?g)$/i;
+			
+			$body .= "<center><img src='$path'></center>" if ($is_image);
+			
+			my $fn_html = "/tmp/task_note_$i->{id}.html";
 	
-		__d ($i, 'dt');
-		
-		my $body = $i -> {label};
-		
-		if ($i -> {body}) {
-		
-			$body .= "\n$i->{body}";
-		
-			$body =~ s{[\n\r]+}{<p>}gsm;
+			open (F, ">$fn_html") or die ("Can't open $fn_html:\n");
+				
+			print F qq {<html><body><p><i>$i->{dt}, <b>$i->{user}->{label}</b></i>:<blockquote>$body</blockquote></body></html>};
+			
+			close F;			
+			
+			my $fn_pdf = "/tmp/task_note_$i->{id}.pdf";
+			
+			push @fn_pdf, $fn_pdf . ' ';
+			
+			$ENV{HTMLDOC_NOCGI} = 1;
+			
+			`htmldoc $fn_html --webpage --footer '' --pagelayout one -f $fn_pdf`;
+			
+			unlink $fn_html;
+			
+			if ($path && !$is_image) {
+
+				File::Copy::move ($fn_pdf, "${fn_pdf}_");
+
+				`pdftk ${fn_pdf}_ attach_files $path to_page 1 output $fn_pdf`;
+
+				unlink "${fn_pdf}_";
+
+			}
 
 		}
 
-		$r -> print (qq {<p><i>$i->{dt}, <b>$i->{user}->{label}</b></i>:<blockquote>$body</blockquote>});
+	);
+
+	my $fn_pdf = "/tmp/$_REQUEST{id}.pdf";
 	
-	});
+	`pdftk @fn_pdf cat output $fn_pdf`;
+	
+	foreach (@fn_pdf) {chop; unlink}
+	
+	download_file ({
+		path      => $fn_pdf,
+		file_name => "$_REQUEST{id}.pdf",
+		delete    => 1,
+	});	
 
 }
 

@@ -105,14 +105,6 @@ sub draw_item_of_users {
 				off    => 0 == @{$data -> {groups}},
 			},
 			{
-				name   => 'id_site',
-				label  => 'Onglet',
-				type   => 'select',
-				empty  => ' ',
-				values => $data -> {sites},
-				off    => 0 == @{$data -> {sites}},
-			},
-			{
 				name   => 'options',
 				label  => 'Options',
 				type   => 'checkboxes',
@@ -129,7 +121,24 @@ sub draw_item_of_users {
 					},
 				],
 			},
-			
+						
+			{
+				name   => 'id_site',
+				label  => 'Appartient aux onglets',
+				type   => 'checkboxes',
+				values => Storable::dclone $data -> {sites},
+				off    => 0 == @{$data -> {sites}},
+			},
+
+			{
+				name   => 'id_default_site',
+				label  => 'Onglet principal',
+				type   => 'select',
+				empty  => ' ',
+				values => $data -> {sites},
+				off    => 0 == @{$data -> {sites}},
+			},
+
 			{
 				
 				type  => 'hgroup',
@@ -151,7 +160,7 @@ sub draw_item_of_users {
 				],
 				
 			},
-			
+
 		]
 
 	)
@@ -267,9 +276,10 @@ sub draw_users {
 				},
 				'Login',
 				{
-					label  => 'Site',
+					label  => 'Onglet principal',
 					hidden => $_USER -> {role} eq 'superadmin',
 				},
+
 			],
 
 			sub {

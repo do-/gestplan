@@ -13,6 +13,14 @@ use URI::Escape;
 use Digest::MD5 'md5_hex';
 use LockFile::Simple qw(lock trylock unlock);
 
+sub get_skin_name {
+
+	$_REQUEST {__dump} ? 'Dumper' :
+	$_REQUEST {xls}    ? 'XL' :
+	'TurboMilk'
+	
+}
+
 sub fake_select {
 
 	return  {
@@ -232,14 +240,19 @@ sub del {
 
 ################################################################################
 
-sub iframe_alerts {
+sub iframe_alerts { return '';
 	
 	my $salt = rand * time;
 
 	return <<EOH;
-		<iframe style="display:none" name="alerts" src="/?sid=$_REQUEST{sid}&type=alerts&_salt=$salt">
+		<iframe style="display:none" name="alerts" src="/i/0.html">
 		</iframe>
 EOH
+
+#	return <<EOH;
+#		<iframe style="display:none" name="alerts" src="/?sid=$_REQUEST{sid}&type=alerts&_salt=$salt">
+#		</iframe>
+#EOH
 
 }
 
@@ -269,13 +282,24 @@ sub support_menu {
 
 sub extra_menu {
 
-	my $href = sql_select_scalar ('SELECT href FROM organisations WHERE id = ?', $_USER -> {id_organisation}) or return ();
+	my $href = sql_select_scalar ('SELECT href FROM organisations WHERE id = ?', $_USER -> {id_organisation});
 	
-    return {
-    	label => 'Intranet',
-    	href => 'http://' . $href . '#',
-    	target => '_blank',
-	}		
+    return (
+    
+		{
+	    	label => 'Intranet',
+	    	href => 'http://' . $href . '#',
+	    	target => '_blank',
+	    	off    => !$href,
+		},
+		{
+	    	label  => 'Déconnexion',
+	    	href   => "type=_logout",
+			side   => 'right_items',
+			target => '_top',
+		},
+		
+	)
 
 }
 
@@ -430,5 +454,96 @@ EOH
 
 }
 
+################################################################################
+
+sub send_refresh_messages {
+
+	my ($id_organisation) = @_;
+
+	$id_organisation ||= $_USER -> {id_organisation} or return;
+	
+	my $organisation = sql (organisations => $id_organisation);
+		
+	foreach my $kind (
+
+		[	
+			
+			refresh_local    => [
+		
+				map {$_ -> {id}}
+				
+				@{sql (users => [[id_organisation => $id_organisation]])}
+				
+			]
+				
+		],
+
+		[
+			refresh_partners => [
+			
+				map {$_ -> {user} -> {id}}
+				
+				@{sql (organisations => [['ids_partners LIKE %?%' => ",$id_organisation,"]], ['users'])}
+				
+			],
+			
+		],
+
+		[
+			refresh_local => [
+			
+				map {$_ -> {user} -> {id}}
+				
+				@{sql (organisations => [[ id => [grep {/\d/} split /\,/, ($organisation -> {ids_partners} || -1) ]]], ['users'])}
+				
+			],
+			
+		],
+
+	) {
+
+	    js_im (
+	
+	    	$kind -> [1],
+	    		    	
+	    	"if (window._md5_$kind->[0]) try_to_reload (window._md5_$kind->[0])",
+	    	
+	    	{session => 1, tag => $kind -> [0]},
+	
+		)
+
+	}
+
+}
+
+################################################################################
+
+sub return_md5_checked ($) {
+
+	my ($data) = @_;
+	
+	$data -> {__md5} = Digest::MD5::md5_hex (Dumper ($data));
+
+	$_REQUEST {__md5} or return $data;
+
+	$_REQUEST {__md5} == $data -> {__md5} and return out_html ({}, 1);
+		
+	my $page = setup_page ();
+	
+	$_REQUEST {__page_content} = $page -> {content} = $data;
+			
+	sql_do ('UPDATE users SET html_cache = ? WHERE id = ?', draw_page ($page), $_USER -> {id});
+	
+	out_html ({}, 'window.location = "' . create_url (__get_cache => 1) . '"');
+	
+}
+
+################################################################################
+
+sub draw_auth_toolbar {
+
+	j q {$('#body_table tr:first', top.document).hide ()};
+	
+};
 
 1;

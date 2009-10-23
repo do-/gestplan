@@ -1,5 +1,13 @@
 ################################################################################
 
+sub recalculate_organisations_acl {
+
+	send_refresh_messages ();
+
+}
+
+################################################################################
+
 sub do_update_organisations_acl {
 
 	$_REQUEST {id} = $_USER -> {id_organisation};

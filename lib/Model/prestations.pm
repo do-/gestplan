@@ -22,6 +22,8 @@ columns => {
 	file_path => {TYPE_NAME    => 'varchar', COLUMN_SIZE  => 255},
 	file_size => {TYPE_NAME    => 'int'},
 
+	id_site                    => {TYPE_NAME => 'int'},
+
 },
 
 keys => {

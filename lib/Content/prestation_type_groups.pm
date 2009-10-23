@@ -1,5 +1,13 @@
 ################################################################################
 
+sub recalculate_prestation_type_groups {
+
+	send_refresh_messages ();
+
+}
+
+################################################################################
+
 sub do_update_prestation_type_groups {
 
 	my $item = sql_select_hash ('prestation_type_groups');

@@ -1,5 +1,230 @@
 ################################################################################
 
+sub validate_clone_prestations {
+
+	my $id = sql ('prestations(id)' => ['id_user', 'dt_start', 'half_start', ['1 ']]);
+
+	if ($id) {
+	
+		redirect (
+			
+			check_href ({
+			
+				href => "/?type=prestations&id=$id",
+				
+			}),
+					
+			{
+				kind   => 'js',
+				target => '_parent',
+			}
+			
+		);
+		
+		return undef;
+	
+	}
+
+	my $data = sql (prestations => $_REQUEST {id}, 'prestation_types', 'organisations');
+
+	if ($data -> {prestation_type} -> {id_day_period} == 1) {
+		$_REQUEST {half_start} == 1 or return "Ce type de prestation ne peut pas commencer l'après-midi";
+	}
+
+	if ($data -> {prestation_type} -> {id_day_period} == 2) {
+		$_REQUEST {half_start} == 2 or return "Ce type de prestation ne peut pas commencer le matin";
+	}
+	
+	if ($data -> {dt_start} . $data -> {half_start} ne $data -> {dt_finish} . $data -> {half_finish}) {
+	
+		my $delta_half_days =
+			2 * Delta_Days (dt_y_m_d ($data -> {dt_start}), dt_y_m_d ($data -> {dt_finish}))
+			  + $data -> {half_finish} - $data -> {half_start}
+		;
+
+		my @dt   = dt_y_m_d ($_REQUEST {dt_start});
+		my $half = $_REQUEST {half_start};
+		
+		if ($half == 2) {
+		
+			@dt = Add_Delta_Days (@dt, 1);
+			
+			$half = 1;
+			
+			$delta_half_days --;
+		
+		}
+		
+		@dt = Add_Delta_Days (@dt, int ($delta_half_days / 2));
+		
+		$half += ($delta_half_days % 2);
+		
+		$_REQUEST {dt_finish}   = dt_iso (@dt);
+
+		$_REQUEST {half_finish} = $half;
+	
+	}
+	
+	my $user = sql (users => $_REQUEST {id_user});
+
+	$data -> {prestation_type} -> {ids_roles} =~ /\,$user->{id_role}\,/ or return "Désolé, mais $user->{label} ne peut pas assister aux prestations $data->{prestation_type}->{label_short}.";
+			
+	0 == sql_select_scalar (
+	
+		q {
+			SELECT
+				id
+			FROM
+				prestations
+			WHERE
+				1=1
+				AND id_user = ?
+				AND fake = 0
+				AND CONCAT(dt_start,  half_start)  <= ?
+				AND CONCAT(dt_finish, half_finish) >= ?
+				AND dt_finish >= ?
+			LIMIT
+				1
+		},
+
+		$user  -> {id},
+		$_REQUEST {dt_finish} . $_REQUEST {half_finish},
+		$_REQUEST {dt_start}  . $_REQUEST {half_start},
+		$_REQUEST {dt_start}
+		
+	) or return "Désolé, mais $user->{label} est occupé(e) pendant cette période.";
+		
+	my @id_prestations_rooms = sql_select_col ('SELECT id_room FROM prestations_rooms WHERE id_prestation = ? AND id_room > 0', $_REQUEST {id});
+	
+	if (@id_prestations_rooms) {
+	
+		my $ids = join ',', @id_prestations_rooms;
+		
+		my $conflict = sql_select_hash (qq {
+				SELECT
+					prestations_rooms.id
+					, rooms.label
+					, prestations_rooms.dt_start
+					, prestations_rooms.dt_finish
+				FROM
+					prestations_rooms
+					LEFT JOIN prestations ON prestations_rooms.id_prestation = prestations.id
+					LEFT JOIN rooms ON prestations_rooms.id_room = rooms.id
+				WHERE
+					prestations_rooms.fake = 0
+					AND prestations.fake = 0
+					AND prestations_rooms.id_room IN ($ids)
+					AND CONCAT(prestations_rooms.dt_start, prestations_rooms.half_start) <= ?
+					AND CONCAT(prestations_rooms.dt_finish, prestations_rooms.half_finish) >= ?
+					AND prestations_rooms.dt_finish >= ?
+				LIMIT
+					1
+			},
+			$_REQUEST {dt_finish} . $_REQUEST {half_finish},
+			$_REQUEST {dt_start}  . $_REQUEST {half_start},
+			$_REQUEST {dt_start},
+			
+		);		
+	
+		if ($conflict -> {id}) {
+		
+			__d ($conflict, 'dt_start', 'dt_finish');
+			
+			return "Conflit de réservation pour $conflict->{label}";
+			
+		}
+	
+	}
+		
+	undef;
+
+}
+
+################################################################################
+
+sub do_clone_prestations { # duplication
+
+	return if $_REQUEST {__response_sent};
+
+	my $data = sql (prestations => $_REQUEST {id});
+	
+	my $type = sql (prestation_types => $data -> {id_prestation_type});
+	
+	$_REQUEST {fake} = '0,-1';
+	
+	my $inscriptions = sql (inscriptions => [[id_prestation => $data -> {id}], [ORDER => 'id']]);
+
+	my $delta_minutes =
+		!$type -> {is_half_hour}                        ? 0 :
+		$data -> {half_start} == $_REQUEST {half_start} ? 0 :
+		60 * ($type -> {"half_$_REQUEST{half_start}_h"} - $type -> {"half_$data->{half_start}_h"})
+		   + ($type -> {"half_$_REQUEST{half_start}_m"} - $type -> {"half_$data->{half_start}_m"})
+	;
+	
+	delete $data -> {$_}           foreach qw (id id_users);
+	
+	$data -> {$_} = $_REQUEST {$_} foreach qw (dt_start half_start dt_finish half_finish id_user);
+
+	$data -> {id} = sql_do_insert (prestations => $data);
+	
+	foreach my $inscription (@$inscriptions) {
+	
+		my $id = delete $inscription -> {id};
+	
+		delete $inscription -> {$_} foreach qw (parent id_user hour minute id_log);
+		
+		$inscription -> {id_author}     = $_USER -> {id};
+		
+		$inscription -> {id_prestation} = $data  -> {id};
+		
+		if ($delta_minutes && $inscription -> {label} =~ /^\s*(\d+)h(\d+)/) {
+		
+			my $m = 60 * $1 + $2 + $delta_minutes;
+			
+			$inscription -> {label} = sprintf ('%2dh%02d', int ($m / 60), $m % 60);
+		
+		}
+		
+		$inscription -> {id} = sql_do_insert (inscriptions => $inscription);
+		
+		sql (ext_field_values => [[id_inscription => $id]], sub {
+		
+			delete $i -> {id};
+			
+			$i -> {id_inscription} = $inscription -> {id};
+			
+			sql_do_insert (ext_field_values => $i);
+		
+		})
+	
+	}
+	
+	sql (prestations_rooms => [[id_prestation => $_REQUEST {id}]], sub {
+	
+		delete $i -> {id};
+		
+		$i -> {id_prestation} = $data -> {id};
+		
+		$i -> {$_} = $_REQUEST {$_} foreach qw (dt_start half_start dt_finish half_finish);
+		
+		sql_do_insert (prestations_rooms => $i);
+	
+	});
+	
+	esc ();
+
+}
+
+################################################################################
+
+sub recalculate_prestations {
+
+	send_refresh_messages ();
+
+}
+
+################################################################################
+
 sub do_erase_prestations {
 
 	my @monday = Monday_of_Week ($_REQUEST {week}, $_REQUEST {year});
@@ -382,7 +607,7 @@ sub do_delete_prestations {
 sub validate_create_prestations {
 
 	if ($_REQUEST {id_user} > 0) {
-
+	
 		$_REQUEST {id} = sql_select_scalar (
 			'SELECT id FROM prestations WHERE fake = 0 AND (id_user = ? OR id_users LIKE ?) AND CONCAT(dt_start,half_start) <= ? AND CONCAT(dt_finish,half_finish) >= ?',
 			$_REQUEST {id_user},
@@ -392,7 +617,7 @@ sub validate_create_prestations {
 		);	
 
 	}
-	else {
+	elsif ($_REQUEST {id_user} < 0) {
 
 		$_REQUEST {id} = sql_select_scalar (<<EOS, -1 * $_REQUEST {id_user}, $_REQUEST {dt_start} . $_REQUEST {half_start}, $_REQUEST {dt_start} . $_REQUEST {half_start});
 			SELECT
@@ -412,6 +637,8 @@ EOS
 	if (!$_REQUEST {id} && $_REQUEST {id_prestation_type} && $_REQUEST {id_user} > 0) {
 		
 		my $prestation_type = sql_select_hash ('prestation_types', $_REQUEST {id_prestation_type});
+		
+		$_REQUEST {id_site} ||= $prestation_type -> {id_site};
 		
 		if ($prestation_type -> {id_day_period} < 3) {		
 			if ($prestation_type -> {id_day_period} == 1 && $_REQUEST {half_start} == 2) { return "Les $$prestation_type{label_short} ne peuvent être affectés que les matins"; };
@@ -444,6 +671,21 @@ EOS
 		}
 	
 	}
+	
+	if (!$_REQUEST {id_site}) {
+	
+		if ($_REQUEST {id_user} > 0) {
+
+			$_REQUEST {id_site} = sql ('users(id_site)' => $_REQUEST {id_user});
+
+		}
+		elsif ($_REQUEST {id_user} < 0) {
+
+			$_REQUEST {id_site} = sql ('rooms(id_site)' => - $_REQUEST {id_user});
+
+		}	
+	
+	}
 
 	return undef;
 	
@@ -467,6 +709,7 @@ sub do_create_prestations {
 			dt_finish => $_REQUEST {dt_finish},
 			half_finish => $_REQUEST {half_finish},
 			id_prestation_type => $_REQUEST {id_prestation_type},
+			id_site => $_REQUEST {id_site},
 		});
 				
 		foreach my $id_room (@ids_rooms) {
@@ -485,21 +728,29 @@ sub do_create_prestations {
 			&& !$prestation_type -> {is_multiday}
 			&& !$prestation_type -> {is_to_edit}
 			&&  $prestation_type -> {id_people_number} < 3
+			&&  $_REQUEST {id_site}
 		) {
 		
 			sql_do ('UPDATE prestations SET id_prestation_type = 0 WHERE id = ?', $_REQUEST {id});
 			
-			$_REQUEST {_id_user} =            $_REQUEST {id_user};
-			$_REQUEST {_dt_start} =           $_REQUEST {dt_start};
-			$_REQUEST {_half_start} =         $_REQUEST {half_start};
-			$_REQUEST {_dt_finish} =          $_REQUEST {dt_finish};
-			$_REQUEST {_half_finish} =        $_REQUEST {half_finish};
-			$_REQUEST {_id_prestation_type} = $_REQUEST {id_prestation_type};
+			$_REQUEST {"_$_"} = delete $_REQUEST {$_} foreach qw (
+				id_user
+				dt_start
+				half_start
+				dt_finish
+				half_finish
+				id_prestation_type
+				id_site
+			);
+			
 			$_REQUEST {_cnt} = 1;
 			
 			do_update_prestations ();
 			
-			esc ();		
+			recalculate_prestations ();
+			
+			esc ();	
+				
 		}
 	
 	}	
@@ -536,6 +787,7 @@ sub do_update_prestations {
 		id_prestation_type
 		note
 		cnt
+		id_site
 	)]);
 		
 	my $item = sql_select_hash ('prestations');
@@ -648,8 +900,21 @@ sub do_update_prestations {
 
 sub validate_update_prestations {
 	
-	$_REQUEST {_id_prestation_type} or return "#_id_prestation_type#:Veuillez choisir le type de prestation";
+	$_REQUEST {_id_site} or !sql ('sites(COUNT(*))' => [[id_organisation => $_USER -> {id_organisation}]]) or return "#_id_site#:Veuillez choisir l'onglet";
+
+	if ($_REQUEST {_id_site}) {
 	
+		@{sql (users_sites => [
+			[id_user => $_REQUEST {_id_user}],
+			[id_site => $_REQUEST {_id_site}],
+		])}
+		
+		or return "#_id_site#:Cet onglet n'est pas disponible pour l'utilisateur choisi";
+		
+	}
+
+	$_REQUEST {_id_prestation_type} or return "#_id_prestation_type#:Veuillez choisir le type de prestation";	
+
 	my $prestation_type = sql_select_hash ('prestation_types', $_REQUEST {_id_prestation_type});
 
 	my $organisation = sql_select_hash ('organisations', $prestation_type -> {id_organisation});
@@ -736,10 +1001,9 @@ sub validate_update_prestations {
 		}
 	
 	}
-	
-	my @id_users = grep {$_ > 0} grep {$_ != $_REQUEST {_id_user}} get_ids ('id_users');
-	$_REQUEST {_id_users} = join ',', (-1, @id_users, -1);
-		
+
+	$_REQUEST {_id_users} = '-1,' . $_REQUEST {'_id_users,-1'};
+
 	foreach my $id_user ($_REQUEST {_id_user}, @id_users) {
 	
 		next if $id_user <= 0;
@@ -865,6 +1129,7 @@ darn $filter;
 	add_vocabularies ($item,
 		'users'            => {filter => "((id in ($ids_users)) OR (id_group IN ($ids_groups) AND (dt_finish IS NULL OR dt_finish > '$item->{_dt_finish}')))"},
 		'prestation_types' => {filter => $filter},
+		'sites'            => {filter => "id_organisation = $_USER->{id_organisation}"},
 	);
 
 	$item -> {day_periods} = [
@@ -929,34 +1194,42 @@ sub select_prestations {
 			inscriptions.id = ?
 EOS
 
-	my $sites = sql_select_vocabulary (sites => {filter => "id_organisation = $_USER->{id_organisation}"});
+	$item -> {prestation_to_clone} = sql (prestations => $_REQUEST {id_prestation_to_clone}, 'prestation_types', 'users') if $_REQUEST {id_prestation_to_clone};
+
+	my $sites = sql_select_vocabulary (sites => {filter => "id_organisation = $_USER->{id_organisation}", order => 'ord,label'});
+	
+	!@$sites or defined $_REQUEST {id_site} or $_REQUEST {id_site} = $_USER -> {id_site};
+
+	my $organisation = sql_select_hash (organisations => $_USER -> {id_organisation});
 	
 	my @menu = ({
-		label     => 'Tous sites',
-		href      => {id_site => '', aliens => ''},
+		label     => 'Tous',
+		href      => {id_site => 0, aliens => '', __next_query_string => -1},
 		is_active => !$_REQUEST {id_site} && !$_REQUEST {aliens},
+		keep_esc  => 1,
 	});
 	
 	foreach my $site (@$sites) {
 	
 		push @menu, {
 			label     => $site -> {label},
-			href      => {id_site => $site -> {id}, aliens => ''},
+			href      => {id_site => $site -> {id}, aliens => '', __next_query_string => -1},
 			is_active => $_REQUEST {id_site} == $site -> {id} && !$_REQUEST {aliens},
+			keep_esc  => 1,
 		};
 	
 	}
 	
 	if (@menu == 1) {
 		
-		$menu [0] -> {label} = 'Prestations locales',
+		$menu [0] -> {label} = $organisation -> {empty_site_label},
 		
 	}
 
 
 	my $site_filter = $_REQUEST {id_site} ? " AND IFNULL(id_site, 0) IN ($_REQUEST{id_site}, 0) " : '';
 
-	$_REQUEST {__meta_refresh} = $_USER -> {refresh_period} || 300;
+#	$_REQUEST {__meta_refresh} = $_USER -> {refresh_period} || 300;
 	
 	my $default_color = sql_select_scalar ('SELECT color FROM prestation_type_groups WHERE id = -1');
 	my $busy_color    = sql_select_scalar ('SELECT color FROM prestation_type_groups WHERE id = -2');
@@ -982,9 +1255,7 @@ EOS
 	my @days = ();
 	
 	my $ix_days = {};
-	
-	my $organisation = sql_select_hash (organisations => $_USER -> {id_organisation});
-	
+		
 	$organisation -> {days} = [sort split ',', $organisation -> {days}];
 		
 	for (my $i = 0; $i < @{$organisation -> {days}}; $i++) {
@@ -998,9 +1269,17 @@ EOS
 	
 		my $label = $day_names [$day_index] . '&nbsp;' . $day [2];
 		
-		my $h_create = {href => "/?type=prestations&action=create&dt_start=$iso_dt&half_start=1&dt_finish=$iso_dt&half_finish=1&id_prestation_type=$_REQUEST{id_prestation_type}"};
+		my $h_create = {href => "/?type=prestations&action=create&dt_start=$iso_dt&half_start=1&dt_finish=$iso_dt&half_finish=1&id_prestation_type=$_REQUEST{id_prestation_type}&id_site=$_REQUEST{id_site}"};
 		check_href ($h_create);
+		$h_create -> {href} =~ s{salt=[\d\.]+}{salt=1};
+		$h_create -> {href} =~ s{&__last_query_string=\d+}{};
 		
+		if ($_REQUEST {id_prestation_to_clone}) {
+
+			$h_create -> {href} =~ s{action=create}{action=clone&id=$_REQUEST{id_prestation_to_clone}};
+
+		}
+
 		push @days, {
 			id => 2 * ($i + 1),
 			iso_dt => $iso_dt,
@@ -1016,8 +1295,16 @@ EOS
 			$days [-2] -> {next} = $days [-1];
 		}
 
-		my $h_create = {href => "/?type=prestations&action=create&dt_start=$iso_dt&half_start=2&dt_finish=$iso_dt&half_finish=2&id_prestation_type=$_REQUEST{id_prestation_type}"};
+		my $h_create = {href => "/?type=prestations&action=create&dt_start=$iso_dt&half_start=2&dt_finish=$iso_dt&half_finish=2&id_prestation_type=$_REQUEST{id_prestation_type}&id_site=$_REQUEST{id_site}"};
 		check_href ($h_create);
+		$h_create -> {href} =~ s{salt=[\d\.]+}{salt=1};
+		$h_create -> {href} =~ s{&__last_query_string=\d+}{};
+
+		if ($_REQUEST {id_prestation_to_clone}) {
+
+			$h_create -> {href} =~ s{action=create}{action=clone&id=$_REQUEST{id_prestation_to_clone}};
+
+		}
 
 		push @days, {
 			id => 2 * ($i + 1) + 1,
@@ -1146,7 +1433,7 @@ EOS
 	my @alien_id_users = (-1);	
 	foreach my $alien_prestation (@$alien_prestations) {	
 		push @alien_id_users, $alien_prestation -> {id_user};
-		push @alien_id_users, (split /\,/, $alien_prestation -> {id_users});	
+		push @alien_id_users, grep {$_ > 0} (split /\,/, $alien_prestation -> {id_users});	
 	}
 
 	my $alien_id_users = join ',', grep {$_} @alien_id_users;	
@@ -1159,6 +1446,16 @@ EOS
 	unless ($_USER -> {role} eq 'admin') {
 		$filter .= ' AND (IFNULL(roles.is_hidden, 0) = 0 OR users.id_group = ?)';
 		push @params, 0 + $_USER -> {id_group};
+	}
+	
+	my $users_site_filter = '';
+	
+	if ($_REQUEST {id_site}) {
+	
+		my $ids = sql ('users_sites(id_user)' => [[ id_site => $_REQUEST {id_site} ]]);
+		
+		$users_site_filter = " AND users.id IN ($$ids,$alien_id_users)";
+
 	}
 
 	my $users = sql_select_all (<<EOS, $days [-1] -> {iso_dt}, $days [0] -> {iso_dt}, $_USER -> {id_organisation}, @params);
@@ -1176,7 +1473,7 @@ EOS
 			INNER JOIN organisations ON users.id_organisation = organisations.id
 		WHERE
 			users.fake = 0
-			$site_filter
+			$users_site_filter
 			AND (dt_start  IS NULL OR dt_start  <= ?)
 			AND (dt_finish IS NULL OR dt_finish >= ?)
 			AND (roles.id_organisation = ? OR (users.id IN ($alien_id_users) AND users.id_role < 3))
@@ -1212,14 +1509,15 @@ EOS
 	if ($item -> {has_aliens}) {
 	
 		push @menu, {
-			label     => 'Partenaires',
-			href      => {id_site => '', aliens => 1},
+			label     => $organisation -> {partners_site_label},
+			href      => {id_site => '', aliens => 1, __next_query_string => -1},
 			is_active => $_REQUEST {aliens},
+			keep_esc  => 1,
 		};
 	
 	}
 	
-	if (!$_REQUEST {aliens} && !$item -> {inscription_to_clone}) {
+	if (!$_REQUEST {aliens} && !$item -> {inscription_to_clone} && !$item -> {prestation_to_clone}) {
 	
 		push @users, {label => 'Ressources'};
 		push @users, @{ sql_select_all ("SELECT -id AS id, label FROM rooms WHERE fake = 0 $site_filter AND id_organisation = ? ORDER BY label", $_USER -> {id_organisation})};
@@ -1242,6 +1540,7 @@ EOS
 				, prestations.id_prestation_model
 				, prestations.id_prestation_type
 				, prestations.cnt
+				, prestations.id_site
 				, prestation_types.label_short AS label
 				, prestation_types.is_half_hour
 				, prestation_types.is_placeable_by_conseiller
@@ -1252,6 +1551,7 @@ EOS
 				, IF(prestations.dt_finish > '$dt_finish', '$dt_finish', prestations.dt_finish) AS dt_finish
 				, IF(prestations.dt_finish > '$dt_finish', 2, prestations.half_finish) AS half_finish
 				, IFNULL(prestation_type_group_colors.color, prestation_type_groups.color) AS color
+				, sites.label AS site_label
 			FROM
 				prestations
 				INNER JOIN users ON prestations.id_user = users.id
@@ -1261,6 +1561,7 @@ EOS
 					prestation_type_group_colors.id_prestation_type_group = prestation_type_groups.id
 					AND prestation_type_group_colors.id_organisation = ?
 				)
+				LEFT  JOIN sites ON prestations.id_site = sites.id
 			WHERE
 				prestations.fake = 0
 #				AND users.id_role IN (2,3)
@@ -1402,16 +1703,23 @@ EOS
 				$prestation -> {color} = $busy_color;
 			}		
 			elsif ($prestation -> {is_half_hour}) {
-#				$bgcolor = sql_select_scalar ('SELECT COUNT(*) FROM inscriptions WHERE fake <> 0 AND id_prestation = ?', $prestation -> {id}) ? '#ddffdd' : '#ffdddd',
+
 				$bgcolor = $prestation -> {cnt_fake} ? '#ddffdd' : '#ffdddd',
+
 			}
 
 		}		
 
 		$prestation -> {color} ||= $default_color;
+								
+		if ($_REQUEST {id_site} > 1 && $_REQUEST {id_site} != $prestation -> {id_site} && $prestation -> {id_user} > 0) {
+
+			$prestation -> {note}  = "$prestation->{label} sur $prestation->{site_label}";
+			$prestation -> {label} = 'Occupé(e)';
+			$prestation -> {color} = 'ffffff';
 		
-		my $bgcolor = '#ffffd0';
-						
+		}
+
 		my $day = $ix_days -> {$prestation -> {dt_start} . '-' . $prestation -> {half_start}};
 
 		my $rowspan =
@@ -1465,7 +1773,9 @@ EOS
 		
 	}
 	
-	my $off_periods = sql_select_all (<<EOS, $_USER -> {id_organisation});
+	my $ids_users = ids ($users);
+	
+	my $off_periods = sql_select_all (<<EOS);
 		SELECT
 			off_periods.id
 			, off_periods.id_user
@@ -1475,13 +1785,11 @@ EOS
 			, IF(off_periods.dt_finish > '$dt_finish', 2,            off_periods.half_finish) AS half_finish
 		FROM
 			off_periods
-			INNER JOIN users ON off_periods.id_user = users.id
 		WHERE
 			off_periods.fake = 0
 			AND off_periods.dt_start  <= '$dt_finish'
 			AND off_periods.dt_finish >= '$dt_start'
-			AND users.id_organisation = ?
-			$site_filter
+			AND off_periods.id_user IN ($ids_users)
 EOS
 
 	foreach my $user (@$users) {
@@ -1587,22 +1895,28 @@ EOS
 	
 	}
 	else {
-
+	
 		my $sql = 'SELECT COUNT(*) FROM prestation_types WHERE fake = 0 AND is_placeable_by_conseiller IN (2, 3) AND ids_users LIKE ?';
+
+		if ($_REQUEST {id_prestation_to_clone}) {
 		
+			$_REQUEST {id_prestation_type} = $item -> {prestation_to_clone} -> {id_prestation_type};
+		
+		}
+
 		if ($_REQUEST {id_prestation_type}) {
 		
 			$sql .= " AND id = $_REQUEST{id_prestation_type}";
 		
 		}
-		
-		$_USER -> {cnt_prestation_types} = sql_select_scalar ($sql, '%,' . $_USER -> {id} . ',%');
-		
-		$_USER -> {can_dblclick_others_empty} = $_USER -> {cnt_prestation_types} > 0;
 
+		$_USER -> {cnt_prestation_types} = sql_select_scalar ($sql, '%,' . $_USER -> {id} . ',%');
+
+		$_USER -> {can_dblclick_others_empty} = $_USER -> {cnt_prestation_types} > 0;
+	
 	}
 		
-	return {
+	return_md5_checked {
 	
 		week_status_type => $week_status_type,
 	
@@ -1624,7 +1938,7 @@ EOS
 		
 		have_models => $have_models,
 
-		menu => @menu > 1 ? \@menu : undef,
+		menu => @menu > 1 && !$_REQUEST {id_prestation_to_clone} ? \@menu : undef,
 		
 		holydays => $holydays,
 		
@@ -1633,7 +1947,7 @@ EOS
 		%$item,
 			
 	};
-	
+
 }
 
 1;

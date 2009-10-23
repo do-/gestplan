@@ -101,7 +101,7 @@ sub draw_item_of_inscriptions_select {
 					label => $p -> {prestation_type_label},
 					href  => "/?type=prestations&id=$$p{id}",
 			   	},
-			   	"$$p{inscription_label} $$p{inscription_nom} $$p{inscription_prenom}",
+			   	"$$p{inscription_label}&nbsp;$$p{inscription_nom}&nbsp;$$p{inscription_prenom}",
 			]);
 		
 		},

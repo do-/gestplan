@@ -11,11 +11,14 @@ columns => {
 	refresh_period  => {TYPE_NAME => 'int', NULLABLE => 0, COLUMN_DEFAULT => 60},
 
 	id_organisation => {TYPE_NAME => 'int'},
+	id_role         => {TYPE_NAME => 'int'},
 	id_site         => {TYPE_NAME => 'int'},
 	id_group        => {TYPE_NAME => 'int'},
 	no_popup        => {TYPE_NAME => 'tinyint', NULLABLE => 0, COLUMN_DEFAULT => 0},
 	
 	options => {TYPE_NAME => 'text'},
+
+	html_cache => {TYPE_NAME => 'longtext'},
 
 },
 

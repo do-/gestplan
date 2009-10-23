@@ -3,6 +3,8 @@
 sub draw_item_of_inscriptions {
 	
 	my ($data) = @_;
+	
+	$_REQUEST {__focused_input} = $data -> {prestation} -> {type} -> {is_half_hour} == -1 ? '_label' : '_nom';
 
 	draw_form ({
 	
@@ -239,6 +241,9 @@ sub draw_item_of_inscriptions {
 sub draw_inscriptions {
 	
 	my ($data) = @_;
+
+	$_REQUEST {__script} .= "; var _md5_refresh_local = '$data->{__md5}'; ";
+	$_REQUEST {__script} .= "; var _md5_refresh_partners = '$data->{__md5}'; ";
 	
 	my $title_1 = '';
 	
@@ -264,7 +269,7 @@ sub draw_inscriptions {
 	}
 	else {
 		
-		$title_1 = "$_REQUEST{_day_name} $_REQUEST{dt} matin: ";
+		$title_1 = "$_REQUEST{_day_name} $_REQUEST{dt} matin sur $data->{prestation_1}->{site_label}: ";
 		$title_1 .= $data -> {prestation_1} -> {type} -> {label} || 'Libre';
 	
 	}
@@ -430,6 +435,15 @@ sub draw_inscriptions {
 							$data -> {week_status_type} -> {id} == 3 ||
 							$data -> {user} -> {id_organisation} != $_USER -> {id_organisation}
 					},
+					{
+						icon     => 'create',
+						href     => $data -> {prestation_1} -> {clone_href},
+						label    => 'Dupliquer...',
+						keep_esc => 0,
+						off      =>
+							$_USER -> {role} ne 'admin' ||
+							$data -> {user} -> {id_organisation} != $_USER -> {id_organisation}
+					},
 				
 				)
 				
@@ -552,7 +566,7 @@ qq {
 
 			{
 				
-				title => {label => "$_REQUEST{_day_name} $_REQUEST{dt}" . ' après-midi : ' . ($data -> {prestation_2} -> {type} -> {label} || 'libre') . " pour $data->{user}->{label}"},
+				title => {label => "$_REQUEST{_day_name} $_REQUEST{dt} après-midi sur $data->{prestation_2}->{site_label}: " . ($data -> {prestation_2} -> {type} -> {label} || 'libre') . " pour $data->{user}->{label}"},
 				
 				off => $data -> {prestation_1} -> {id} == $data -> {prestation_2} -> {id} || $_REQUEST {id_day_period} == 1,
 
@@ -583,6 +597,15 @@ qq {
 						off =>
 							$_USER -> {role} ne 'admin' ||
 							$data -> {week_status_type} -> {id} == 3 ||
+							$data -> {user} -> {id_organisation} != $_USER -> {id_organisation}
+					},
+					{
+						icon     => 'create',
+						href     => $data -> {prestation_2} -> {clone_href},
+						label    => 'Dupliquer...',
+						keep_esc => 0,
+						off      =>
+							$_USER -> {role} ne 'admin' ||
 							$data -> {user} -> {id_organisation} != $_USER -> {id_organisation}
 					},
 				

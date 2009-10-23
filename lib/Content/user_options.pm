@@ -1,5 +1,13 @@
 ################################################################################
 
+sub recalculate_user_options {
+
+	send_refresh_messages ();
+
+}
+
+################################################################################
+
 sub do_update_user_options {
 	
 	sql_do_update ('users', [qw(login refresh_period no_popup)]);
@@ -18,7 +26,7 @@ sub validate_update_user_options {
 	
 	$_REQUEST {_login} ||= $_USER -> {login};
 	
-	$_REQUEST {_login} =~ /^\w+$/ or return "#_login#:Désolé, vous avez choisi un login invalide";
+	$_REQUEST {_login} =~ /^[\w\-]+$/ or return "#_login#:Désolé, vous avez choisi un login invalide";
 
 	vld_unique ('users', {field => 'login'}) or return "#_login#:Le login '$_REQUEST{_login}' est déjà occupé, veuillez choisir un autre";
 
