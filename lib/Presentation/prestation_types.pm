@@ -84,7 +84,7 @@ sub draw_item_of_prestation_types {
 	my $numeros = [
 		{
 			id    => 0,
-			label => '1, 2, 3...',
+			label => 'numéro',
 		},
 		{
 			id    => 1,
@@ -136,9 +136,48 @@ sub draw_item_of_prestation_types {
 				size  => 80,
 			},
 			[
+				{
+					name  => 'is_placeable_by_conseiller',
+					label => 'Délégation',
+					type  => 'radio',
+					values => [
+						{id => 0, label => 'Administrateurs seulement'},
+						{id => 1, label => 'Tous les utilisateurs sans délégation'},
+						{
+							id     => 2,
+							name   => 'ids_users_2',
+							label  => 'Délégué uniquement à' . ($_REQUEST {__read_only} ? '' : '...'),
+							type   => 'checkboxes',
+							values => $data -> {users},
+							height => 150,
+							cols   => 2,
+						},
+						{
+							id     => 3,
+							name   => 'ids_users_3',
+							label  => 'Accessible a tous et délégué à' . ($_REQUEST {__read_only} ? '' : '...'),
+							type   => 'checkboxes',
+							values => $data -> {users},
+							height => 150,
+							cols   => 2,
+						},
+						{
+							id     => 4,
+							name   => 'ids_users_4',
+							label  => 'Sans délégation accessible uniquement à' . ($_REQUEST {__read_only} ? '' : '...'),
+							type   => 'checkboxes',
+							values => $data -> {users},
+							height => 150,
+							cols   => 2,
+						},
+					],
+				},
+			],						
+			
+			[
     				{
 					name   => 'is_half_hour',
-					label  => 'Numéros',
+					label  => 'Inscription',
 					type   => 'radio',
 					values => $numeros,
 				},
@@ -276,44 +315,6 @@ sub draw_item_of_prestation_types {
 				},
     				
 			],
-			[
-				{
-					name  => 'is_placeable_by_conseiller',
-					label => 'Délégation',
-					type  => 'radio',
-					values => [
-						{id => 0, label => 'Administrateurs seulement'},
-						{id => 1, label => 'Tous les utilisateurs sans délégation'},
-						{
-							id     => 2,
-							name   => 'ids_users_2',
-							label  => 'Délégué uniquement à' . ($_REQUEST {__read_only} ? '' : '...'),
-							type   => 'checkboxes',
-							values => $data -> {users},
-							height => 150,
-							cols   => 2,
-						},
-						{
-							id     => 3,
-							name   => 'ids_users_3',
-							label  => 'Accessible a tous et délégué à' . ($_REQUEST {__read_only} ? '' : '...'),
-							type   => 'checkboxes',
-							values => $data -> {users},
-							height => 150,
-							cols   => 2,
-						},
-						{
-							id     => 4,
-							name   => 'ids_users_4',
-							label  => 'Sans délégation accessible uniquement à' . ($_REQUEST {__read_only} ? '' : '...'),
-							type   => 'checkboxes',
-							values => $data -> {users},
-							height => 150,
-							cols   => 2,
-						},
-					],
-				},
-			],						
 
 			[
 
@@ -342,13 +343,6 @@ sub draw_item_of_prestation_types {
 					type  => 'checkbox',
 				},
 			],
-			{
-				name   => 'ids_rooms',
-				label  => 'Ressource(s) par défaut',
-				type   => 'checkboxes',
-				cols   => 8,
-				values => $data -> {rooms},
-			},
 			[			
 				{
 					name   => 'ids_roles',
@@ -367,6 +361,13 @@ sub draw_item_of_prestation_types {
 					],
 				},
 			],
+			{
+				name   => 'ids_rooms',
+				label  => 'Ressource(s) par défaut',
+				type   => 'checkboxes',
+				cols   => 8,
+				values => $data -> {rooms},
+			},
 			{
 				name   => 'ids_ext_fields',
 				label  => 'Données',
