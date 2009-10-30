@@ -2,19 +2,87 @@
 
 sub select_inscriptions_par_jour {
 
-	my $sites = sql (sites => [
-		[id_organisation => $_USER->{id_organisation}],
-		[ORDER           => 'ord, label'],
-	]);
+#	exists $_REQUEST {id_site} or $_REQUEST {id_site} = 0;
+#
+#	my $organisation = sql (organisations => $_USER -> {id_organisation});
+#	
+#	$organisation -> {ids_partners} ||= -1;
+#
+#	my $sites = sql (sites => [
+#		[id_organisation => $_USER->{id_organisation}],
+#		[ORDER           => 'ord, label'],
+#	]);
+#	
+#	if ($organisation -> {ids_partners} ne '-1') {
+#	
+#		if (@$sites == 0) {
+#	
+#			push @$sites, {
+#				id    => 0,
+#				label => $organisation -> {empty_site_label},
+#			}
+#		
+#		}
+#
+#		push @$sites, {
+#			id    => '',
+#			label => $organisation -> {partners_site_label},
+#		}
+#	
+#	}
+#	
+#	my $menu = @$sites == 0 ? undef : [map {{
+#		label     => $_ -> {label},
+#		href      => {id_site => $_ -> {id}},
+#		is_active => $_REQUEST {id_site} == $_ -> {id},
+#	}} ({label => 'Tous'}, @$sites)];
+
+
+
+	my $sites = sql_select_vocabulary (sites => {filter => "id_organisation = $_USER->{id_organisation}", order => 'ord,label'});
 	
-	my $menu = @$sites == 0 ? undef : [map {{
-		label     => $_ -> {label},
-		href      => {id_site => $_ -> {id}},
-		is_active => $_REQUEST {id_site} == $_ -> {id},
-	}} ({label => 'Tous'}, @$sites)];
+	!@$sites or defined $_REQUEST {id_site} or $_REQUEST {id_site} = $_USER -> {id_site};
 
+	my $organisation = sql_select_hash (organisations => $_USER -> {id_organisation});
+	
+	my @menu = ({
+		label     => 'Tous',
+		href      => {id_site => 0, aliens => '', __next_query_string => -1},
+		is_active => !$_REQUEST {id_site} && !$_REQUEST {aliens},
+		keep_esc  => 1,
+	});
+	
+	foreach my $site (@$sites) {
+	
+		push @menu, {
+			label     => $site -> {label},
+			href      => {id_site => $site -> {id}, aliens => '', __next_query_string => -1},
+			is_active => $_REQUEST {id_site} == $site -> {id} && !$_REQUEST {aliens},
+			keep_esc  => 1,
+		};
+	
+	}
+	
+	if (@menu == 1) {
+		
+		$menu [0] -> {label} = $organisation -> {empty_site_label},
+		
+	}
 
-
+	if ($organisation -> {ids_partners} ne '-1') {
+	
+		push @menu, {
+			label     => $organisation -> {partners_site_label},
+			href      => {id_site => '', aliens => 1, __next_query_string => -1},
+			is_active => $_REQUEST {aliens},
+			keep_esc  => 1,
+		};
+	
+	}
+	
+	
+	
+	
 
 	
 	unless ($_REQUEST {year}) {	
@@ -34,11 +102,17 @@ sub select_inscriptions_par_jour {
 		AND IFNULL(users.dt_start,  '1970-01-01') <= '$dt_to'
 		AND IFNULL(users.dt_finish, '9999-99-99') >= '$dt_from'
 	"});
+
+	my ($id_users, $idx_users) = ids ($users);
 	
-	my $prestation_types = sql (prestation_types => [[id_organisation => $_USER -> {id_organisation} ]]);
+	my $prestation_types =
+	
+		$_REQUEST {aliens} ? sql (prestation_types => [['id_organisation IN '=> "$organisation->{ids_partners}" ]]) :
+
+		sql (prestation_types => [[id_organisation => $_USER -> {id_organisation} ]]);
 
 	my $id_prestation_types = ids ($prestation_types);
-
+	
 	my $filter = $_REQUEST {id_user} ? "AND (id_user = $_REQUEST{id_user} OR id_users LIKE ',%$_REQUEST{id_user}%,')" : '';
 	
 	if ($_REQUEST {half_start}) {
@@ -52,36 +126,39 @@ sub select_inscriptions_par_jour {
 	if ($_REQUEST {id_site} > 0) {
 		$filter .= " AND prestations.id_site = " . $_REQUEST {id_site};
 	}
-
-	my ($id_users, $idx_users) = ids ($users);
-
-	$id_prestations = -1;
+	
 
 	my $collect = sub {
-	
-		my $is_visible = $idx_users -> {$i -> {id_user}};
 
-		if (!$is_visible && $i -> {id_users}) {
-		
-			foreach my $id_user (split /\,/, $i -> {id_users}) {
-			
-				$idx_users -> {$id_user} or next;
-				
-				$is_visible = 1;
-				
-				last;
-			
-			}
-		
-		}
-		
-		$is_visible or return;
+#		my $is_visible = $idx_users -> {$i -> {id_user}};
+#
+#		if (!$is_visible && $i -> {id_users}) {
+#		
+#			foreach my $id_user (split /\,/, $i -> {id_users}) {
+#			
+#				$idx_users -> {$id_user} or next;
+#				
+#				$is_visible = 1;
+#				
+#				last;
+#			
+#			}
+#		
+#		}
+#		
+#		$is_visible or return;
 		
 		$id_prestations .= ",$i->{id}";
 	
 	};
+	
+	unless ($_REQUEST {aliens}) {
+		
+		$filter .= " AND ();
+	
+	}
 
-	sql_select_loop (<<EOS, $collect, $dt_to, $dt_from);
+	my $id_prestations = sql_select_ids (<<EOS, $dt_to, $dt_from);
 		SELECT
 			*
 		FROM
@@ -303,7 +380,7 @@ EOS
 		next                        => $next,		
 		users                       => $users,
 		prestation_types            => $prestation_types,
-		menu                        => $menu,
+		menu                        => \@menu,
 		ext_fields                  => \@ext_fields,
 	};
 
