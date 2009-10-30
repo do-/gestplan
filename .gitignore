@@ -1,6 +1,7 @@
 bin
 conf
 logs
+sql
 docroot/dbm/
 docroot/i/_skins/
 docroot/session_access_logs/
