@@ -108,7 +108,7 @@ sub draw_inscriptions_par_jour {
 				lpt => 1,
 
 				top_toolbar => [{
-					keep_params => ['type', 'year', 'week', 'id_site'],
+					keep_params => ['type', 'year', 'week', 'id_site', 'aliens'],
 				},
 	
 					{
