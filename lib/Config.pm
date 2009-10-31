@@ -4,11 +4,42 @@ use Date::Calc qw(
 	Delta_Days
 	Add_Delta_YM
 	Add_Delta_Days
-	Monday_of_Week
-	Week_of_Year
 	Day_of_Week
 	Days_in_Month
 );
+#	Monday_of_Week
+#	Week_of_Year
+
+sub Week_Number_Shift {
+
+	my ($year) = @_;
+	
+	my ($w, $y) = Date::Calc::Week_of_Year ($year, 1, 1);
+	
+	return $year == $y ? 0 : 1;
+
+}
+
+sub Week_of_Year {
+
+	my ($year, $month, $day) = @_;
+	
+	my ($w, $y) = Date::Calc::Week_of_Year ($year, $month, $day);
+	
+	return ($w + Week_Number_Shift ($y), $y);
+
+}
+
+sub Monday_of_Week {
+
+	my ($week, $year) = @_;
+	
+	$week -= Week_Number_Shift ($year);
+	
+	return Date::Calc::Monday_of_Week ($week, $year);
+
+}
+
 use URI::Escape;
 use Digest::MD5 'md5_hex';
 use LockFile::Simple qw(lock trylock unlock);

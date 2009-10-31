@@ -974,6 +974,12 @@ EOS
 		$_REQUEST {week} = 1;
 	}	
 	
+	if ($_REQUEST {week} == 1 && Week_Number_Shift ($_REQUEST {year})) {
+	
+		$_REQUEST {week} = 2;
+	
+	}
+	
 	my @monday = Monday_of_Week ($_REQUEST {week}, $_REQUEST {year});
 
 	my $prev = [Week_of_Year (Add_Delta_Days (@monday, -7))];
