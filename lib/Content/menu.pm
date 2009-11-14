@@ -54,6 +54,23 @@ sub select_menu_for_admin {
 			organisations.label
 		
 	}, $_USER -> {id}, $_USER -> {id_organisation});
+	
+	$_USER -> {id_site_group} += 0;
+
+	my $site_groups = sql_select_all (q {
+	
+		SELECT
+			site_groups.*
+		FROM
+			site_groups
+		WHERE
+			site_groups.fake = 0
+			AND site_groups.id_organisation = ?
+			AND site_groups.id <> ?
+		ORDER BY
+			site_groups.label
+		
+	}, $_USER -> {id_organisation}, $_USER -> {id_site_group});
 
 	return [
 
@@ -116,6 +133,10 @@ sub select_menu_for_admin {
 			items => [
 
 				{
+					name  => 'site_groups',
+					label => "Secteurs",
+				},
+				{
 					name  => 'sites',
 					label => "Onglets",
 				},
@@ -150,6 +171,32 @@ sub select_menu_for_admin {
 					target => '_top',
 				
 				}} @$organisations
+			
+			],
+			
+		},
+
+		{
+			label   => 'Secteurs',
+			no_page => 1,
+			off     => 0 == @$site_groups,
+			
+			items   => [
+			
+				{
+					label  => 'Tout secteur',
+					href   => "/?type=users&action=change_site_group&_id_site_group=0",
+					target => '_top',
+					off    => !$_USER -> {id_site_group},
+				},
+			
+				map {{
+				
+					label  => $_ -> {label},
+					href   => "/?type=users&action=change_site_group&_id_site_group=$_->{id}",
+					target => '_top',
+				
+				}} @$site_groups
 			
 			],
 			

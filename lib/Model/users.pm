@@ -17,5 +17,13 @@ columns => {
 	
 	options => {TYPE_NAME => 'text'},
 
+	id_site_group => 'select(site_groups)' # Secteur
+
+},
+
+keys => {
+
+	id_organisation => 'id_organisation',
+
 },
 

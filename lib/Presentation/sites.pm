@@ -14,6 +14,10 @@ sub draw_sites {
 					href  => "/?type=sites&id=$$i{id}",
 				}, [
 					$i -> {label},
+					{
+						label  => $i -> {site_group} -> {label},
+						hidden => 0 == @{$data -> {site_groups}},
+					},
 				])
 
 			},
@@ -40,6 +44,14 @@ sub draw_sites {
 						label   => 'Chercher',
 						name    => 'q',
 						keep_params => [],
+					},
+
+					{
+						type    => 'input_select',
+						name    => 'id_site_group',
+						values  => $data -> {site_groups},
+						empty   => '[Tout secteur]',
+						off     => 0 == @{$data -> {site_groups}},
 					},
 
 					{
@@ -74,6 +86,11 @@ sub draw_item_of_sites {
 			{
 				name  => 'label',
 				label => 'Désignation',
+			},
+			{
+				name  => 'id_site_group',
+				off   => 0 == @{$data -> {site_groups}},
+				empty => '',
 			},
 		],
 	);

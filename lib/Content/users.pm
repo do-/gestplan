@@ -1,5 +1,15 @@
 ################################################################################
 
+sub do_change_site_group_users { # navigation vers un autre secteur
+
+	sql_do ('UPDATE users SET id_site_group = ? WHERE id = ?', $_REQUEST {_id_site_group}, $_USER -> {id});
+	
+	delete $_REQUEST {type};
+
+}
+
+################################################################################
+
 sub do_change_organisation_users { # navigation vers une autre structure
 
 	sql_do ('UPDATE users SET id_organisation = ? WHERE id = ?', $_REQUEST {_id_organisation}, $_USER -> {id});
