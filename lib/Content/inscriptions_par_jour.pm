@@ -2,15 +2,45 @@
 
 sub select_inscriptions_par_jour {
 
-	my $sites = sql_select_vocabulary (sites => {filter => "id_organisation = $_USER->{id_organisation}"});
+	if ($_USER -> {id_site}) {
+	
+		$_USER -> {id_site_group} = sql_select_scalar ('SELECT id_site_group FROM sites WHERE id = ?', $_USER -> {id_site});
+	
+	}
+	
+	$_USER -> {id_site_group} += 0;
+
+	my $sites = sql_select_vocabulary (sites => {
+	
+		filter => $_USER -> {id_site_group} ?
+		
+			"id_site_group = $_USER->{id_site_group}" :
+			
+			"id_organisation = $_USER->{id_organisation}"
+	
+	});
 	
 	my $menu = @$sites == 0 ? undef : [map {{
 		label     => $_ -> {label},
 		href      => {id_site => $_ -> {id}},
 		is_active => $_REQUEST {id_site} == $_ -> {id},
-	}} ({label => 'Tous sites'}, @$sites)];
+	}} ({label => $_USER -> {id_site_group} ? sql_select_scalar ('SELECT label FROM site_groups WHERE id = ?', $_USER -> {id_site_group}) : 'Tous sites'}, @$sites)];
+	
+		
+	my $site_filter = '';
 
-	my $site_filter = $_REQUEST {id_site} ? " AND IFNULL(users.id_site, 0) IN ($_REQUEST{id_site}, 0) " : '';
+	if ($_REQUEST {id_site}) {
+		
+		$site_filter = " AND IFNULL(users.id_site, 0) IN ($_REQUEST{id_site}, 0) ";
+		
+	}
+	elsif ($_USER -> {id_site_group}) {
+	
+		my $ids = sql_select_ids ('SELECT id FROM sites WHERE fake = 0 AND id_site_group = ?', $_USER -> {id_site_group});
+
+		$site_filter = " AND IFNULL(users.id_site, 0) IN ($ids, 0) ";
+		
+	}
 
 	$_REQUEST {__meta_refresh} = $_USER -> {refresh_period} || 300;
 	
