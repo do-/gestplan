@@ -1220,6 +1220,7 @@ EOS
 			IF(users.id_organisation = $$_USER{id_organisation}, 0, 1)
 			, organisations.label
 			, roles.ord
+			, roles.label
 			, prenom
 EOS
 
