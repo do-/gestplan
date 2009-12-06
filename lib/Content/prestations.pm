@@ -1199,16 +1199,19 @@ EOS
 	my $users = sql_select_all (<<EOS, $days [-1] -> {iso_dt}, $days [0] -> {iso_dt}, $_USER -> {id_organisation}, @params);
 		SELECT
 			users.id
+			, users.id_site
 			, IFNULL(prenom, users.label) AS label
 			, dt_start - INTERVAL 1 DAY  AS dt_start
 			, dt_finish + INTERVAL 1 DAY AS dt_finish
 			, roles.id AS id_role
+			, sites.label AS site_label
 			, IF(users.id_organisation = $$_USER{id_organisation}, roles.label, organisations.label) AS role
 			, IF(users.id_organisation = $$_USER{id_organisation}, 0, 1) AS is_alien
 		FROM
 			users
 			INNER JOIN groups AS roles ON users.id_group = roles.id
 			INNER JOIN organisations ON users.id_organisation = organisations.id
+			LEFT  JOIN sites ON users.id_site = sites.id
 		WHERE
 			users.fake = 0
 			$site_filter
@@ -1240,7 +1243,13 @@ EOS
 #		}
 		
 		$last_role eq $role or push @users, {id => 0, label => $role};
+		
+		$user -> {title} = $user -> {label};
+
+		!$user -> {id_site} or $user -> {id_site} == $_REQUEST {id_site} or $user -> {title} .= " - $user->{site_label}";
+
 		push @users, $user;
+		
 		$last_role = $role;
 		
 	}
