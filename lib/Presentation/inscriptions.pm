@@ -8,8 +8,6 @@ sub draw_item_of_inscriptions {
 	
 		max_len => 1000,
 		
-		right_buttons => [ $data -> {read_only} ? () : del ($data) ],
-
 		additional_buttons => [
 		
 			{
@@ -38,6 +36,9 @@ sub draw_item_of_inscriptions {
 		],
 		
 		right_buttons => [
+
+			($data -> {read_only} ? () : del ($data)),
+
 			{
 				icon     => 'right',
 				label    => "$data->{next}->{label} $data->{next}->{nom} $data->{next}->{prenom}",
@@ -49,6 +50,7 @@ sub draw_item_of_inscriptions {
 				keep_esc => 0,
 				hotkey   => {code => 39},
 			},
+			
 		],		
 			no_edit => $data -> {read_only},
 		
