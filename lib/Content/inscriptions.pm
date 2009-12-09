@@ -423,7 +423,7 @@ sub get_item_of_inscriptions {
 		$item -> {"field_$i->{id_ext_field}"} = $i -> {file_name} || $i -> {value};
 		$item -> {"field_$i->{id_ext_field}_id"} = $i -> {id};
 	
-	}, $item -> {id});	
+	}, $item -> {parent} || $item -> {id});	
 	
 	$_REQUEST {id_log} = $item -> {id_log};
 	
@@ -780,7 +780,15 @@ EOS
 				, id
 EOS
 
-		my ($ids, $idx) = ids ($prestation_1 -> {inscriptions});
+		my ($ids, $idx) = ('', {});
+		
+		foreach my $i (@{$prestation_1 -> {inscriptions}}) {
+		
+			$idx -> {$i -> {parent} || $i -> {id}} = $i;
+		
+		}
+		
+		$ids = join ',', (-1, keys %$idx);
 	
 		sql_select_loop ("SELECT * FROM ext_field_values WHERE id_inscription IN ($ids)", sub {
 		
@@ -916,9 +924,17 @@ EOS
 				, minute_start
 				, id
 EOS
+
+		my ($ids, $idx) = ('', {});
 		
-		my ($ids, $idx) = ids ($prestation_2 -> {inscriptions});
-	
+		foreach my $i (@{$prestation_2 -> {inscriptions}}) {
+		
+			$idx -> {$i -> {parent} || $i -> {id}} = $i;
+		
+		}
+
+		$ids = join ',', (-1, keys %$idx);
+
 		sql_select_loop ("SELECT * FROM ext_field_values WHERE id_inscription IN ($ids)", sub {
 		
 			$idx -> {$i -> {id_inscription}} -> {"field_$i->{id_ext_field}"} = $i -> {file_name} || $i -> {value};

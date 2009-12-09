@@ -235,7 +235,15 @@ EOS
 	 		$_REQUEST{start}, $portion
 EOS
 
-	my ($ids, $idx) = ids ($inscriptions_par_conseiller);
+	my ($ids, $idx) = ('', {});
+		
+	foreach my $i (@$inscriptions_par_conseiller) {
+		
+		$idx -> {$i -> {parent} || $i -> {id}} = $i;
+		
+	}
+
+	$ids = join ',', (-1, keys %$idx);
 
 	sql_select_loop ("SELECT * FROM ext_field_values WHERE id_inscription IN ($ids)", sub {
 	
