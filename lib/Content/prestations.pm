@@ -1,5 +1,252 @@
 ################################################################################
 
+sub validate_clone_prestations {
+
+	my $id = sql ('prestations(id)' => ['id_user', 'dt_start', 'half_start', ['1 ']]);
+
+	if ($id) {
+	
+		redirect (
+			
+			check_href ({
+			
+				href => "/?type=prestations&id=$id",
+				
+			}),
+					
+			{
+				kind   => 'js',
+				target => '_parent',
+			}
+			
+		);
+		
+		return undef;
+	
+	}
+
+	my $data = sql (prestations => $_REQUEST {id}, 'prestation_types', 'organisations');
+
+	if ($data -> {prestation_type} -> {id_day_period} == 1) {
+		$_REQUEST {half_start} == 1 or return "Ce type de prestation ne peut pas commencer l'après-midi";
+	}
+
+	if ($data -> {prestation_type} -> {id_day_period} == 2) {
+		$_REQUEST {half_start} == 2 or return "Ce type de prestation ne peut pas commencer le matin";
+	}
+	
+	if ($data -> {dt_start} . $data -> {half_start} ne $data -> {dt_finish} . $data -> {half_finish}) {
+	
+		my $delta_half_days =
+			2 * Delta_Days (dt_y_m_d ($data -> {dt_start}), dt_y_m_d ($data -> {dt_finish}))
+			  + $data -> {half_finish} - $data -> {half_start}
+		;
+
+		my @dt   = dt_y_m_d ($_REQUEST {dt_start});
+		my $half = $_REQUEST {half_start};
+		
+		if ($half == 2) {
+		
+			@dt = Add_Delta_Days (@dt, 1);
+			
+			$half = 1;
+			
+			$delta_half_days --;
+		
+		}
+		
+		@dt = Add_Delta_Days (@dt, int ($delta_half_days / 2));
+		
+		$half += ($delta_half_days % 2);
+		
+		$_REQUEST {dt_finish}   = dt_iso (@dt);
+
+		$_REQUEST {half_finish} = $half;
+	
+	}
+	
+	if ($data -> {dt_start} . $data -> {half_start} ne $data -> {dt_finish} . $data -> {half_finish}) {
+	
+		my $delta_half_days =
+			2 * Delta_Days (dt_y_m_d ($data -> {dt_start}), dt_y_m_d ($data -> {dt_finish}))
+			  + $data -> {half_finish} - $data -> {half_start}
+		;
+
+		my @dt   = dt_y_m_d ($_REQUEST {dt_start});
+		my $half = $_REQUEST {half_start};
+		
+		if ($half == 2) {
+		
+			@dt = Add_Delta_Days (@dt, 1);
+			
+			$half = 1;
+			
+			$delta_half_days --;
+		
+		}
+		
+		@dt = Add_Delta_Days (@dt, int ($delta_half_days / 2));
+		
+		$half += ($delta_half_days % 2);
+		
+		$_REQUEST {dt_finish}   = dt_iso (@dt);
+
+		$_REQUEST {half_finish} = $half;
+	
+	}
+	
+	my $user = sql (users => $_REQUEST {id_user});
+
+	$data -> {prestation_type} -> {ids_roles} =~ /\,$user->{id_role}\,/ or return "Désolé, mais $user->{label} ne peut pas assister aux prestations $data->{prestation_type}->{label_short}.";
+			
+	0 == sql_select_scalar (
+	
+		q {
+			SELECT
+				id
+			FROM
+				prestations
+			WHERE
+				1 = 1
+				AND id_user = ?
+				AND fake = 0
+				AND CONCAT(dt_start,  half_start)  <= ?
+				AND CONCAT(dt_finish, half_finish) >= ?
+				AND dt_finish >= ?
+			LIMIT
+				1
+		},
+
+		$user  -> {id},
+		$_REQUEST {dt_finish} . $_REQUEST {half_finish},
+		$_REQUEST {dt_start}  . $_REQUEST {half_start},
+		$_REQUEST {dt_start}
+		
+	) or return "Désolé, mais $user->{label} est occupé(e) pendant cette période.";
+	
+	my @id_prestations_rooms = sql_select_col ('SELECT id_room FROM prestations_rooms WHERE id_prestation = ? AND id_room > 0', $_REQUEST {id});
+	
+	if (@id_prestations_rooms) {
+	
+		my $ids = join ',', @id_prestations_rooms;
+		
+		my $conflict = sql_select_hash (qq {
+				SELECT
+					prestations_rooms.id
+					, rooms.label
+					, prestations_rooms.dt_start
+					, prestations_rooms.dt_finish
+				FROM
+					prestations_rooms
+					LEFT JOIN prestations ON prestations_rooms.id_prestation = prestations.id
+					LEFT JOIN rooms ON prestations_rooms.id_room = rooms.id
+				WHERE
+					prestations_rooms.fake = 0
+					AND prestations.fake = 0
+					AND prestations_rooms.id_room IN ($ids)
+					AND CONCAT(prestations_rooms.dt_start, prestations_rooms.half_start) <= ?
+					AND CONCAT(prestations_rooms.dt_finish, prestations_rooms.half_finish) >= ?
+					AND prestations_rooms.dt_finish >= ?
+				LIMIT
+					1
+			},
+			$_REQUEST {dt_finish} . $_REQUEST {half_finish},
+			$_REQUEST {dt_start}  . $_REQUEST {half_start},
+			$_REQUEST {dt_start},
+			
+		);		
+	
+		if ($conflict -> {id}) {
+		
+			__d ($conflict, 'dt_start', 'dt_finish');
+			
+			return "Conflit de réservation pour $conflict->{label}";
+			
+		}
+	
+	}
+
+	undef;
+
+}
+
+################################################################################
+
+sub do_clone_prestations { # duplication
+
+	return if $_REQUEST {__response_sent};
+
+	my $data = sql (prestations => $_REQUEST {id});
+	
+	my $type = sql (prestation_types => $data -> {id_prestation_type});
+	
+	$_REQUEST {fake} = '0,-1';
+	
+	my $inscriptions = sql (inscriptions => [[id_prestation => $data -> {id}], [ORDER => 'id']]);
+
+	my $delta_minutes =
+		!$type -> {is_half_hour}                        ? 0 :
+		$data -> {half_start} == $_REQUEST {half_start} ? 0 :
+		60 * ($type -> {"half_$_REQUEST{half_start}_h"} - $type -> {"half_$data->{half_start}_h"})
+		   + ($type -> {"half_$_REQUEST{half_start}_m"} - $type -> {"half_$data->{half_start}_m"})
+	;
+
+	delete $data -> {$_}           foreach qw (id id_users);
+	
+	$data -> {$_} = $_REQUEST {$_} foreach qw (dt_start half_start dt_finish half_finish id_user);
+	
+	$data -> {id} = sql_do_insert (prestations => $data);
+	
+	foreach my $inscription (@$inscriptions) {
+	
+		my $id = delete $inscription -> {id};
+	
+		delete $inscription -> {$_} foreach qw (parent id_user hour minute id_log);
+		
+		$inscription -> {id_author}     = $_USER -> {id};
+		
+		$inscription -> {id_prestation} = $data  -> {id};
+		
+		if ($delta_minutes && $inscription -> {label} =~ /^\s*(\d+)h(\d+)/) {
+		
+			my $m = 60 * $1 + $2 + $delta_minutes;
+			
+			$inscription -> {label} = sprintf ('%2dh%02d', int ($m / 60), $m % 60);
+		
+		}
+		
+		$inscription -> {id} = sql_do_insert (inscriptions => $inscription);
+		
+		sql (ext_field_values => [[id_inscription => $id]], sub {
+		
+			delete $i -> {id};
+			
+			$i -> {id_inscription} = $inscription -> {id};
+			
+			sql_do_insert (ext_field_values => $i);
+		
+		})
+	
+	}
+
+	sql (prestations_rooms => [[id_prestation => $_REQUEST {id}]], sub {
+	
+		delete $i -> {id};
+		
+		$i -> {id_prestation} = $data -> {id};
+		
+		$i -> {$_} = $_REQUEST {$_} foreach qw (dt_start half_start dt_finish half_finish);
+		
+		sql_do_insert (prestations_rooms => $i);
+	
+	});
+	
+	esc ();
+
+}
+
+################################################################################
+
 sub do_erase_prestations {
 
 	my @monday = Monday_of_Week ($_REQUEST {week}, $_REQUEST {year});
@@ -929,6 +1176,8 @@ sub select_prestations {
 			inscriptions.id = ?
 EOS
 
+	$item -> {prestation_to_clone} = sql (prestations => $_REQUEST {id_prestation_to_clone}, 'prestation_types', 'users') if $_REQUEST {id_prestation_to_clone};
+
 	if ($_USER -> {id_site}) {
 	
 		$_USER -> {id_site_group} = sql_select_scalar ('SELECT id_site_group FROM sites WHERE id = ?', $_USER -> {id_site});
@@ -1035,6 +1284,12 @@ EOS
 		
 		my $h_create = {href => "/?type=prestations&action=create&dt_start=$iso_dt&half_start=1&dt_finish=$iso_dt&half_finish=1&id_prestation_type=$_REQUEST{id_prestation_type}"};
 		check_href ($h_create);
+
+		if ($_REQUEST {id_prestation_to_clone}) {
+
+			$h_create -> {href} =~ s{action=create}{action=clone&id=$_REQUEST{id_prestation_to_clone}};
+
+		}
 		
 		push @days, {
 			id => 2 * ($i + 1),
@@ -1053,6 +1308,12 @@ EOS
 
 		my $h_create = {href => "/?type=prestations&action=create&dt_start=$iso_dt&half_start=2&dt_finish=$iso_dt&half_finish=2&id_prestation_type=$_REQUEST{id_prestation_type}"};
 		check_href ($h_create);
+
+		if ($_REQUEST {id_prestation_to_clone}) {
+
+			$h_create -> {href} =~ s{action=create}{action=clone&id=$_REQUEST{id_prestation_to_clone}};
+
+		}
 
 		push @days, {
 			id => 2 * ($i + 1) + 1,
@@ -1264,7 +1525,7 @@ EOS
 	
 	}
 	
-	if (!$_REQUEST {aliens} && !$item -> {inscription_to_clone}) {
+	if (!$_REQUEST {aliens} && !$item -> {inscription_to_clone} && !$item -> {prestation_to_clone}) {
 	
 		push @users, {label => 'Ressources'};
 		push @users, @{ sql_select_all ("SELECT -id AS id, label FROM rooms WHERE fake = 0 $site_filter AND id_organisation = ? ORDER BY label", $_USER -> {id_organisation})};
@@ -1635,7 +1896,12 @@ EOS
 
 		my $sql = 'SELECT COUNT(*) FROM prestation_types WHERE fake = 0 AND is_placeable_by_conseiller IN (2, 3) AND ids_users LIKE ?';
 		
-		if ($_REQUEST {id_prestation_type}) {
+		if ($_REQUEST {id_prestation_to_clone}) {
+		
+			$sql .= " AND id = $item->{prestation_to_clone}->{id_prestation_type}"
+		
+		}
+		elsif ($_REQUEST {id_prestation_type}) {
 		
 			$sql .= " AND id = $_REQUEST{id_prestation_type}";
 		

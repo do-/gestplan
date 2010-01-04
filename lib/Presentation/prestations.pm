@@ -3,7 +3,15 @@
 sub draw_item_of_prestations {
 
 	my ($data) = @_;
+
+	my ($week, $year) = Week_of_Year (dt_y_m_d ($data -> {dt_start}));
 	
+	my $url = "/?sid=$_REQUEST{sid}&type=prestations&id=$data->{id}&__last_query_string=$_REQUEST{__last_last_query_string}&__last_scrollable_table_row=$_REQUEST{__last_scrollable_table_row}";
+		
+	my $__last_query_string = session_access_log_set ($url);
+	
+	my $clone_url = check_href ({href => "/?id_site=0&type=prestations&id_prestation_to_clone=$data->{id}&year=$year&week=$week&__last_query_string=$__last_query_string"});
+
 	$_REQUEST {__read_only} or $_REQUEST {__on_load} .= <<EOH;
 	
 		var id_users_0 = document.forms['form'].elements['_id_users_0'];
@@ -34,6 +42,16 @@ EOH
 
 	draw_form ({
 	
+		additional_buttons => [
+			{
+				icon  => 'create',
+				label => 'dupliquer...',
+				href  => $clone_url,
+				keep_esc => 1,
+				off   => !$_REQUEST {__read_only},
+			},
+		],
+
 		right_buttons => [ del ($data) ],
 		
 	}, $data,
@@ -221,7 +239,7 @@ EOH
 sub draw_prestations {
 	
 	my ($data) = @_;
-	
+
 	my $shift = $data -> {menu} ? 128 : 111;
 
 	my $off_period_divs = <<EOJS;
@@ -452,7 +470,8 @@ EOH
 					': ' .
 					$data -> {week_status_type} -> {label}
 					. ($_REQUEST {id_inscription_to_clone} ? ' (Déplacement)' : '')
-					,					
+					. ($_REQUEST {id_prestation_to_clone}  ? " (Duplication $data->{prestation_to_clone}->{prestation_type}->{label_short} $data->{prestation_to_clone}->{user}->{label})" : '')
+					,
 				}],
 			},
 		
@@ -680,14 +699,17 @@ EOH
 #				no_scroll => 1,
 
 				top_toolbar => [{
-					keep_params => ['type', 'year', 'id_site'],
+					keep_params => ['type', 'year', 'id_site', 'id_prestation_to_clone', 'id_inscription_to_clone'],
 				},
 
 					{
 						icon    => 'cancel',
 						label   => 'retour (Echap)',
 						href    => esc_href (),
-						off     => !$_REQUEST {id_inscription_to_clone},
+						off     =>
+							!$_REQUEST {id_inscription_to_clone}
+							&& !$_REQUEST {id_prestation_to_clone}
+						,
 						hotkey  => {code => ESC},
 					},
 
@@ -720,7 +742,8 @@ EOH
 						empty  => '',
 						off    =>
 							$_USER -> {role} eq 'accueil'
-							|| $_REQUEST {id_inscription_to_clone},
+							|| $_REQUEST {id_inscription_to_clone}
+							|| $_REQUEST {id_prestation_to_clone}
 						,
 					},
 					
@@ -731,7 +754,8 @@ EOH
 						href    => {action => 'switch_status', id_week_status_type => $data -> {week_status_type} -> {switch} -> {id}},
 						off     =>
 							$_USER -> {role} ne 'admin'
-							|| $_REQUEST {id_inscription_to_clone},
+							|| $_REQUEST {id_inscription_to_clone}
+							|| $_REQUEST {id_prestation_to_clone}
 						,
 					},
 			
@@ -744,7 +768,8 @@ EOH
 							$data -> {have_models}
 							|| $_USER -> {role} ne 'admin'
 							|| $data -> {week_status_type} -> {id} != 1
-							|| $_REQUEST {id_inscription_to_clone},
+							|| $_REQUEST {id_inscription_to_clone}
+							|| $_REQUEST {id_prestation_to_clone}
 						,
 					},
 					
@@ -756,7 +781,8 @@ EOH
 						off     =>
 							$_USER -> {role} ne 'admin'
 							|| $data -> {week_status_type} -> {id} != 1
-							|| $_REQUEST {id_inscription_to_clone},
+							|| $_REQUEST {id_inscription_to_clone}
+							|| $_REQUEST {id_prestation_to_clone}
 						,
 					},
 
