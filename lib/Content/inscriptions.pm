@@ -316,6 +316,15 @@ sub validate_update_inscriptions {
 	
 	$item -> {prestation} = sql_select_hash ('prestations', $item -> {id_prestation});
 	$item -> {prestation} -> {type} = sql_select_hash ('prestation_types', $item -> {prestation} -> {id_prestation_type});
+	
+	if ($item -> {prestation} -> {type} -> {is_anonymous}) {
+	
+		 $_REQUEST {_nom}     = 'x';
+		 $_REQUEST {_prenom}  = 'x';
+		($_REQUEST {_hour}, $_REQUEST {_minute}) = map {sprintf ('%02d', $_)} Date::Calc::Now ();
+		 $_REQUEST {_id_user} = $item -> {prestation} -> {id_user};
+		
+	}
 
 	if ($item -> {prestation} -> {type} -> {is_half_hour} == -1) {
 	

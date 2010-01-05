@@ -45,6 +45,7 @@ sub do_update_prestation_types {
 		is_protedted
 		ids_partners
 		id_site
+		is_anonymous
 	)]);
 	
 	sql_do ('DELETE FROM prestation_types_ext_fields WHERE id_prestation_type = ?', $_REQUEST {id});
