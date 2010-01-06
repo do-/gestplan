@@ -108,11 +108,13 @@ sub draw_item_of_inscriptions {
 				name  => 'nom',
 				label => 'Nom ou objet',
 				size  => 40,
+				off   => $data -> {prestation} -> {type} -> {is_anonymous},
 			},
 			{
 				name  => 'prenom',
 				label => 'Prénom ou complément',
 				size  => 40,
+				off   => $data -> {prestation} -> {type} -> {is_anonymous},
 			},
 			
 			(
@@ -152,6 +154,7 @@ sub draw_item_of_inscriptions {
 			{
 				type  => 'hgroup',
 				label => 'Arrivé à',
+				off   => $data -> {prestation} -> {type} -> {is_anonymous},
 				
 				items => [
 					{
@@ -180,6 +183,7 @@ sub draw_item_of_inscriptions {
 				type   => 'select',
 				values => $data -> {users},
 				empty  => '[personne pour le moment]',
+				off   => $data -> {prestation} -> {type} -> {is_anonymous},
 			},
 		],
 	)
