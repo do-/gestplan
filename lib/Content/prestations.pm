@@ -203,7 +203,7 @@ sub do_clone_prestations { # duplication
 	
 		delete $inscription -> {$_} foreach qw (parent id_user hour minute id_log);
 		
-		$inscription -> {id_author}     = $_USER -> {id};
+#		$inscription -> {id_author}     = $_USER -> {id};
 		
 		$inscription -> {id_prestation} = $data  -> {id};
 		
