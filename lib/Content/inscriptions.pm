@@ -612,7 +612,7 @@ EOS
 
 	if ($item -> {prestation} -> {type} -> {id_organisation} != $_USER -> {id_organisation}) {
 	
-		$inscriptions = grep {$_ -> {id_organisation} == $_USER -> {id_organisation}} @$inscriptions;
+		$inscriptions = [grep {$_ -> {id_organisation} == $_USER -> {id_organisation}} @$inscriptions];
 	
 	}
 
