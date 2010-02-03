@@ -154,7 +154,7 @@ sub select_inscriptions_par_jour {
 	
 	unless ($_REQUEST {aliens}) {
 		
-		$filter .= " AND ();
+		$filter .= " AND (1=1)";
 	
 	}
 
