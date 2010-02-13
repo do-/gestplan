@@ -4,7 +4,9 @@ sub do_change_site_group_users { # navigation vers un autre secteur
 
 	sql_do ('UPDATE users SET id_site_group = ? WHERE id = ?', $_REQUEST {_id_site_group}, $_USER -> {id});
 	
-	delete $_REQUEST {type};
+	$_REQUEST {type} = 'prestations';
+	
+	delete $_REQUEST {id};
 
 }
 
