@@ -1196,14 +1196,30 @@ EOS
 
 	$item -> {prestation_to_clone} = sql (prestations => $_REQUEST {id_prestation_to_clone}, 'prestation_types', 'users') if $_REQUEST {id_prestation_to_clone};
 
-	my $sites = sql_select_vocabulary (sites => {filter => "id_organisation = $_USER->{id_organisation}", order => 'ord,label'});
+	if ($_USER -> {id_site}) {
+	
+		$_USER -> {id_site_group} = sql_select_scalar ('SELECT id_site_group FROM sites WHERE id = ?', $_USER -> {id_site});
+	
+	}
+	
+	$_USER -> {id_site_group} += 0;
+
+	my $sites = sql_select_vocabulary (sites => {
+	
+		filter => $_USER -> {id_site_group} ?
+		
+			"id_site_group   = $_USER->{id_site_group}" :
+
+			"id_organisation = $_USER->{id_organisation}"
+
+	});
 	
 	!@$sites or defined $_REQUEST {id_site} or $_REQUEST {id_site} = $_USER -> {id_site};
 
 	my $organisation = sql_select_hash (organisations => $_USER -> {id_organisation});
 	
 	my @menu = ({
-		label     => 'Tous',
+		label     => $_USER -> {id_site_group} ? sql_select_scalar ('SELECT label FROM site_groups WHERE id = ?', $_USER -> {id_site_group}) : 'Tous sites',
 		href      => {id_site => 0, aliens => '', __next_query_string => -1},
 		is_active => !$_REQUEST {id_site} && !$_REQUEST {aliens},
 		keep_esc  => 1,
@@ -1220,14 +1236,26 @@ EOS
 	
 	}
 	
-	if (@menu == 1) {
+	if (@menu == 1 && !$_USER -> {id_site_group}) {
 		
 		$menu [0] -> {label} = $organisation -> {empty_site_label},
 		
 	}
 
-
-	my $site_filter = $_REQUEST {id_site} ? " AND IFNULL(id_site, 0) IN ($_REQUEST{id_site}, 0) " : '';
+	my $site_filter = '';
+	
+	if ($_REQUEST {id_site}) {
+		
+		$site_filter = " AND IFNULL(id_site, 0) IN ($_REQUEST{id_site}, 0) ";
+		
+	}
+	elsif ($_USER -> {id_site_group}) {
+	
+		my $ids = sql_select_ids ('SELECT id FROM sites WHERE fake = 0 AND id_site_group = ?', $_USER -> {id_site_group});
+		
+		$site_filter = " AND IFNULL(id_site, 0) IN ($ids, 0) ";
+		
+	}
 
 #	$_REQUEST {__meta_refresh} = $_USER -> {refresh_period} || 300;
 	

@@ -13,6 +13,7 @@ sub do_update_sites {
 	sql_do_update ('sites', [qw(
 		label
 		ord
+		id_site_group
 	)]);
 
 }
@@ -42,6 +43,12 @@ sub get_item_of_sites {
 		{type => 'sites', name => $item -> {label}, id => $item -> {id}},
 	];
 
+	add_vocabularies ($item,
+	
+		site_groups => {filter => "id_organisation = $_USER->{id_organisation}"},
+	
+	),
+
 	return $item;
 	
 }
@@ -50,12 +57,26 @@ sub get_item_of_sites {
 
 sub select_sites {
 
-	sql ({}, sites => [
-		['label LIKE %?%' => $_REQUEST {q}],
-		[ id_organisation => $_USER -> {id_organisation}],
-		[ ORDER           => 'ord,label'],
-		[ LIMIT           => "start, $conf->{portion}"],
-	])
+	sql (
+	
+		add_vocabularies ({},
+	
+			site_groups => {filter => "id_organisation = $_USER->{id_organisation}"},
+	
+		),
+
+		sites => [
+		
+			['label LIKE %?%' => $_REQUEST {q}],
+			[ id_organisation => $_USER -> {id_organisation}],
+			[ ORDER           => 'ord,label'],
+			[ LIMIT           => "start, $conf->{portion}"],
+		
+		],
+		
+		'site_groups',		
+		
+	)
 	
 }
 

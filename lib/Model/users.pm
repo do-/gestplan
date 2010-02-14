@@ -17,8 +17,15 @@ columns => {
 	no_popup        => {TYPE_NAME => 'tinyint', NULLABLE => 0, COLUMN_DEFAULT => 0},
 	
 	options => {TYPE_NAME => 'text'},
+	
+	id_site_group => 'select(site_groups)', # Secteur	
 
 	html_cache => {TYPE_NAME => 'longtext'},
 
 },
 
+keys => {
+
+	id_organisation => 'id_organisation',
+
+},

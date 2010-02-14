@@ -37,16 +37,30 @@ sub select_inscriptions_par_jour {
 #		is_active => $_REQUEST {id_site} == $_ -> {id},
 #	}} ({label => 'Tous'}, @$sites)];
 
+	if ($_USER -> {id_site}) {
+	
+		$_USER -> {id_site_group} = sql_select_scalar ('SELECT id_site_group FROM sites WHERE id = ?', $_USER -> {id_site});
+	
+	}
+	
+	$_USER -> {id_site_group} += 0;
 
-
-	my $sites = sql_select_vocabulary (sites => {filter => "id_organisation = $_USER->{id_organisation}", order => 'ord,label'});
+	my $sites = sql_select_vocabulary (sites => {
+	
+		filter => $_USER -> {id_site_group} ?
+		
+			"id_site_group = $_USER->{id_site_group}" :
+			
+			"id_organisation = $_USER->{id_organisation}"
+	
+	});
 	
 	!@$sites or defined $_REQUEST {id_site} or $_REQUEST {id_site} = $_USER -> {id_site};
 
 	my $organisation = sql_select_hash (organisations => $_USER -> {id_organisation});
 	
 	my @menu = ({
-		label     => 'Tous',
+		label     => $_USER -> {id_site_group} ? sql_select_scalar ('SELECT label FROM site_groups WHERE id = ?', $_USER -> {id_site_group}) : 'Tous',
 		href      => {id_site => 0, aliens => '', __next_query_string => -1},
 		is_active => !$_REQUEST {id_site} && !$_REQUEST {aliens},
 		keep_esc  => 1,
@@ -63,7 +77,7 @@ sub select_inscriptions_par_jour {
 	
 	}
 	
-	if (@menu == 1) {
+	if (@menu == 1 && !$_USER -> {id_site_group}) {
 		
 		$menu [0] -> {label} = $organisation -> {empty_site_label},
 		
@@ -122,11 +136,19 @@ sub select_inscriptions_par_jour {
 	if ($_REQUEST {id_prestation_type}) {
 		$filter .= " AND prestations.id_prestation_type = " . $_REQUEST {id_prestation_type};
 	}
-
-	if ($_REQUEST {id_site} > 0) {
-		$filter .= " AND prestations.id_site = " . $_REQUEST {id_site};
-	}
 	
+	if ($_REQUEST {id_site} > 0) {
+		
+		$filter .= " AND prestations.id_site = " . $_REQUEST {id_site};
+		
+	}
+	elsif ($_USER -> {id_site_group} > 0) {
+	
+		my $ids = sql_select_ids ('SELECT id FROM sites WHERE fake = 0 AND id_site_group = ?', $_USER -> {id_site_group});
+
+		$filter .= " AND prestations.id_site IN ($ids) ";
+
+	}
 
 	my $collect = sub {
 
