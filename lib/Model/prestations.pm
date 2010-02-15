@@ -16,6 +16,8 @@ columns => {
 	id_prestation_model => {TYPE_NAME => 'int'},
 
 	cnt         => {TYPE_NAME => 'int'},
+	
+	id_prestation_partnership  => {TYPE_NAME => 'int'},
 
 	file_name => {TYPE_NAME    => 'varchar', COLUMN_SIZE  => 255},
 	file_type => {TYPE_NAME    => 'varchar', COLUMN_SIZE  => 255},

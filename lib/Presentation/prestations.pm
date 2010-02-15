@@ -149,6 +149,31 @@ EOH
 				add_hidden => 1,
 			},
 			{
+				name   => 'is_open',
+				label  => 'Partenariat',
+				type   => 'radio',
+				values => [
+					{
+						id    => 0,
+						label => 'Prestation locale',
+					},
+					{
+						id     => 1,
+						label  => 'Prestation partenariale ouverte',
+					},
+					{
+						id     => 2,
+						label  => 'Prestation partenariale pour...',
+						type   => 'checkboxes',
+						name   => 'ids_partners',
+						values => $data -> {organisations},
+					},
+				],
+				
+				off => 0 == @{$data -> {organisations}},
+				
+			},
+			{
 				type  => 'text',
 				label => 'Note',
 				name  => 'note',

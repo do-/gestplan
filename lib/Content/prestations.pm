@@ -783,6 +783,7 @@ sub do_update_prestations {
 		id_prestation_type
 		note
 		cnt
+		id_prestation_partnership
 	)]);
 		
 	my $item = sql_select_hash ('prestations');
@@ -1047,6 +1048,46 @@ EOS
 		}
 	
 	}
+	
+	$_REQUEST {_id_prestation_partnership} = undef;
+	
+	if (exists $_REQUEST {_is_open}) {
+
+		if ($_REQUEST {_is_open} < 2) {
+		
+			$_REQUEST {_ids_partners} = '';
+			
+		}
+		else {
+		
+			my @ids = get_ids ('ids_partners');		
+			@ids > 0 or return 'Vous avez oublié de choisir les partenaires';
+			$_REQUEST {_ids_partners} = join ',', (-1, (sort @ids), -1);
+	
+		}
+		
+		my $prestation_type = sql_select_hash (prestation_types => $_REQUEST {_id_prestation_type});
+						
+		if ($_REQUEST {_is_open} != $prestation_type -> {is_open}) {
+
+			my $fixed_ids = join ',', (-1, (sort (grep {$_ > 0} split /\,/, $prestation_type -> {ids_partners})), -1);
+
+			if ($fixed_ids ne $_REQUEST {_ids_partners}) {
+			
+				$_REQUEST {_id_prestation_partnership} = sql_select_id (prestation_partnerships => {
+				
+					fake					=> 0,
+					id_organisation         => $prestation_type -> {id_organisation},
+					ids_partners 			=> $_REQUEST {_ids_partners},
+					is_open                 => $_REQUEST {_is_open},
+
+				}, ['id_organisation', 'ids_partners', 'is_open']);
+
+			}
+
+		}
+	
+	}	
 
 	return undef;
 	
@@ -1100,18 +1141,17 @@ EOS
 	}
 	
 	$filter = "($filter) AND id_organisation = $_USER->{id_organisation}";
-darn $filter;
+
 	my $ids_groups = sql_select_ids ("SELECT id FROM groups WHERE id_organisation = ? AND fake = 0 AND (IFNULL(is_hidden, 0) = 0 OR id = ?)", $_USER -> {id_organisation}, 0 + $_USER -> {id_group});
-#	$ids_groups .= ',';
-#	$ids_groups .= (0 + $_USER -> {id_group});
 
 	my @ids_users = (-1, grep {$_ > 0} ($item -> {id_user}, @{$item -> {id_users}}));
 	
 	my $ids_users = join ',', @ids_users;
 
 	add_vocabularies ($item,
-		'users'            => {filter => "((id in ($ids_users)) OR (id_group IN ($ids_groups) AND (dt_finish IS NULL OR dt_finish > '$item->{_dt_finish}')))"},
-		'prestation_types' => {filter => $filter},
+		users            => {filter => "((id in ($ids_users)) OR (id_group IN ($ids_groups) AND (dt_finish IS NULL OR dt_finish > '$item->{_dt_finish}')))"},
+		prestation_types => {filter => $filter},
+		organisations    => {filter => "CONCAT('-1,', ids_partners, '-1') LIKE ('%,$item->{prestation_type}->{id_organisation},%')"},
 	);
 
 	$item -> {day_periods} = [
@@ -1154,7 +1194,17 @@ darn $filter;
 			, prestations_rooms.dt_start
 			, prestations_rooms.half_start
 EOS
+		
+	my $partnership = $item -> {id_prestation_partnership} ?
 	
+		sql_select_hash ('SELECT * FROM prestation_partnerships WHERE id = ?', $item -> {id_prestation_partnership}) :
+		
+		$item -> {prestation_type};
+
+	$item -> {is_open} = 0 + $partnership -> {is_open};
+
+	$item -> {ids_partners} = [split /\,/, $partnership -> {ids_partners}];
+
 	return $item;
 	
 }
@@ -1368,7 +1418,8 @@ EOS
 
 	my $ids_partners = $organisation -> {ids_partners} || '-1';
 	my $ids_alien_types = -1;
-	
+	my $ids_alien_partnerships = -1;
+
 	if ($ids_partners ne '-1') {
 
 		$ids_partners = sql_select_ids (<<EOS, $_REQUEST {year}, $_REQUEST {week});
@@ -1388,6 +1439,24 @@ EOS
 				id
 			FROM
 				prestation_types
+			WHERE
+				id_organisation IN ($ids_partners)
+				AND (
+					is_open = 1
+					OR (
+						is_open = 2
+						AND ids_partners LIKE ?
+					)
+				)
+EOS
+
+darn $ids_alien_types;
+
+		$ids_alien_partnerships = sql_select_ids (<<EOS, '%,' . $organisation -> {id} . ',%');
+			SELECT
+				id
+			FROM
+				prestation_partnerships
 			WHERE
 				id_organisation IN ($ids_partners)
 				AND (
@@ -1436,7 +1505,13 @@ EOS
 				prestations.fake = 0
 				AND prestations.dt_start  <= '$dt_finish'
 				AND prestations.dt_finish >= '$dt_start'
-				AND prestations.id_prestation_type IN ($ids_alien_types)
+				AND (
+					prestations.id_prestation_partnership IN ($ids_alien_partnerships)
+					OR (
+						prestations.id_prestation_partnership IS NULL
+						AND prestations.id_prestation_type IN ($ids_alien_types)
+					)
+				)
 EOS
 
 	my @alien_id_users = (-1);	
