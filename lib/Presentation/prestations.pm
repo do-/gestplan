@@ -564,6 +564,7 @@ EOH
 				my @cells = (
 					{
 						label      => $i -> {label},
+						title      => $i -> {title} || $i -> {label},
 						href       => $i -> {id} < 0 ? undef : {
 							type => 'inscriptions_par_jour',
 							dt_from => $data -> {days} -> [0] -> {fr_dt},
