@@ -407,11 +407,18 @@ sub draw_item_of_prestation_types {
 				label => 'Sans statistique',
 				type  => 'checkbox',
 			},
+			[
 			{
 				name  => 'is_collective',
 				label => 'Prestation collective',
 				type  => 'checkbox',
 			},
+			{
+				name  => 'is_anonymous',
+				label => 'Anonyme',
+				type  => 'checkbox',
+			},
+			],
 			{
 				name   => 'id_site',
 				label  => 'Onglet',
