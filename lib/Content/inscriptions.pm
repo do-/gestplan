@@ -648,7 +648,27 @@ EOS
 			prestation_type_files.label
 EOS
 
+	$item -> {inscriptions} = sql_select_all (<<EOS, $item -> {id_prestation});
+		SELECT
+			inscriptions.*
+		FROM
+			inscriptions
+		WHERE
+			id_prestation = ?
+			AND inscriptions.fake <= 0
+		ORDER BY
+			hour_start
+			, minute_start
+			, id
+EOS
 
+	if ($item -> {prestation} -> {type} -> {id_organisation} != $_USER -> {id_organisation}) {
+	
+		$inscriptions = [grep {$_ -> {id_organisation} == $_USER -> {id_organisation}} @$inscriptions];
+		
+	}
+
+	($item -> {prev}, $item -> {next}) = prev_next_n ($item, $item -> {inscriptions});
 
 	return $item;
 

@@ -25,6 +25,34 @@ sub draw_item_of_inscriptions {
 			
 		],
 		
+		left_buttons => [
+			{
+				icon     => 'left',
+				label    => "$data->{prev}->{label} $data->{prev}->{nom} $data->{prev}->{prenom}",
+				href     => {id => $data -> {prev} -> {id}},
+				off      =>
+					!$_REQUEST {__read_only}
+					|| !$data -> {prev} -> {id}
+				,
+				keep_esc => 0,
+				hotkey   => {code => 37},
+			},
+		],
+		
+		right_buttons => [
+			{
+				icon     => 'right',
+				label    => "$data->{next}->{label} $data->{next}->{nom} $data->{next}->{prenom}",
+				href     => {id => $data -> {next} -> {id}},
+				off      =>
+					!$_REQUEST {__read_only}
+					|| !$data -> {next} -> {id}
+				,
+				keep_esc => 0,
+				hotkey   => {code => 39},
+			},
+		],		
+
 		no_edit => $data -> {read_only},
 		
 		keep_params => ['id_log'],
