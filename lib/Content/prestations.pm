@@ -1,3 +1,58 @@
+
+################################################################################
+
+sub do_erase_col_prestations {
+	
+	my $sql = <<EOS;
+		SELECT
+			prestations.id
+		FROM
+			prestations
+		WHERE
+			1=1
+			AND prestations.dt_start    = ?
+			AND prestations.dt_finish   = ?
+EOS
+
+	my @params = ($_REQUEST {_dt}, $_REQUEST {_dt});
+
+	if ($_REQUEST {_half} != 3) {
+
+		$sql .= <<EOS;
+			AND prestations.half_start  = ?
+			AND prestations.half_finish = ?
+EOS
+
+		push @params, $_REQUEST {_half};
+		push @params, $_REQUEST {_half};
+
+	}
+	
+	if ($_REQUEST {id_site}) {
+		
+		$sql .= " AND IFNULL(id_site, 0) IN ($_REQUEST{id_site}, 0) ";
+
+	}
+	elsif ($_USER -> {id_site_group}) {
+	
+		my $ids = sql_select_ids ('SELECT id FROM sites WHERE fake = 0 AND id_site_group = ?', $_USER -> {id_site_group});
+		
+		$sql .= " AND IFNULL(id_site, 0) IN ($ids, 0) ";
+		
+	}
+	
+	my $ids = sql_select_ids ($sql, @params);
+
+	if ($ids ne '-1') {
+
+		sql_do ("DELETE FROM prestations WHERE id IN ($ids)");
+		sql_do ("DELETE FROM inscriptions WHERE id_prestation IN ($ids)");
+		sql_do ("DELETE FROM prestations_rooms WHERE id_prestation IN ($ids)");
+
+	}
+
+}
+
 ################################################################################
 
 sub validate_clone_prestations {

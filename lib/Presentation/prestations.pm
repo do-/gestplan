@@ -11,7 +11,7 @@ sub draw_item_of_prestations {
 	my $__last_query_string = session_access_log_set ($url);
 	
 	my $clone_url = check_href ({href => "/?id_site=0&type=prestations&id_prestation_to_clone=$data->{id}&year=$year&week=$week&__last_query_string=$__last_query_string"});
-		
+
 	$_REQUEST {__read_only} or $_REQUEST {__on_load} .= <<EOH;
 
 		var id_users_0 = document.forms['form'].elements['_id_users_0'];
@@ -292,26 +292,45 @@ sub draw_prestations {
 	
 	my $shift = $data -> {menu} ? 128 : 111;
 
-	my $off_period_divs = <<EOJS;
-		<script>
-			
-			function coord (row, col, what) {
+	my $off_period_divs = '';
 
+	my $erase_url = check_href ({href => "/?type=prestations&action=erase_col&id_site=$_REQUEST{id_site}&__last_query_string=$__last_query_string"});
+
+	$off_period_divs .= <<EOJS;
+		<script>
+		
+			var eraseColDt;
+		
+			function showEraseCol (dt, half, label) {
+			
+				eraseColDt    = dt;
+				eraseColHalf  = half;
+				eraseColLabel = label;
+			
+				open_popup_menu ('erase_col');
+						
+			}
+
+			function eraseCol () {
+			
+				if (confirm ('Etes-vous sur de supprimer toutes les prestations pour ' + eraseColLabel.replace ('&nbsp;', ' ') + ' ?')) {
+				
+					nope ('$erase_url&_dt=' + eraseColDt + '&_half=' + eraseColHalf, 'invisible');
+				
+				}
+			
+			}
+
+			function coord (row, col, what) {
 
 				var tbody = document.getElementById (scrollable_table_ids [0]).tBodies(0);
 				var _row = tbody.rows [row];
 			
-				if (!_row) {
-//					alert ('coord ('+row+', ' + col +', '+what+') : no row');
-					return 0;
-				}
+				if (!_row)  {return 0}
 			
 				var _cell = _row.cells [col];
 
-				if (!_cell) {
-//					alert ('coord ('+row+', ' + col +', '+what+') : no cell');
-					return 0;
-				}
+				if (!_cell)  {return 0}
 			
 				return _cell ['offset' + what];			
 
@@ -321,17 +340,11 @@ sub draw_prestations {
 				var thead = document.getElementById (scrollable_table_ids [0]).tHead;
 				var _row = thead.rows [row];
 
-				if (!_row) {
-//					alert ('coord_h ('+row+', ' + col +', '+what+') : no row');
-					return 0;
-				}
+				if (!_row)  {return 0}
 
 				var _cell = _row.cells [col];
 
-				if (!_cell) {
-//					alert ('coord_h ('+row+', ' + col +', '+what+') : no cell');
-					return 0;
-				}
+				if (!_cell) {return 0}
 
 				return _cell ['offset' + what];			
 			}
@@ -451,6 +464,9 @@ EOH
 	
 		my @h2 = ();
 		
+		my @half_title = ('Matin', '<nobr>Après-midi</nobr>');
+		my @half_label = ('matin', 'après-midi');
+		
 		foreach my $day (@{$data -> {days}}) {
 		
 			my $holyday = $data -> {holydays} -> {$day -> {iso_dt}};
@@ -466,9 +482,15 @@ EOH
 			
 			}
 			else {
+			
+				my $half = 1 + ($day -> {id} % 2);
 
 				push @h2, {
-					label => ($day -> {id} % 2 ? '<nobr>Après-midi</nobr>' : 'Matin'),
+				
+					label => $half_title [$half - 1],
+					
+					attributes => $_USER -> {role} ne 'admin' ? {} : {oncontextmenu => "showEraseCol ('$day->{iso_dt}', $half, '$day->{label} $half_label[$half-1]'); blockEvent ();"},
+					
 				};
 
 			}
@@ -487,10 +509,7 @@ EOH
 	
 	
 	
-	
-	
-	
-	
+		
 		draw_form (
 		
 			{
@@ -530,6 +549,15 @@ EOH
 		
 		.	
 
+		draw_vert_menu ('erase_col', [{
+		
+			label => '&nbsp;<img src="/i/_skins/TurboMilk/i_delete.gif" border=0 hspace=0 vspace=0 align=absmiddle>&nbsp;Supprimer',
+			href  => 'javaScript:eraseCol()',
+			
+		}])
+		
+		.
+
 		draw_table (
 		
 			[
@@ -541,6 +569,7 @@ EOH
 						label => $_ -> {label},
 						colspan => 2,
 						hidden => ($_ -> {id} % 2),
+						attributes => $_USER -> {role} ne 'admin' ? {} : {oncontextmenu => "showEraseCol ('$_->{iso_dt}', 3, '$_->{label}'); blockEvent ();"},
 						href => $_REQUEST {xls} ? undef : {type => 'inscriptions_par_jour', dt_from => $_ -> {fr_dt}, dt_to => $_ -> {fr_dt}},
 					}} @{$data -> {days}},
 			
@@ -847,6 +876,7 @@ EOH
 		.
 		
 		iframe_alerts ()
+		
 		
 		;
 
