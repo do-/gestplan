@@ -1230,7 +1230,7 @@ EOS
 
 	if ($_USER -> {id_site}) {
 	
-		$_USER -> {id_site_group} = sql_select_scalar ('SELECT id_site_group FROM sites WHERE id = ?', $_USER -> {id_site});
+		$_USER -> {id_site_group} ||= sql_select_scalar ('SELECT id_site_group FROM sites WHERE id = ?', $_USER -> {id_site});
 	
 	}
 	

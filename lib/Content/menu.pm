@@ -65,7 +65,10 @@ sub site_group_menu {
 				label  => 'Tout secteur',
 				href   => "/?type=users&action=change_site_group&_id_site_group=0",
 				target => '_top',
-				off    => !$_USER -> {id_site_group},
+				off    =>				
+					!$_USER -> {id_site_group}
+					|| $_USER -> {id_site}
+				,
 			},
 
 			map {{
