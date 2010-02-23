@@ -141,8 +141,8 @@ sub validate_update_prestation_types {
 	else {
 	
 		my @ids = get_ids ('ids_partners');		
-		@ids > 0 or return 'Vous avez oublié de choisir les partenaires';	
-		$_REQUEST {_ids_partners} = join ',', (-1, @ids, -1);
+		@ids > 0 or return 'Vous avez oublié de choisir les partenaires';
+		$_REQUEST {_ids_partners} = join ',', (-1, (sort @ids), -1);
 
 	}
 	

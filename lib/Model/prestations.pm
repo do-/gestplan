@@ -24,6 +24,8 @@ columns => {
 
 	id_site                    => {TYPE_NAME => 'int'},
 
+	id_prestation_partnership  => {TYPE_NAME => 'int'},
+
 },
 
 keys => {
