@@ -257,6 +257,8 @@ sub select_menu_for_conseiller {
 
 		extra_menu (),
 
+		site_group_menu (),
+
 	];
 
 }
@@ -283,8 +285,6 @@ sub select_menu_for_accueil {
 		support_menu (),
 	
 		extra_menu (),
-
-		site_group_menu (),
 
 	];
 
