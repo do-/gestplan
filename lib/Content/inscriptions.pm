@@ -657,7 +657,7 @@ EOS
 			prestation_type_files.label
 EOS
 
-	$item -> {inscriptions} = sql_select_all (<<EOS, $item -> {id_prestation});
+	my $inscriptions = sql_select_all (<<EOS, $item -> {id_prestation});
 		SELECT
 			inscriptions.*
 		FROM
@@ -677,7 +677,7 @@ EOS
 		
 	}
 
-	($item -> {prev}, $item -> {next}) = prev_next_n ($item, $item -> {inscriptions});
+	($item -> {prev}, $item -> {next}) = prev_next_n ($item, $inscriptions);
 
 	return $item;
 
