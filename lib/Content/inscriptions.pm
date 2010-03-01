@@ -673,8 +673,8 @@ EOS
 
 	if ($item -> {prestation} -> {type} -> {id_organisation} != $_USER -> {id_organisation}) {
 	
-		$inscriptions = [grep {$_ -> {id_organisation} == $_USER -> {id_organisation}} @$inscriptions];
-		
+		$inscriptions = [grep {($_ -> {fake} < 0) || ($_ -> {id_organisation} == $_USER -> {id_organisation})} @$inscriptions];
+
 	}
 
 	($item -> {prev}, $item -> {next}) = prev_next_n ($item, $inscriptions);
