@@ -660,8 +660,10 @@ EOS
 	my $inscriptions = sql_select_all (<<EOS, $item -> {id_prestation});
 		SELECT
 			inscriptions.*
+			, users.id_organisation
 		FROM
 			inscriptions
+			LEFT JOIN users ON inscriptions.id_author = users.id
 		WHERE
 			id_prestation = ?
 			AND inscriptions.fake <= 0
