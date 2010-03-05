@@ -1613,6 +1613,13 @@ EOS
 		$users_site_filter = " AND users.id IN ($$ids,$alien_id_users)";
 
 	}
+	elsif ($_USER -> {id_site_group}) {
+	
+		my $ids = sql ('users_sites(id_user)' => [[ id_site => sql ('sites(id)' => [[id_site_group => $_USER -> {id_site_group}]]) ]]);
+	
+		$users_site_filter = " AND users.id IN ($$ids,$alien_id_users)";
+
+	}
 
 	my $users = sql_select_all (<<EOS, $days [-1] -> {iso_dt}, $days [0] -> {iso_dt}, $_USER -> {id_organisation}, @params);
 		SELECT
