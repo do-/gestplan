@@ -386,13 +386,14 @@ EOS
 			sql_select_hash ('prestation_types', $prestation_model -> {id_prestation_type})
 		);
 	
-		my $conflict = sql_select_hash (<<EOS, $dt, $dt, "${dt}$prestation_model->{half_finish}", "${dt}$prestation_model->{half_start}", $prestation_model -> {id_user}, "\%,$prestation_model->{id_user},\%");
+		my $conflict = sql_select_hash (<<EOS, $_USER -> {id_organisation}, $dt, $dt, "${dt}$prestation_model->{half_finish}", "${dt}$prestation_model->{half_start}", $prestation_model -> {id_user}, "\%,$prestation_model->{id_user},\%");
 			SELECT 	
 				prestations.*
 			FROM
 				prestations
 			WHERE
 				fake = 0
+				AND id_organisation = ?
 				AND dt_start  <= ?
 				AND dt_finish >= ?
 				AND CONCAT(dt_start,  half_start)  <= ?
