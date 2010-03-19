@@ -1615,7 +1615,7 @@ EOS
 	if ($week_status_type -> {id} != 1 || $_USER -> {role} eq 'admin') {
 	
 		$prestations = [@$alien_prestations, @{sql_select_all (<<EOS, 0 + $_USER -> {id_organisation}, $_USER -> {id_organisation})}];
-			SELECT
+			SELECT STRAIGHT_JOIN
 				prestations.id
 				, prestations.id_user
 				, prestations.id_users
