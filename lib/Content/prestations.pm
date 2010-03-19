@@ -1614,7 +1614,21 @@ EOS
 		
 	if ($week_status_type -> {id} != 1 || $_USER -> {role} eq 'admin') {
 	
-		$prestations = [@$alien_prestations, @{sql_select_all (<<EOS, 0 + $_USER -> {id_organisation}, $_USER -> {id_organisation})}];
+		my $ids_prestation_types = sql_select_ids ('SELECT id FROM prestation_types WHERE id_organisation = ?', 0 + $_USER -> {id_organisation});
+		
+		my $ids_prestations = sql_select_ids (<<EOS, $dt_finish, $dt_start);
+			SELECT
+				id
+			FROM
+				prestations
+			WHERE
+				fake = 0
+				AND id_prestation_type IN ($ids_prestation_types)
+				AND dt_start  <= ?
+				AND dt_finish >= ?
+EOS
+								
+		$prestations = [@$alien_prestations, @{sql_select_all (<<EOS)}];
 			SELECT STRAIGHT_JOIN
 				prestations.id
 				, prestations.id_user
@@ -1643,11 +1657,7 @@ EOS
 					AND prestation_type_group_colors.id_organisation = ?
 				)
 			WHERE
-				prestations.fake = 0
-#				AND users.id_role IN (2,3)
-				AND prestations.dt_start  <= '$dt_finish'
-				AND prestations.dt_finish >= '$dt_start'
-				AND prestation_types.id_organisation = ?
+				prestations.id IN ($ids_prestations)
 EOS
 		
 		$prestations_rooms = sql_select_all (<<EOS, $_USER -> {id_organisation});
