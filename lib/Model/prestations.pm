@@ -24,6 +24,8 @@ columns => {
 	file_path => {TYPE_NAME    => 'varchar', COLUMN_SIZE  => 255},
 	file_size => {TYPE_NAME    => 'int'},
 
+	id_organisation            => {TYPE_NAME => 'int'},
+
 },
 
 keys => {
@@ -31,5 +33,6 @@ keys => {
 	dt_finish => 'dt_finish,half_finish',
 	dt_start  => 'dt_start,half_start',
 	id_user   => 'id_user',
+	id_organisation   => 'id_organisation,dt_finish',
 
 },

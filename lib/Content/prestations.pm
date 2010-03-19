@@ -1,5 +1,23 @@
 ################################################################################
 
+sub recalculate_prestations {
+
+	sql_do (qq {
+	
+		UPDATE
+			prestations
+			LEFT JOIN prestation_types ON prestations.id_prestation_type = prestation_types.id
+		SET
+			prestations.id_organisation = prestation_types.id_organisation
+		WHERE
+			prestations.id_organisation IS NULL
+	
+	});
+
+}
+
+################################################################################
+
 sub validate_clone_prestations {
 
 	my $id = sql ('prestations(id)' => ['id_user', 'dt_start', 'half_start', ['1 ']]);
@@ -1450,8 +1468,6 @@ EOS
 				)
 EOS
 
-darn $ids_alien_types;
-
 		$ids_alien_partnerships = sql_select_ids (<<EOS, '%,' . $organisation -> {id} . ',%');
 			SELECT
 				id
@@ -1613,22 +1629,8 @@ EOS
 	my $prestations_rooms = [];
 		
 	if ($week_status_type -> {id} != 1 || $_USER -> {role} eq 'admin') {
-	
-		my $ids_prestation_types = sql_select_ids ('SELECT id FROM prestation_types WHERE id_organisation = ?', 0 + $_USER -> {id_organisation});
-		
-		my $ids_prestations = sql_select_ids (<<EOS, $dt_finish, $dt_start);
-			SELECT
-				id
-			FROM
-				prestations
-			WHERE
-				fake = 0
-				AND id_prestation_type IN ($ids_prestation_types)
-				AND dt_start  <= ?
-				AND dt_finish >= ?
-EOS
 								
-		$prestations = [@$alien_prestations, @{sql_select_all (<<EOS)}];
+		$prestations = [@$alien_prestations, @{sql_select_all (<<EOS, 0 + $_USER -> {id_organisation}, 0 + $_USER -> {id_organisation}, $dt_finish, $dt_start)}];
 			SELECT STRAIGHT_JOIN
 				prestations.id
 				, prestations.id_user
@@ -1657,7 +1659,10 @@ EOS
 					AND prestation_type_group_colors.id_organisation = ?
 				)
 			WHERE
-				prestations.id IN ($ids_prestations)
+				prestations.fake = 0
+				AND prestations.id_organisation = ?
+				AND prestations.dt_start  <= ?
+				AND prestations.dt_finish >= ?
 EOS
 		
 		$prestations_rooms = sql_select_all (<<EOS, $_USER -> {id_organisation});
