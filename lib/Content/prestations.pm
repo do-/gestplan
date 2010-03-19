@@ -1519,6 +1519,7 @@ EOS
 				LEFT JOIN organisations ON prestation_types.id_organisation = organisations.id
 			WHERE
 				prestations.fake = 0
+				AND prestations.id_organisation IN ($ids_partners)
 				AND prestations.dt_start  <= '$dt_finish'
 				AND prestations.dt_finish >= '$dt_start'
 				AND (
