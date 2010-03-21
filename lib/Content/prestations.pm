@@ -13,6 +13,40 @@ sub recalculate_prestations {
 			prestations.id_organisation IS NULL
 	
 	});
+	
+	if ($_REQUEST {id}) {
+	
+		my $data = sql (prestations => $_REQUEST {id});
+		
+		my ($w, $y) = Week_of_Year (dt_y_m_d ($data -> {dt_start}));
+
+		my ($wf, $yf) = Week_of_Year (dt_y_m_d ($data -> {dt_finish}));
+		
+		my @prestations_weeks = ();
+
+		while ($y <= $yf and $w <= $wf) {
+		
+			push @prestations_weeks, {
+			    fake            => 0,
+				year            => $y,
+				week            => $w,
+				id_organisation => $data -> {id_organisation},
+			};
+		
+			($w, $y) = Week_of_Year (Add_Delta_Days (Monday_of_Week ($w, $y), 7));
+		
+		}
+		
+		wish (table_data => \@prestations_weeks, {
+			
+			table   => 'prestations_weeks',
+			root    => {id_prestation => $data -> {id}},
+			key     => 'year,week',	
+			delayed => 1,
+
+		});
+	
+	}
 
 }
 
@@ -259,6 +293,8 @@ sub do_clone_prestations { # duplication
 	
 	});
 	
+	$_REQUEST {id} = $data -> {id};
+	
 	esc ();
 
 }
@@ -313,6 +349,7 @@ EOS
 		sql_do ("DELETE FROM prestations WHERE id IN ($ids)");
 		sql_do ("DELETE FROM inscriptions WHERE id_prestation IN ($ids)");
 		sql_do ("DELETE FROM prestations_rooms WHERE id_prestation IN ($ids)");
+		sql_do ("DELETE FROM prestations_weeks WHERE id_prestation IN ($ids)");
 
 	}
 	
@@ -345,6 +382,7 @@ EOS
 	sql_do ("DELETE FROM prestations  WHERE id IN ($ids)");
 	sql_do ("DELETE FROM inscriptions WHERE id_prestation IN ($ids)");
 	sql_do ("DELETE FROM prestations_rooms WHERE id_prestation IN ($ids)");
+	sql_do ("DELETE FROM prestations_weeks WHERE id_prestation IN ($ids)");
 	
 }
 
@@ -519,7 +557,16 @@ EOS
 			id_user             => $prestation_model -> {id_user},
 			id_prestation_type  => $prestation_model -> {id_prestation_type},
 			id_prestation_model => $prestation_model -> {id},
+			id_organisation     => $type -> {id_organisation},
 			cnt                 => 1 + $prestation_model -> {half_finish} - $prestation_model -> {half_start},
+		});
+
+		sql_do_insert ('prestations_weeks', {
+			fake                => 0,
+			year                => $_REQUEST {year},
+			week                => $_REQUEST {week},
+			id_organisation     => $type -> {id_organisation},
+			id_prestation       => $id,
 		});
 		
 		if ($type -> {is_collective}) {
@@ -638,9 +685,12 @@ sub do_switch_status_prestations {
 ################################################################################
 
 sub do_delete_prestations {
+
 	sql_do ('DELETE FROM inscriptions WHERE id_prestation = ?', $_REQUEST {id});
 	sql_do ('DELETE FROM prestations_rooms WHERE id_prestation = ?', $_REQUEST {id});
+	sql_do ('DELETE FROM prestations_weeks WHERE id_prestation = ?', $_REQUEST {id});
 	sql_do_delete ('prestations');
+
 }
 
 ################################################################################
@@ -1231,7 +1281,7 @@ EOS
 ################################################################################
 
 sub select_prestations {
-
+my $time = time ();
 	my $item = {};
 
 	$item -> {inscription_to_clone} = sql_select_hash (<<EOS => $_REQUEST {id_inscription_to_clone}) if $_REQUEST {id_inscription_to_clone};
@@ -1438,6 +1488,8 @@ EOS
 	my $ids_partners = $organisation -> {ids_partners} || '-1';
 	my $ids_alien_types = -1;
 	my $ids_alien_partnerships = -1;
+	
+#$time = __log_profilinig ($time, '      1');
 
 	if ($ids_partners ne '-1') {
 
@@ -1468,6 +1520,7 @@ EOS
 					)
 				)
 EOS
+#$time = __log_profilinig ($time, '      2');
 
 		$ids_alien_partnerships = sql_select_ids (<<EOS, '%,' . $organisation -> {id} . ',%');
 			SELECT
@@ -1486,11 +1539,11 @@ EOS
 EOS
 
 	}
-
+#$time = __log_profilinig ($time, '      3');
 	my $alien_prestations = $ids_partners eq '-1' ? [] :
 		
-		sql_select_all (<<EOS);
-			SELECT
+		sql_select_all (<<EOS, $_USER -> {id_organisation}, $_REQUEST {year}, $_REQUEST {week});
+			SELECT STRAIGHT_JOIN
 				prestations.id
 				, prestations.id_user
 				, prestations.id_users
@@ -1510,7 +1563,17 @@ EOS
 				, 1 AS is_alien
 				, organisations.label AS inscriptions
 			FROM
-				prestations
+				prestations_weeks
+				INNER JOIN prestations ON (
+					prestations_weeks.id_prestation = prestations.id
+					AND (
+						prestations.id_prestation_partnership IN ($ids_alien_partnerships)
+						OR (
+							prestations.id_prestation_partnership IS NULL
+							AND prestations.id_prestation_type IN ($ids_alien_types)
+						)
+					)
+				)
 				LEFT  JOIN prestation_types       ON prestations.id_prestation_type = prestation_types.id
 				LEFT  JOIN prestation_type_groups ON prestation_types.id_prestation_type_group = prestation_type_groups.id
 				LEFT  JOIN prestation_type_group_colors ON (
@@ -1519,19 +1582,11 @@ EOS
 				)
 				LEFT JOIN organisations ON prestation_types.id_organisation = organisations.id
 			WHERE
-				prestations.fake = 0
-				AND prestations.id_organisation IN ($ids_partners)
-				AND prestations.dt_start  <= '$dt_finish'
-				AND prestations.dt_finish >= '$dt_start'
-				AND (
-					prestations.id_prestation_partnership IN ($ids_alien_partnerships)
-					OR (
-						prestations.id_prestation_partnership IS NULL
-						AND prestations.id_prestation_type IN ($ids_alien_types)
-					)
-				)
+				prestations_weeks.year = ?
+				AND prestations_weeks.week = ?
+				AND prestations_weeks.id_organisation IN ($ids_partners)
 EOS
-
+#$time = __log_profilinig ($time, '      4');
 	my @alien_id_users = (-1);	
 	foreach my $alien_prestation (@$alien_prestations) {	
 		push @alien_id_users, $alien_prestation -> {id_user};
@@ -1551,7 +1606,7 @@ EOS
 	}
 
 	my $users = sql_select_all (<<EOS, $days [-1] -> {iso_dt}, $days [0] -> {iso_dt}, $_USER -> {id_organisation}, @params);
-		SELECT
+		SELECT STRAIGHT_JOIN
 			users.id
 			, users.id_site
 			, IFNULL(prenom, users.label) AS label
@@ -1580,7 +1635,7 @@ EOS
 			, roles.label
 			, prenom
 EOS
-
+#$time = __log_profilinig ($time, '      5');
 	my @users = ();
 	my $last_role = '';
 	
@@ -1629,10 +1684,10 @@ EOS
 
 	my $prestations = [];
 	my $prestations_rooms = [];
-		
+#$time = __log_profilinig ($time, '      6');
 	if ($week_status_type -> {id} != 1 || $_USER -> {role} eq 'admin') {
 								
-		$prestations = [@$alien_prestations, @{sql_select_all (<<EOS, 0 + $_USER -> {id_organisation}, 0 + $_USER -> {id_organisation}, $dt_finish, $dt_start)}];
+		$prestations = [@$alien_prestations, @{sql_select_all (<<EOS, 0 + $_USER -> {id_organisation}, 0 + $_USER -> {id_organisation}, $_REQUEST {year}, $_REQUEST {week})}];
 			SELECT STRAIGHT_JOIN
 				prestations.id
 				, prestations.id_user
@@ -1652,21 +1707,22 @@ EOS
 				, IF(prestations.dt_finish > '$dt_finish', 2, prestations.half_finish) AS half_finish
 				, IFNULL(prestation_type_group_colors.color, prestation_type_groups.color) AS color
 			FROM
-				prestations
-				INNER JOIN users ON prestations.id_user = users.id
-				INNER JOIN prestation_types       ON prestations.id_prestation_type = prestation_types.id
+				prestations_weeks
+				INNER JOIN prestations ON prestations_weeks.id_prestation = prestations.id
+				LEFT  JOIN users ON prestations.id_user = users.id
+				LEFT  JOIN prestation_types       ON prestations.id_prestation_type = prestation_types.id
 				LEFT  JOIN prestation_type_groups ON prestation_types.id_prestation_type_group = prestation_type_groups.id
 				LEFT  JOIN prestation_type_group_colors ON (
 					prestation_type_group_colors.id_prestation_type_group = prestation_type_groups.id
 					AND prestation_type_group_colors.id_organisation = ?
 				)
 			WHERE
-				prestations.fake = 0
-				AND prestations.id_organisation = ?
-				AND prestations.dt_start  <= ?
-				AND prestations.dt_finish >= ?
+				1 = 1
+				AND prestations_weeks.id_organisation = ?
+				AND prestations_weeks.year = ?
+				AND prestations_weeks.week = ?
 EOS
-		
+#$time = __log_profilinig ($time, '      7');
 		$prestations_rooms = sql_select_all (<<EOS, $_USER -> {id_organisation});
 			SELECT
 				prestations.id
@@ -1693,7 +1749,7 @@ EOS
 				AND prestations_rooms.dt_finish >= '$dt_start'
 				AND prestation_types.id_organisation = ?
 EOS
-	
+#$time = __log_profilinig ($time, '      8');
 	}
 	
 	my $have_models = 0;
@@ -1707,23 +1763,36 @@ EOS
 	
 	my ($ids, $idx) = ids ($prestations);
 	
-	sql_select_loop (
-			
-		"SELECT id_prestation, COUNT(*) AS cnt, SUM(IF(fake = 0, 0, 1)) AS cnt_fake FROM inscriptions WHERE id_prestation IN ($ids) AND label NOT LIKE '+%' GROUP BY 1",
-				
-		sub {
-			
+#$time = __log_profilinig ($time, '      81');
+
+	foreach my $i (@{sql_select_all ("SELECT id_prestation, COUNT(*) AS cnt, SUM(IF(fake = 0, 0, 1)) AS cnt_fake FROM inscriptions WHERE id_prestation IN ($ids) AND label NOT LIKE '+%' GROUP BY 1 #!!!")}) {
+
 			my $prestation = $idx -> {$i -> {id_prestation}};
 			
 			if ($prestation -> {is_half_hour} != -1) {
 				$prestation -> {cnt_inscriptions_total} += $i -> {cnt};
 				$prestation -> {cnt_fake} = $i -> {cnt_fake};
 			}
-			
-		},
-							
-	);
-	
+
+	}
+
+#	sql_select_loop (
+#			
+#		"SELECT id_prestation, COUNT(*) AS cnt, SUM(IF(fake = 0, 0, 1)) AS cnt_fake FROM inscriptions WHERE id_prestation IN ($ids) AND label NOT LIKE '+%' GROUP BY 1 #!!!",
+#				
+#		sub {
+#			
+#			my $prestation = $idx -> {$i -> {id_prestation}};
+#			
+#			if ($prestation -> {is_half_hour} != -1) {
+#				$prestation -> {cnt_inscriptions_total} += $i -> {cnt};
+#				$prestation -> {cnt_fake} = $i -> {cnt_fake};
+#			}
+#			
+#		},
+#							
+#	);
+#$time = __log_profilinig ($time, '      9');
 	sql_select_loop (
 			
 		"SELECT * FROM inscriptions WHERE id_prestation IN ($ids) AND fake = 0 ORDER BY id",
@@ -1746,7 +1815,7 @@ EOS
 		},
 							
 	);
-	
+#$time = __log_profilinig ($time, '      10');
 	my @prestations = ();	
 	my @holydays = sort keys %$holydays;
 		
