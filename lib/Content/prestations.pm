@@ -783,6 +783,7 @@ sub do_create_prestations {
 			dt_finish => $_REQUEST {dt_finish},
 			half_finish => $_REQUEST {half_finish},
 			id_prestation_type => $_REQUEST {id_prestation_type},
+			id_organisation => $_USER -> {id_organisation},
 		});
 				
 		foreach my $id_room (@ids_rooms) {
@@ -814,6 +815,8 @@ sub do_create_prestations {
 			$_REQUEST {_cnt} = 1;
 			
 			do_update_prestations ();
+			
+			recalculate_prestations ();
 			
 			esc ();		
 		}
