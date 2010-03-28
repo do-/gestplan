@@ -817,9 +817,9 @@ EOH
 			
 		)
 		
-#		.
+		.
 		
-#		iframe_alerts ()
+		iframe_alerts ()
 		
 		;
 
