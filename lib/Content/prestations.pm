@@ -1285,6 +1285,7 @@ EOS
 
 sub select_prestations {
 my $time = time ();
+$time = __log_profilinig ($time, '      0');
 	my $item = {};
 
 	$item -> {inscription_to_clone} = sql_select_hash (<<EOS => $_REQUEST {id_inscription_to_clone}) if $_REQUEST {id_inscription_to_clone};
@@ -1492,7 +1493,7 @@ EOS
 	my $ids_alien_types = -1;
 	my $ids_alien_partnerships = -1;
 	
-#$time = __log_profilinig ($time, '      1');
+$time = __log_profilinig ($time, '      1');
 
 	if ($ids_partners ne '-1') {
 
@@ -1523,7 +1524,7 @@ EOS
 					)
 				)
 EOS
-#$time = __log_profilinig ($time, '      2');
+$time = __log_profilinig ($time, '      2');
 
 		$ids_alien_partnerships = sql_select_ids (<<EOS, '%,' . $organisation -> {id} . ',%');
 			SELECT
@@ -1542,15 +1543,26 @@ EOS
 EOS
 
 	}
-#$time = __log_profilinig ($time, '      3');
-	my $alien_prestations = $ids_partners eq '-1' ? [] :
+
+	$_USER -> {id_organisation} += 0;
+
+	if ($week_status_type -> {id} != 1 || $_USER -> {role} eq 'admin') {
+	
+		$ids_partners .= ",$_USER->{id_organisation}";
+	
+	}
+	
+$time = __log_profilinig ($time, '      3');
+
+	my $prestations = $ids_partners eq '-1' ? [] :
 		
-		sql_select_all (<<EOS, $_USER -> {id_organisation}, $_REQUEST {year}, $_REQUEST {week});
+		sql_select_all (<<EOS, $_REQUEST {year}, $_REQUEST {week});
 			SELECT STRAIGHT_JOIN
 				prestations.id
 				, prestations.id_user
 				, prestations.id_users
 				, prestations.note
+				, prestations.id_prestation_model
 				, prestations.id_prestation_type
 				, prestation_types.label_short AS label
 				, prestation_types.is_half_hour
@@ -1563,14 +1575,15 @@ EOS
 				, IF(prestations.dt_finish > '$dt_finish', '$dt_finish', prestations.dt_finish) AS dt_finish
 				, IF(prestations.dt_finish > '$dt_finish', 2, prestations.half_finish) AS half_finish
 				, IFNULL(prestation_type_group_colors.color, prestation_type_groups.color) AS color
-				, 1 AS is_alien
+				, IF(prestations.id_organisation = $_USER->{id_organisation}, 0, 1) AS is_alien
 				, organisations.label AS inscriptions
 			FROM
 				prestations_weeks
 				INNER JOIN prestations ON (
 					prestations_weeks.id_prestation = prestations.id
 					AND (
-						prestations.id_prestation_partnership IN ($ids_alien_partnerships)
+						prestations.id_organisation = $_USER->{id_organisation}
+						OR prestations.id_prestation_partnership IN ($ids_alien_partnerships)
 						OR (
 							prestations.id_prestation_partnership IS NULL
 							AND prestations.id_prestation_type IN ($ids_alien_types)
@@ -1581,7 +1594,7 @@ EOS
 				LEFT  JOIN prestation_type_groups ON prestation_types.id_prestation_type_group = prestation_type_groups.id
 				LEFT  JOIN prestation_type_group_colors ON (
 					prestation_type_group_colors.id_prestation_type_group = prestation_type_groups.id
-					AND prestation_type_group_colors.id_organisation = ?
+					AND prestation_type_group_colors.id_organisation = $_USER->{id_organisation}
 				)
 				LEFT JOIN organisations ON prestation_types.id_organisation = organisations.id
 			WHERE
@@ -1589,17 +1602,17 @@ EOS
 				AND prestations_weeks.week = ?
 				AND prestations_weeks.id_organisation IN ($ids_partners)
 EOS
-#$time = __log_profilinig ($time, '      4');
+
 	my @alien_id_users = (-1);	
-	foreach my $alien_prestation (@$alien_prestations) {	
-		push @alien_id_users, $alien_prestation -> {id_user};
-		push @alien_id_users, (split /\,/, $alien_prestation -> {id_users});	
+	
+	foreach my $prestation (@$prestations) {
+		next if $prestation -> {id_organisation} == $_USER -> {id_organisation};
+		push @alien_id_users, $prestation -> {id_user};
+		push @alien_id_users, (split /\,/, $prestation -> {id_users});	
 	}
 
 	my $alien_id_users = join ',', grep {$_} @alien_id_users;	
-	
-	$_USER -> {id_organisation} += 0;
-	
+		
 	my $filter = '';
 	my @params = ();
 	
@@ -1608,6 +1621,7 @@ EOS
 		push @params, 0 + $_USER -> {id_group};
 	}
 
+$time = __log_profilinig ($time, '      4');
 	my $users = sql_select_all (<<EOS, $days [-1] -> {iso_dt}, $days [0] -> {iso_dt}, $_USER -> {id_organisation}, @params);
 		SELECT STRAIGHT_JOIN
 			users.id
@@ -1638,7 +1652,7 @@ EOS
 			, roles.label
 			, prenom
 EOS
-#$time = __log_profilinig ($time, '      5');
+$time = __log_profilinig ($time, '      5');
 	my @users = ();
 	my $last_role = '';
 	
@@ -1685,47 +1699,10 @@ EOS
 	
 	$users = \@users;	
 
-	my $prestations = [];
 	my $prestations_rooms = [];
-#$time = __log_profilinig ($time, '      6');
-	if ($week_status_type -> {id} != 1 || $_USER -> {role} eq 'admin') {
+
+	if (!$_REQUEST {aliens} && ($week_status_type -> {id} != 1 || $_USER -> {role} eq 'admin')) {
 								
-		$prestations = [@$alien_prestations, @{sql_select_all (<<EOS, 0 + $_USER -> {id_organisation}, 0 + $_USER -> {id_organisation}, $_REQUEST {year}, $_REQUEST {week})}];
-			SELECT STRAIGHT_JOIN
-				prestations.id
-				, prestations.id_user
-				, prestations.id_users
-				, prestations.note
-				, prestations.id_prestation_model
-				, prestations.id_prestation_type
-				, prestations.cnt
-				, prestation_types.label_short AS label
-				, prestation_types.is_half_hour
-				, prestation_types.is_placeable_by_conseiller
-				, prestation_types.ids_users
-				, prestation_types.length + prestation_types.length_ext AS length
-				, IF(prestations.dt_start < '$dt_start', '$dt_start', prestations.dt_start) AS dt_start
-				, IF(prestations.dt_start < '$dt_start', 1, prestations.half_start) AS half_start
-				, IF(prestations.dt_finish > '$dt_finish', '$dt_finish', prestations.dt_finish) AS dt_finish
-				, IF(prestations.dt_finish > '$dt_finish', 2, prestations.half_finish) AS half_finish
-				, IFNULL(prestation_type_group_colors.color, prestation_type_groups.color) AS color
-			FROM
-				prestations_weeks
-				INNER JOIN prestations ON prestations_weeks.id_prestation = prestations.id
-				LEFT  JOIN users ON prestations.id_user = users.id
-				LEFT  JOIN prestation_types       ON prestations.id_prestation_type = prestation_types.id
-				LEFT  JOIN prestation_type_groups ON prestation_types.id_prestation_type_group = prestation_type_groups.id
-				LEFT  JOIN prestation_type_group_colors ON (
-					prestation_type_group_colors.id_prestation_type_group = prestation_type_groups.id
-					AND prestation_type_group_colors.id_organisation = ?
-				)
-			WHERE
-				1 = 1
-				AND prestations_weeks.id_organisation = ?
-				AND prestations_weeks.year = ?
-				AND prestations_weeks.week = ?
-EOS
-#$time = __log_profilinig ($time, '      7');
 		$prestations_rooms = sql_select_all (<<EOS, $_USER -> {id_organisation});
 			SELECT
 				prestations.id
@@ -1752,7 +1729,7 @@ EOS
 				AND prestations_rooms.dt_finish >= '$dt_start'
 				AND prestation_types.id_organisation = ?
 EOS
-#$time = __log_profilinig ($time, '      8');
+
 	}
 	
 	my $have_models = 0;
@@ -1762,13 +1739,12 @@ EOS
 		$prestations = [grep {$_ -> {id_prestation_type} == $item -> {inscription_to_clone} -> {id_prestation_type}} @$prestations]
 	
 	}
-	
-	
+		
 	my ($ids, $idx) = ids ($prestations);
 	
-#$time = __log_profilinig ($time, '      81');
+$time = __log_profilinig ($time, '      8');
 
-	foreach my $i (@{sql_select_all ("SELECT id_prestation, COUNT(*) AS cnt, SUM(IF(fake = 0, 0, 1)) AS cnt_fake FROM inscriptions WHERE id_prestation IN ($ids) AND label NOT LIKE '+%' GROUP BY 1 #!!!")}) {
+	foreach my $i (@{sql_select_all ("SELECT id_prestation, COUNT(*) AS cnt, SUM(IF(fake = 0, 0, 1)) AS cnt_fake FROM inscriptions WHERE id_prestation IN ($ids) AND label NOT LIKE '+%' GROUP BY 1")}) {
 
 			my $prestation = $idx -> {$i -> {id_prestation}};
 			
@@ -1778,29 +1754,14 @@ EOS
 			}
 
 	}
+	
+$time = __log_profilinig ($time, '      9');
 
-#	sql_select_loop (
-#			
-#		"SELECT id_prestation, COUNT(*) AS cnt, SUM(IF(fake = 0, 0, 1)) AS cnt_fake FROM inscriptions WHERE id_prestation IN ($ids) AND label NOT LIKE '+%' GROUP BY 1 #!!!",
-#				
-#		sub {
-#			
-#			my $prestation = $idx -> {$i -> {id_prestation}};
-#			
-#			if ($prestation -> {is_half_hour} != -1) {
-#				$prestation -> {cnt_inscriptions_total} += $i -> {cnt};
-#				$prestation -> {cnt_fake} = $i -> {cnt_fake};
-#			}
-#			
-#		},
-#							
-#	);
-#$time = __log_profilinig ($time, '      9');
-	sql_select_loop (
+	foreach my $i (@{sql_select_all
 			
-		"SELECT * FROM inscriptions WHERE id_prestation IN ($ids) AND fake = 0 ORDER BY id",
-				
-		sub {
+		"SELECT id_prestation, label, prenom, nom FROM inscriptions WHERE id_prestation IN ($ids) AND fake = 0 ORDER BY id"
+		
+	}){
 					
 			my $prestation = $idx -> {$i -> {id_prestation}};
 
@@ -1808,17 +1769,14 @@ EOS
 				$prestation -> {cnt_inscriptions} ++;
 			}
 
-			return if $prestation -> {is_alien};
+			next if $prestation -> {is_alien};
 			
 			$prestation -> {inscriptions} .= ', ' if $prestation -> {inscriptions};
-			$prestation -> {inscriptions} .= $i -> {prenom};
-			$prestation -> {inscriptions} .= ' ';
-			$prestation -> {inscriptions} .= $i -> {nom};
+			$prestation -> {inscriptions} .= "$i->{prenom} $i->{nom}";
 						
-		},
+	};
 							
-	);
-#$time = __log_profilinig ($time, '      10');
+$time = __log_profilinig ($time, '      10');
 	my @prestations = ();	
 	my @holydays = sort keys %$holydays;
 		
@@ -1854,6 +1812,7 @@ EOS
 	
 	}	
 
+$time = __log_profilinig ($time, '      11');
 	foreach my $prestation (@prestations) {
 	
 		$prestation -> {no_href} = 1 if !$prestation -> {length} && $prestation -> {is_half_hour} != -1;
@@ -1934,6 +1893,7 @@ EOS
 		}	
 		
 	}
+$time = __log_profilinig ($time, '      12');
 	
 	my $off_periods = sql_select_all (<<EOS, $_USER -> {id_organisation});
 		SELECT
@@ -1953,6 +1913,7 @@ EOS
 			AND users.id_organisation = ?
 			$site_filter
 EOS
+$time = __log_profilinig ($time, '      13');
 
 	foreach my $user (@$users) {
 	
@@ -1983,7 +1944,7 @@ EOS
 		}
 		
 	}
-
+$time = __log_profilinig ($time, '      14');
 	if (@$off_periods) {
 	
 		my $user2ord = {};	
@@ -2050,7 +2011,7 @@ EOS
 		};
 	
 	}
-	
+$time = __log_profilinig ($time, '      15');
 	if ($_USER -> {role} eq 'admin') {
 	
 		$_USER -> {can_dblclick_others_empty} = 1;
@@ -2076,8 +2037,8 @@ EOS
 		$_USER -> {can_dblclick_others_empty} = $_USER -> {cnt_prestation_types} > 0;
 
 	}
-		
-	return {
+$time = __log_profilinig ($time, '      16');
+	my $data = {
 	
 		week_status_type => $week_status_type,
 	
@@ -2109,6 +2070,10 @@ EOS
 			
 	};
 	
+$time = __log_profilinig ($time, '      17');
+
+	return $data;
+
 }
 
 1;
