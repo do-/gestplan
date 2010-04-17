@@ -18,15 +18,23 @@ sub do_add_inscriptions_select {
 	@ids_prestations = get_ids ('prestation');
 
 	foreach my $id_user (get_ids ('user')) {
-        	$prestation -> {id_user} = $id_user;
+        $prestation -> {id_user} = $id_user;
 		push @ids_prestations, sql_do_insert ('prestations', $prestation);
 	}
+	
+	require_content ('prestations');
+	
+	my $id = $_REQUEST {id};
 
 	foreach my $id_prestation (@ids_prestations) {
 		delete $item -> {id};
-        	$item -> {id_prestation} = $id_prestation;
+        $item -> {id_prestation} = $id_prestation;
 		sql_do_insert ('inscriptions', $item);
+		$_REQUEST {id} = $id_prestation;
+		recalculate_prestations ();
 	}
+
+	$_REQUEST {id} = $id;
 	
 	my $id_inscriptions = sql_select_ids ('SELECT id FROM inscriptions WHERE parent = ?', $item -> {parent});
 	
