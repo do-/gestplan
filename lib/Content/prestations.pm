@@ -496,7 +496,7 @@ sub do_add_models_prestations {
 	
 		my $dt = sprintf ('%04d-%02d-%02d', Add_Delta_Days (@monday, $d - 1));
 		
-		next if sql_select_scalar ('SELECT id FROM holydays WHERE id_organisation = ? AND dt = ?', $_USER -> {id_organisation}, $dt);
+		next if sql_select_scalar ('SELECT id FROM holydays WHERE id_organisation = ? AND dt = ? AND fake = 0', $_USER -> {id_organisation}, $dt);
 	
 		$days {$dt} = 1;
 	
