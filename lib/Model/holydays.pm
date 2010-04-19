@@ -7,6 +7,6 @@ columns => {
 },
 
 keys => {
-	dt   => 'dt',
-	mmdd => 'mmdd',
+	dt   => 'id_organisation,dt',
+	mmdd => 'id_organisation,mmdd',
 },

@@ -1,3 +1,54 @@
+################################################################################
+
+sub recalculate_prestations {
+
+	sql_do (qq {
+	
+		UPDATE
+			prestations
+			LEFT JOIN prestation_types ON prestations.id_prestation_type = prestation_types.id
+		SET
+			prestations.id_organisation = prestation_types.id_organisation
+		WHERE
+			prestations.id_organisation IS NULL
+	
+	});
+	
+	if ($_REQUEST {id}) {
+	
+		my $data = sql (prestations => $_REQUEST {id});
+		
+		my ($w, $y) = Week_of_Year (dt_y_m_d ($data -> {dt_start}));
+
+		my ($wf, $yf) = Week_of_Year (dt_y_m_d ($data -> {dt_finish}));
+		
+		my @prestations_weeks = ();
+
+		while ($y <= $yf and $w <= $wf) {
+		
+			push @prestations_weeks, {
+			    fake            => 0,
+				year            => $y,
+				week            => $w,
+				id_organisation => $data -> {id_organisation},
+			};
+		
+			($w, $y) = Week_of_Year (Add_Delta_Days (Monday_of_Week ($w, $y), 7));
+		
+		}
+		
+		wish (table_data => \@prestations_weeks, {
+			
+			table   => 'prestations_weeks',
+			root    => {id_prestation => $data -> {id}},
+			key     => 'year,week',	
+			delayed => 1,
+
+		});
+	
+	}
+
+}
 
 ################################################################################
 
@@ -266,6 +317,8 @@ sub do_clone_prestations { # duplication
 	
 	});
 	
+	$_REQUEST {id} = $data -> {id};
+
 	esc ();
 
 }
@@ -328,6 +381,7 @@ EOS
 		sql_do ("DELETE FROM prestations WHERE id IN ($ids)");
 		sql_do ("DELETE FROM inscriptions WHERE id_prestation IN ($ids)");
 		sql_do ("DELETE FROM prestations_rooms WHERE id_prestation IN ($ids)");
+		sql_do ("DELETE FROM prestations_weeks WHERE id_prestation IN ($ids)");
 
 	}
 	
@@ -360,6 +414,7 @@ EOS
 	sql_do ("DELETE FROM prestations  WHERE id IN ($ids)");
 	sql_do ("DELETE FROM inscriptions WHERE id_prestation IN ($ids)");
 	sql_do ("DELETE FROM prestations_rooms WHERE id_prestation IN ($ids)");
+	sql_do ("DELETE FROM prestations_weeks WHERE id_prestation IN ($ids)");
 	
 }
 
@@ -401,13 +456,14 @@ EOS
 			sql_select_hash ('prestation_types', $prestation_model -> {id_prestation_type})
 		);
 	
-		my $conflict = sql_select_hash (<<EOS, $dt, $dt, "${dt}$prestation_model->{half_finish}", "${dt}$prestation_model->{half_start}", $prestation_model -> {id_user}, "\%,$prestation_model->{id_user},\%");
+		my $conflict = sql_select_hash (<<EOS, $_USER -> {id_organisation}, $dt, $dt, "${dt}$prestation_model->{half_finish}", "${dt}$prestation_model->{half_start}", $prestation_model -> {id_user}, "\%,$prestation_model->{id_user},\%");
 			SELECT 	
 				prestations.*
 			FROM
 				prestations
 			WHERE
 				fake = 0
+				AND id_organisation = ?
 				AND dt_start  <= ?
 				AND dt_finish >= ?
 				AND CONCAT(dt_start,  half_start)  <= ?
@@ -472,7 +528,7 @@ sub do_add_models_prestations {
 	
 		my $dt = sprintf ('%04d-%02d-%02d', Add_Delta_Days (@monday, $d - 1));
 		
-		next if sql_select_scalar ('SELECT id FROM holydays WHERE id_organisation = ? AND dt = ?', $_USER -> {id_organisation}, $dt);
+		next if sql_select_scalar ('SELECT id FROM holydays WHERE id_organisation = ? AND dt = ? AND fake = 0', $_USER -> {id_organisation}, $dt);
 	
 		$days {$dt} = 1;
 	
@@ -533,9 +589,18 @@ EOS
 			id_user             => $prestation_model -> {id_user},
 			id_prestation_type  => $prestation_model -> {id_prestation_type},
 			id_prestation_model => $prestation_model -> {id},
+			id_organisation     => $type -> {id_organisation},
 			cnt                 => 1 + $prestation_model -> {half_finish} - $prestation_model -> {half_start},
 		});
 		
+		sql_do_insert ('prestations_weeks', {
+			fake                => 0,
+			year                => $_REQUEST {year},
+			week                => $_REQUEST {week},
+			id_organisation     => $type -> {id_organisation},
+			id_prestation       => $id,
+		});
+
 		if ($type -> {is_collective}) {
 		
 			$collective_prestations -> {$type -> {is_collective}, $dt, $prestation_model -> {half_start}} = {id => $id};
@@ -654,6 +719,7 @@ sub do_switch_status_prestations {
 sub do_delete_prestations {
 	sql_do ('DELETE FROM inscriptions WHERE id_prestation = ?', $_REQUEST {id});
 	sql_do ('DELETE FROM prestations_rooms WHERE id_prestation = ?', $_REQUEST {id});
+	sql_do ('DELETE FROM prestations_weeks WHERE id_prestation = ?', $_REQUEST {id});
 	sql_do_delete ('prestations');
 }
 
@@ -765,6 +831,7 @@ sub do_create_prestations {
 			half_finish => $_REQUEST {half_finish},
 			id_prestation_type => $_REQUEST {id_prestation_type},
 			id_site => $_REQUEST {id_site},
+			id_organisation => $_USER -> {id_organisation},
 		});
 				
 		foreach my $id_room (@ids_rooms) {
@@ -1542,14 +1609,22 @@ EOS
 
 	}
 
-	my $alien_prestations = $ids_partners eq '-1' ? [] :
+	$_USER -> {id_organisation} += 0;
+
+	if ($week_status_type -> {id} != 1 || $_USER -> {role} eq 'admin') {
+	
+		$ids_partners .= ",$_USER->{id_organisation}";
+	
+	}
+
+	my $prestations = $ids_partners eq '-1' ? [] :
 		
-		sql_select_all (<<EOS);
-			SELECT
-				prestations.id
+		sql_select_all (<<EOS, $_REQUEST {year}, $_REQUEST {week});
+			SELECT STRAIGHT_JOIN				prestations.id
 				, prestations.id_user
 				, prestations.id_users
 				, prestations.note
+				, prestations.id_prestation_model
 				, prestations.id_prestation_type
 				, prestation_types.label_short AS label
 				, prestation_types.is_half_hour
@@ -1562,34 +1637,39 @@ EOS
 				, IF(prestations.dt_finish > '$dt_finish', '$dt_finish', prestations.dt_finish) AS dt_finish
 				, IF(prestations.dt_finish > '$dt_finish', 2, prestations.half_finish) AS half_finish
 				, IFNULL(prestation_type_group_colors.color, prestation_type_groups.color) AS color
-				, 1 AS is_alien
+				, IF(prestations.id_organisation = $_USER->{id_organisation}, 0, 1) AS is_alien
 				, organisations.label AS inscriptions
 			FROM
-				prestations
+				prestations_weeks
+				INNER JOIN prestations ON (
+					prestations_weeks.id_prestation = prestations.id
+					AND (
+						prestations.id_organisation = $_USER->{id_organisation}
+						OR prestations.id_prestation_partnership IN ($ids_alien_partnerships)
+						OR (
+							prestations.id_prestation_partnership IS NULL
+							AND prestations.id_prestation_type IN ($ids_alien_types)
+						)
+					)
+				)
 				LEFT  JOIN prestation_types       ON prestations.id_prestation_type = prestation_types.id
 				LEFT  JOIN prestation_type_groups ON prestation_types.id_prestation_type_group = prestation_type_groups.id
 				LEFT  JOIN prestation_type_group_colors ON (
 					prestation_type_group_colors.id_prestation_type_group = prestation_type_groups.id
-					AND prestation_type_group_colors.id_organisation = ?
+					AND prestation_type_group_colors.id_organisation = $_USER->{id_organisation}
 				)
 				LEFT JOIN organisations ON prestation_types.id_organisation = organisations.id
 			WHERE
-				prestations.fake = 0
-				AND prestations.dt_start  <= '$dt_finish'
-				AND prestations.dt_finish >= '$dt_start'
-				AND (
-					prestations.id_prestation_partnership IN ($ids_alien_partnerships)
-					OR (
-						prestations.id_prestation_partnership IS NULL
-						AND prestations.id_prestation_type IN ($ids_alien_types)
-					)
-				)
+				prestations_weeks.year = ?
+				AND prestations_weeks.week = ?
+				AND prestations_weeks.id_organisation IN ($ids_partners)
 EOS
 
 	my @alien_id_users = (-1);	
-	foreach my $alien_prestation (@$alien_prestations) {	
-		push @alien_id_users, $alien_prestation -> {id_user};
-		push @alien_id_users, grep {$_ > 0} (split /\,/, $alien_prestation -> {id_users});	
+	foreach my $prestation (@$prestations) {
+		next if $prestation -> {id_organisation} == $_USER -> {id_organisation};
+		push @alien_id_users, $prestation -> {id_user};
+		push @alien_id_users, (split /\,/, $prestation -> {id_users});	
 	}
 
 	my $alien_id_users = join ',', grep {$_} @alien_id_users;	
@@ -1622,7 +1702,7 @@ EOS
 	}
 
 	my $users = sql_select_all (<<EOS, $days [-1] -> {iso_dt}, $days [0] -> {iso_dt}, $_USER -> {id_organisation}, @params);
-		SELECT
+		SELECT STRAIGHT_JOIN
 			users.id
 			, users.id_site
 			, IFNULL(prenom, users.label) AS label
@@ -1698,50 +1778,10 @@ EOS
 	
 	$users = \@users;	
 
-	my $prestations = [];
 	my $prestations_rooms = [];
-		
-	if ($week_status_type -> {id} != 1 || $_USER -> {role} eq 'admin') {
-	
-		$prestations = [@$alien_prestations, @{sql_select_all (<<EOS, 0 + $_USER -> {id_organisation}, $_USER -> {id_organisation})}];
-			SELECT
-				prestations.id
-				, prestations.id_user
-				, prestations.id_users
-				, prestations.note
-				, prestations.id_prestation_model
-				, prestations.id_prestation_type
-				, prestations.cnt
-				, prestations.id_site
-				, prestation_types.label_short AS label
-				, prestation_types.is_half_hour
-				, prestation_types.is_placeable_by_conseiller
-				, prestation_types.ids_users
-				, prestation_types.length + prestation_types.length_ext AS length
-				, IF(prestations.dt_start < '$dt_start', '$dt_start', prestations.dt_start) AS dt_start
-				, IF(prestations.dt_start < '$dt_start', 1, prestations.half_start) AS half_start
-				, IF(prestations.dt_finish > '$dt_finish', '$dt_finish', prestations.dt_finish) AS dt_finish
-				, IF(prestations.dt_finish > '$dt_finish', 2, prestations.half_finish) AS half_finish
-				, IFNULL(prestation_type_group_colors.color, prestation_type_groups.color) AS color
-				, sites.label AS site_label
-			FROM
-				prestations
-				INNER JOIN users ON prestations.id_user = users.id
-				INNER JOIN prestation_types       ON prestations.id_prestation_type = prestation_types.id
-				LEFT  JOIN prestation_type_groups ON prestation_types.id_prestation_type_group = prestation_type_groups.id
-				LEFT  JOIN prestation_type_group_colors ON (
-					prestation_type_group_colors.id_prestation_type_group = prestation_type_groups.id
-					AND prestation_type_group_colors.id_organisation = ?
-				)
-				LEFT  JOIN sites ON prestations.id_site = sites.id
-			WHERE
-				prestations.fake = 0
-#				AND users.id_role IN (2,3)
-				AND prestations.dt_start  <= '$dt_finish'
-				AND prestations.dt_finish >= '$dt_start'
-				AND prestation_types.id_organisation = ?
-EOS
-		
+
+	if (!$_REQUEST {aliens} && ($week_status_type -> {id} != 1 || $_USER -> {role} eq 'admin')) {		
+
 		$prestations_rooms = sql_select_all (<<EOS, $_USER -> {id_organisation});
 			SELECT
 				prestations.id
@@ -1782,11 +1822,7 @@ EOS
 	
 	my ($ids, $idx) = ids ($prestations);
 	
-	sql_select_loop (
-			
-		"SELECT id_prestation, COUNT(*) AS cnt, SUM(IF(fake = 0, 0, 1)) AS cnt_fake FROM inscriptions WHERE id_prestation IN ($ids) AND label NOT LIKE '+%' GROUP BY 1",
-				
-		sub {
+	foreach my $i (@{sql_select_all ("SELECT id_prestation, COUNT(*) AS cnt, SUM(IF(fake = 0, 0, 1)) AS cnt_fake FROM inscriptions WHERE id_prestation IN ($ids) AND label NOT LIKE '+%' GROUP BY 1")}) {
 			
 			my $prestation = $idx -> {$i -> {id_prestation}};
 			
@@ -1794,10 +1830,8 @@ EOS
 				$prestation -> {cnt_inscriptions_total} += $i -> {cnt};
 				$prestation -> {cnt_fake} = $i -> {cnt_fake};
 			}
-			
-		},
-							
-	);
+										
+	}
 	
 	sql_select_loop (
 			
@@ -1811,15 +1845,13 @@ EOS
 				$prestation -> {cnt_inscriptions} ++;
 			}
 
-			return if $prestation -> {is_alien};
-			
+			next if $prestation -> {is_alien};
+
 			$prestation -> {inscriptions} .= ', ' if $prestation -> {inscriptions};
-			$prestation -> {inscriptions} .= $i -> {prenom};
-			$prestation -> {inscriptions} .= ' ';
-			$prestation -> {inscriptions} .= $i -> {nom};
-						
+			$prestation -> {inscriptions} .= "$i->{prenom} $i->{nom}";
+
 		},
-							
+
 	);
 	
 	my @prestations = ();	

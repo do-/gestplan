@@ -96,6 +96,11 @@ sub site_group_menu {
 
 sub select_menu_for_admin {
 
+darn 1111111111;
+require_content 'prestations';
+darn 2222222222;
+
+
 	$_REQUEST {__im_delay} = 60 * 1000;
 
 	my $organisations = sql_select_all (q {

@@ -3,3 +3,7 @@ columns => {
 	id_organisation => {TYPE_NAME => 'int'},
 	id_site         => {TYPE_NAME => 'int'},
 },
+
+keys => {
+	id_organisation => 'id_organisation',
+}

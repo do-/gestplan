@@ -39,6 +39,11 @@ sub do_add_inscriptions_select {
 
 	delete $item -> {id};
 
+	
+	require_content ('prestations');
+	
+	my $id = $_REQUEST {id};
+
 	foreach my $id_prestation (@ids_prestations) {
 		
         $item -> {id_prestation} = $id_prestation;
@@ -59,8 +64,14 @@ sub do_add_inscriptions_select {
 		
 		}
 		
+		$_REQUEST {id} = $id_prestation;
+
+		recalculate_prestations ();
+
 	}
 	
+	$_REQUEST {id} = $id;
+
 	my $id_inscriptions = sql_select_ids ('SELECT id FROM inscriptions WHERE parent = ?', $item -> {parent});
 	
 	$id_inscriptions =
