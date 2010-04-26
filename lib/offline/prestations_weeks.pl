@@ -1,8 +1,8 @@
 my $st = $db -> prepare ('INSERT INTO prestations_weeks (fake, year, week, id_organisation, id_prestation) VALUES (0, ?, ?, ?, ?)');
 
-sql_do ('TRUNCATE TABLE prestations_weeks');
-
 sql_select_loop ('SELECT * FROM prestations', sub {
+
+	sql_do ('DELETE FROM prestations_weeks WHERE id_prestation = ?', $i -> {id});
 
 	my ($w, $y) = Week_of_Year (dt_y_m_d ($i -> {dt_start}));
 
@@ -10,7 +10,7 @@ sql_select_loop ('SELECT * FROM prestations', sub {
 		
 	my @prestations_weeks = ();
 
-	while ($y <= $yf and $w <= $wf) {
+	while ($y < $yf or ($y == $yf and $w <= $wf)) {
 		
 		$st -> execute ($y, $w, $i -> {id_organisation}, $i -> {id});
 
