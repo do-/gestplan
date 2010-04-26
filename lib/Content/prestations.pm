@@ -21,10 +21,10 @@ sub recalculate_prestations {
 		my ($w, $y) = Week_of_Year (dt_y_m_d ($data -> {dt_start}));
 
 		my ($wf, $yf) = Week_of_Year (dt_y_m_d ($data -> {dt_finish}));
-		
+
 		my @prestations_weeks = ();
 
-		while ($y <= $yf and $w <= $wf) {
+		while ($y < $yf or ($y == $yf and $w <= $wf)) {
 		
 			push @prestations_weeks, {
 			    fake            => 0,
