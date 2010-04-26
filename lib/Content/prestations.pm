@@ -24,7 +24,7 @@ sub recalculate_prestations {
 		
 		my @prestations_weeks = ();
 
-		while ($y <= $yf and $w <= $wf) {
+		while ($y < $yf or ($y == $yf and $w <= $wf)) {
 		
 			push @prestations_weeks, {
 			    fake            => 0,
