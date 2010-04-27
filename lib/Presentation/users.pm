@@ -211,47 +211,7 @@ sub draw_users {
 	my ($data) = @_;
 	
 	return
-	
-		draw_hr (height => 10)
-		
-		.
-	
-		draw_window_title ({
-			label => 'Utilisateurs'
-		})
-	
-		.
-		
-		draw_toolbar (
-		
-			{
-				keep_params => ['type'],
-			},
 			
-			draw_toolbar_button ({
-				icon => 'create',
-				label => 'Créer',
-				href => "?type=users&action=create",
-			}),
-
-			draw_toolbar_input_text ({
-				label   => 'Chercher',
-				name   => 'q',
-				keep_params => [],
-			}),
-			
-			draw_toolbar_pager ({
-				cnt    => 0 + @{$data -> {users}},
-				total  => $data -> {cnt},
-				portion => $data -> {portion},
-			}),
-			
-			fake_select (),
-			
-		)
-		
-		.
-
 		draw_table (
 		
 			[
@@ -274,7 +234,7 @@ sub draw_users {
 
 			sub {
 
-				draw_text_cells ({
+				draw_cells ({
 					href => "/?type=users&id=$$i{id}",
 				}, [
 					$i -> {label},
@@ -296,7 +256,43 @@ sub draw_users {
 								
 			},
 			
-			$data -> {users}
+			$data -> {users},
+			
+			{
+				
+				title => {label => 'Utilisateurs'},
+			
+				top_toolbar => [
+				
+					{
+						keep_params => ['type'],
+					},
+					
+					{
+						icon => 'create',
+						label => 'Créer',
+						href => "?type=users&action=create",
+					},
+		
+					{
+						type  => 'input_text',
+						label => 'Chercher',
+						name  => 'q',
+						keep_params => [],
+					},
+					
+					{
+						type => 'pager',
+						cnt    => 0 + @{$data -> {users}},
+						total  => $data -> {cnt},
+						portion => $data -> {portion},
+					},
+					
+					fake_select (),
+					
+				],
+				
+			}
 			
 		)
 		
