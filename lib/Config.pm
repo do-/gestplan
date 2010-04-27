@@ -21,22 +21,6 @@ sub get_skin_name {
 	
 }
 
-sub fake_select {
-
-	return  {
-
-		type    => 'input_select',
-		name    => 'fake',
-		values  => [
-			{id => '0,-1', label => 'Tous'},
-			{id => '-1', label => 'Supprimés'},
-		],
-		empty   => 'Actuels',
-
-	};
-	
-};
-
 our $conf = {
 
 	page_title => 'GestPlan',
@@ -537,15 +521,5 @@ sub return_md5_checked ($) {
 	out_html ({}, 'window.location = "' . create_url (__get_cache => 1) . '"');
 	
 }
-
-################################################################################
-
-sub draw_auth_toolbar {
-
-	j qq {var __month_names = [];};
-
-	j q {$('#body_table tr:first', top.document).hide ()};
-	
-};
 
 1;
