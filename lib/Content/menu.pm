@@ -276,11 +276,28 @@ sub select_menu_for_accueil {
 
 }
 
-
 ################################################################################
 
 sub select_menu {
 	return [];
 }
+
+################################################################################
+
+sub fake_select {
+
+	return  {
+
+		type    => 'input_select',
+		name    => 'fake',
+		values  => [
+			{id => '0,-1', label => 'Tous'},
+			{id => '-1', label => 'Supprimés'},
+		],
+		empty   => 'Actuels',
+
+	};
+	
+};
 
 1;

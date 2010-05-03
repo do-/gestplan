@@ -44,22 +44,6 @@ use URI::Escape;
 use Digest::MD5 'md5_hex';
 use LockFile::Simple qw(lock trylock unlock);
 
-sub fake_select {
-
-	return  {
-
-		type    => 'input_select',
-		name    => 'fake',
-		values  => [
-			{id => '0,-1', label => 'Tous'},
-			{id => '-1', label => 'Supprimés'},
-		],
-		empty   => 'Actuels',
-
-	};
-	
-};
-
 our $conf = {
 
 	page_title => 'GestPlan',
