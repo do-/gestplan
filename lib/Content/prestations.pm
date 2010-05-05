@@ -1370,7 +1370,7 @@ EOS
 		($_REQUEST {week}, $_REQUEST {year}) = Week_of_Year (Today ());	
 	}
 		
-	if ($_REQUEST {week} > 53) {
+	if ($_REQUEST {week} > Date::Calc::Weeks_in_Year ($_REQUEST {year})) {
 		$_REQUEST {year} ++;
 		$_REQUEST {week} = 1;
 	}	
