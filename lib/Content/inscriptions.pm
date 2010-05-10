@@ -755,9 +755,7 @@ sub select_inscriptions {
 				AND prestations_weeks.week = ?
 
 		}, sub {
-		
-			darn $i;
-			
+					
 			if ("$i->{dt_start}$i->{half_start}" le $dt . 1) {$prestation_1 = $i}
 			
 			if ("$i->{dt_finish}$i->{half_finish}" ge $dt . 2) {$prestation_2 = $i}
