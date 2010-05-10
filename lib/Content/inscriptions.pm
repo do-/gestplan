@@ -733,18 +733,37 @@ sub select_inscriptions {
 	
 #	my $id_absent_users = sql_select_ids ('SELECT id_user FROM off_periods WHERE dt_start <= ? AND dt_finish >= ? AND fake = 0', $dt, $dt);
 
-	my $prestation_1 = sql_select_hash (<<EOS, $_REQUEST {id_user}, '%,' . $_REQUEST {id_user} . ',%', $dt . 1, $dt . 1);
-		SELECT
-			prestations.*
-		FROM
-			prestations
-		WHERE
-			(prestations.id_user = ? OR prestations.id_users LIKE ?)
-			AND CONCAT(prestations.dt_start,  prestations.half_start)  <= ?
-			AND CONCAT(prestations.dt_finish, prestations.half_finish) >= ?
-			and prestations.fake = 0
-EOS
+	my ($prestation_1, $prestation_2);
 	
+	my ($w, $y) = Week_of_Year (dt_y_m_d ($dt));
+	
+	sql_select_loop (q {
+
+			SELECT STRAIGHT_JOIN
+				prestations.*
+			FROM
+				prestations_weeks
+				INNER JOIN prestations ON (
+					prestations_weeks.id_prestation = prestations.id
+					AND prestations.fake = 0
+					AND dt_start  <= ?
+					AND dt_finish >= ?
+					AND (prestations.id_user = ? OR prestations.id_users LIKE ?)
+				)
+			WHERE
+				prestations_weeks.year = ?
+				AND prestations_weeks.week = ?
+
+		}, sub {
+		
+			darn $i;
+			
+			if ("$i->{dt_start}$i->{half_start}" le $dt . 1) {$prestation_1 = $i}
+			
+			if ("$i->{dt_finish}$i->{half_finish}" ge $dt . 2) {$prestation_2 = $i}
+			
+		}, $dt, $dt, $_REQUEST {id_user}, '%,' . $_REQUEST {id_user} . ',%', $y, $w);
+			
 	my %cache = ();
 	
 	if ($prestation_1 -> {id}) {
@@ -878,21 +897,6 @@ EOS
 		}
 		
 	}
-
-	my $prestation_2 = sql_select_hash (<<EOS, $_REQUEST {id_user}, '%,' . $_REQUEST {id_user} . ',%', $dt . 2, $dt . 2);
-		SELECT
-			prestations.*
-		FROM
-			prestations
-		WHERE
-			(prestations.id_user = ? OR prestations.id_users LIKE ?)
-			AND CONCAT(prestations.dt_start,  prestations.half_start)  <= ?
-			AND CONCAT(prestations.dt_finish, prestations.half_finish) >= ?
-			and prestations.fake = 0
-EOS
-
-
-
 
 	if ($prestation_2 -> {id}) {
 
