@@ -736,10 +736,8 @@ sub select_inscriptions {
 	my $prestation_1 = sql_select_hash (<<EOS, $_REQUEST {id_user}, '%,' . $_REQUEST {id_user} . ',%', $dt . 1, $dt . 1);
 		SELECT
 			prestations.*
-			, prestation_types.id_organisation
 		FROM
 			prestations
-			LEFT JOIN prestation_types ON prestations.id_prestation_type = prestation_types.id
 		WHERE
 			(prestations.id_user = ? OR prestations.id_users LIKE ?)
 			AND CONCAT(prestations.dt_start,  prestations.half_start)  <= ?
@@ -884,10 +882,8 @@ EOS
 	my $prestation_2 = sql_select_hash (<<EOS, $_REQUEST {id_user}, '%,' . $_REQUEST {id_user} . ',%', $dt . 2, $dt . 2);
 		SELECT
 			prestations.*
-			, prestation_types.id_organisation
 		FROM
 			prestations
-			LEFT JOIN prestation_types ON prestations.id_prestation_type = prestation_types.id
 		WHERE
 			(prestations.id_user = ? OR prestations.id_users LIKE ?)
 			AND CONCAT(prestations.dt_start,  prestations.half_start)  <= ?
