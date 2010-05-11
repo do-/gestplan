@@ -1284,8 +1284,8 @@ EOS
 ################################################################################
 
 sub select_prestations {
-my $time = time ();
-$time = __log_profilinig ($time, '      0');
+#my $time = time ();
+#$time = __log_profilinig ($time, '      0');
 	my $item = {};
 
 	$item -> {inscription_to_clone} = sql_select_hash (<<EOS => $_REQUEST {id_inscription_to_clone}) if $_REQUEST {id_inscription_to_clone};
@@ -1493,7 +1493,7 @@ EOS
 	my $ids_alien_types = -1;
 	my $ids_alien_partnerships = -1;
 	
-$time = __log_profilinig ($time, '      1');
+#$time = __log_profilinig ($time, '      1');
 
 	if ($ids_partners ne '-1') {
 
@@ -1524,7 +1524,7 @@ EOS
 					)
 				)
 EOS
-$time = __log_profilinig ($time, '      2');
+#$time = __log_profilinig ($time, '      2');
 
 		$ids_alien_partnerships = sql_select_ids (<<EOS, '%,' . $organisation -> {id} . ',%');
 			SELECT
@@ -1552,7 +1552,7 @@ EOS
 	
 	}
 	
-$time = __log_profilinig ($time, '      3');
+#$time = __log_profilinig ($time, '      3');
 
 	my $prestations = $ids_partners eq '-1' ? [] :
 		
@@ -1621,7 +1621,7 @@ EOS
 		push @params, 0 + $_USER -> {id_group};
 	}
 
-$time = __log_profilinig ($time, '      4');
+#$time = __log_profilinig ($time, '      4');
 	my $users = sql_select_all (<<EOS, $days [-1] -> {iso_dt}, $days [0] -> {iso_dt}, $_USER -> {id_organisation}, @params);
 		SELECT STRAIGHT_JOIN
 			users.id
@@ -1652,7 +1652,7 @@ $time = __log_profilinig ($time, '      4');
 			, roles.label
 			, prenom
 EOS
-$time = __log_profilinig ($time, '      5');
+#$time = __log_profilinig ($time, '      5');
 	my @users = ();
 	my $last_role = '';
 	
@@ -1742,7 +1742,7 @@ EOS
 		
 	my ($ids, $idx) = ids ($prestations);
 	
-$time = __log_profilinig ($time, '      8');
+#$time = __log_profilinig ($time, '      8');
 
 	foreach my $i (@{sql_select_all ("SELECT id_prestation, COUNT(*) AS cnt, SUM(IF(fake = 0, 0, 1)) AS cnt_fake FROM inscriptions WHERE id_prestation IN ($ids) AND label NOT LIKE '+%' GROUP BY 1")}) {
 
@@ -1755,7 +1755,7 @@ $time = __log_profilinig ($time, '      8');
 
 	}
 	
-$time = __log_profilinig ($time, '      9');
+#$time = __log_profilinig ($time, '      9');
 
 	foreach my $i (@{sql_select_all
 			
@@ -1776,7 +1776,7 @@ $time = __log_profilinig ($time, '      9');
 						
 	};
 							
-$time = __log_profilinig ($time, '      10');
+#$time = __log_profilinig ($time, '      10');
 	my @prestations = ();	
 	my @holydays = sort keys %$holydays;
 		
@@ -1812,7 +1812,7 @@ $time = __log_profilinig ($time, '      10');
 	
 	}	
 
-$time = __log_profilinig ($time, '      11');
+#$time = __log_profilinig ($time, '      11');
 	foreach my $prestation (@prestations) {
 	
 		$prestation -> {no_href} = 1 if !$prestation -> {length} && $prestation -> {is_half_hour} != -1;
@@ -1893,7 +1893,7 @@ $time = __log_profilinig ($time, '      11');
 		}	
 		
 	}
-$time = __log_profilinig ($time, '      12');
+#$time = __log_profilinig ($time, '      12');
 	
 	my $off_periods = sql_select_all (<<EOS, $_USER -> {id_organisation});
 		SELECT
@@ -1913,7 +1913,7 @@ $time = __log_profilinig ($time, '      12');
 			AND users.id_organisation = ?
 			$site_filter
 EOS
-$time = __log_profilinig ($time, '      13');
+#$time = __log_profilinig ($time, '      13');
 
 	foreach my $user (@$users) {
 	
@@ -1944,7 +1944,7 @@ $time = __log_profilinig ($time, '      13');
 		}
 		
 	}
-$time = __log_profilinig ($time, '      14');
+#$time = __log_profilinig ($time, '      14');
 	if (@$off_periods) {
 	
 		my $user2ord = {};	
@@ -2011,7 +2011,7 @@ $time = __log_profilinig ($time, '      14');
 		};
 	
 	}
-$time = __log_profilinig ($time, '      15');
+#$time = __log_profilinig ($time, '      15');
 	if ($_USER -> {role} eq 'admin') {
 	
 		$_USER -> {can_dblclick_others_empty} = 1;
@@ -2037,7 +2037,7 @@ $time = __log_profilinig ($time, '      15');
 		$_USER -> {can_dblclick_others_empty} = $_USER -> {cnt_prestation_types} > 0;
 
 	}
-$time = __log_profilinig ($time, '      16');
+#$time = __log_profilinig ($time, '      16');
 	my $data = {
 	
 		week_status_type => $week_status_type,
@@ -2070,7 +2070,7 @@ $time = __log_profilinig ($time, '      16');
 			
 	};
 	
-$time = __log_profilinig ($time, '      17');
+#$time = __log_profilinig ($time, '      17');
 
 	return $data;
 
