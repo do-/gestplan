@@ -172,22 +172,6 @@ sub is_past {
 
 ################################################################################
 
-sub get_page {
-
-	push @{$_REQUEST {__include_js}}, 'clock';
-	
-	sql_do ('SET NAMES latin1');
-	
-	foreach (split /,/, $_USER -> {options}) {
-	
-		$_USER -> {options_hash} -> {$_} = 1;
-		
-	}
-	
-}
-
-################################################################################
-
 sub __d {
 	my ($data, @fields) = @_;	
 	map {$data -> {$_} =~ s{(\d\d\d\d)-(\d\d)-(\d\d)}{$3\/$2\/$1}} @fields;	
@@ -243,20 +227,28 @@ EOH
 ################################################################################
 
 sub support_menu {
+	
+	foreach (split /,/, $_USER -> {options}) {
+	
+		$_USER -> {options_hash} -> {$_} = 1;
+		
+	}
 
-    $_USER -> {options} =~ /support/ or return ();
+	$_USER -> {options_hash} -> {support} or return ();
 
     return {
     
-	label => 'Support',
-	name  => 'tasks',
+		label => 'Support',
+		name  => 'tasks',
     	
     	items => [
+    	
     		{
-			label => 'Correspondance',
-			name  => 'task_notes',
-		},
-	],
+				label => 'Correspondance',
+				name  => 'task_notes',
+			},
+			
+		],
     	
     }
 
