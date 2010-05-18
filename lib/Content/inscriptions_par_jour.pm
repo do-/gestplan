@@ -247,7 +247,7 @@ EOS
 
 	sql_select_loop ("SELECT * FROM ext_field_values WHERE id_inscription IN ($ids)", sub {
 	
-		$idx -> {$i -> {id_inscription}} -> {"field_$i->{id_ext_field}"} = $i -> {value};
+		$idx -> {$i -> {id_inscription}} -> {"field_$i->{id_ext_field}"} = $i -> {file_name} || $i -> {value};
 	
 	});
 		
