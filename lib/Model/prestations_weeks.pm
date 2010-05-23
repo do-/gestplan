@@ -10,7 +10,7 @@ columns => {
 keys => {
 
 	id_prestation => 'id_prestation',
-	year          => 'year, id_organisation, id_prestation',
+	year          => 'year, week, id_organisation, id_prestation',
 
 },
 
