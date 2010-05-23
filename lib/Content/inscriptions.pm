@@ -799,11 +799,9 @@ sub select_inscriptions {
 	my $prestation_1 = sql_select_hash (<<EOS, $_REQUEST {id_user}, '%,' . $_REQUEST {id_user} . ',%', $dt . 1, $dt . 1);
 		SELECT
 			prestations.*
-			, prestation_types.id_organisation
 			, sites.label AS site_label
 		FROM
 			prestations
-			LEFT JOIN prestation_types ON prestations.id_prestation_type = prestation_types.id
 			LEFT JOIN sites ON prestations.id_site = sites.id
 		WHERE
 			(prestations.id_user = ? OR prestations.id_users LIKE ?)
@@ -941,11 +939,9 @@ EOS
 	my $prestation_2 = sql_select_hash (<<EOS, $_REQUEST {id_user}, '%,' . $_REQUEST {id_user} . ',%', $dt . 2, $dt . 2);
 		SELECT
 			prestations.*
-			, prestation_types.id_organisation
 			, sites.label AS site_label
 		FROM
 			prestations
-			LEFT JOIN prestation_types ON prestations.id_prestation_type = prestation_types.id
 			LEFT JOIN sites ON prestations.id_site = sites.id
 		WHERE
 			(prestations.id_user = ? OR prestations.id_users LIKE ?)
