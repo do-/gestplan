@@ -2,7 +2,7 @@
 
 sub draw_auth_toolbar {
 
-	j qq {var __month_names = [];};
+	j qq {top.__month_names = [];};
 
 	j q {$('#body_table tr:first', top.document).hide ()};
 	
