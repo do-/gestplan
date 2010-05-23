@@ -75,56 +75,6 @@ sub draw_log {
 	
 	return
 	
-		draw_hr (height => 10)
-		
-		.
-	
-		draw_window_title ({
-			label => 'Log'
-		})
-	
-		.
-		
-		draw_toolbar (
-		
-			{
-				keep_params => ['type'],
-			},
-			
-			draw_toolbar_pager ({
-				cnt    => 0 + @{$data -> {log}},
-				total  => $data -> {cnt},
-				portion => $data -> {portion}
-			})
-			
-			,
-
-			draw_toolbar_input_text ({
-				icon   => 'tv',
-				label  => 'Type',
-				keep_params => [],
-				name   => 'object_type',
-			}),
-
-			draw_toolbar_input_text ({
-				icon   => 'tv',
-				label  => 'Action',
-				keep_params => [],
-				name   => 'object_action',
-			}),
-
-			draw_toolbar_input_select ({				
-					name => 'id_user',
-					values => $data -> {users},
-					empty => 'Tout utilisateur'
-				},
-			)
-			
-			
-		)			
-		
-		.
-
 		draw_table (
 			
 			['Date', 'Utilisateur', 'IP', 'MAC', 'Action', 'Type', 'ID', 'Erreur'],
@@ -160,8 +110,48 @@ sub draw_log {
 					$i -> {error},
 				])
 			},
-			$data -> {log}
-		)
+			
+			$data -> {log},
+			
+			{			
+	
+				title => {label => 'Log'},
+			
+				top_toolbar => [
+		
+					{
+						keep_params => ['type'],
+					},
+				
+					{ type => 'pager' },
+
+					{
+						type   => 'input_text',
+						label  => 'Type',
+						keep_params => [],
+						name   => 'object_type',
+					},
+		
+					{
+						type   => 'input_text',
+						label  => 'Action',
+						keep_params => [],
+						name   => 'object_action',
+					},
+		
+					{				
+						type   => 'input_select',
+						name   => 'id_user',
+						values => $data -> {users},
+						empty  => 'Tout utilisateur'
+					},
+					
+				],
+				
+			},
+				
+		)			
+			
 		
 }
 
