@@ -266,9 +266,26 @@ sub draw_prestations {
 	my ($data) = @_;
 
 	my $shift = $data -> {menu} ? 128 : 111;
+	
+	js 'var user2row = {};';
 
 	my $off_period_divs = <<EOJS;
 		<script>
+		
+			function set_cell (o) {
+			
+				var col = 2 * (o.dow - 1) + o.half;
+				
+				for (var i = 0; i < o.ids_users.length; i ++) {
+
+					var c = scrollable_rows [user2row [o.ids_users [i]]].cells [col];
+
+					c.style.backgroundColor = o.color;
+					c.innerText             = o.label_short;
+
+				}
+
+			}
 			
 			function coord (row, col, what) {
 
@@ -691,6 +708,8 @@ EOH
 					};	
 
 				}
+				
+				js "user2row [$i->{id}] = $scrollable_row_id;";
 
 				return draw_cells ({}, \@cells);
 
