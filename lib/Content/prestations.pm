@@ -726,8 +726,8 @@ sub do_delete_prestations {
 
 sub do_create_prestations {
 
-	my $prestation_type = sql_select_hash ('prestation_types', $_REQUEST {id_prestation_type});
-	
+	my $prestation_type = sql (prestation_types => $_REQUEST {id_prestation_type} || -1, 'prestation_type_groups');
+
 	my $user = sql_select_hash ($_REQUEST {id_user} > 0 ? 'users' : 'rooms', abs ($_REQUEST {id_user}));
 
 	my ($w, $y) = Week_of_Year (dt_y_m_d ($_REQUEST {dt_start}));
@@ -896,7 +896,15 @@ sub do_create_prestations {
 
 			recalculate_prestations ();
 
-			esc ();
+			out_script (set_cell => {
+			
+				dow         => 0 + Day_of_Week (dt_y_m_d ($_REQUEST {dt_start})),
+				half        => 0 + $_REQUEST {half_start},
+				label_short => $prestation_type -> {label_short},
+				color       => $prestation_type -> {prestation_type_group} -> {color},
+				ids_users   => [$_REQUEST {id_user}, map {-1 * $_} @ids_rooms],
+			
+			});
 
 				
 		}
