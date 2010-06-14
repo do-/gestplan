@@ -791,8 +791,8 @@ sub do_create_prestations {
 		$_REQUEST {id_site} ||= $prestation_type -> {id_site};
 		
 		if ($prestation_type -> {id_day_period} < 3) {		
-			if ($prestation_type -> {id_day_period} == 1 && $_REQUEST {half_start} == 2) { return "Les $$prestation_type{label_short} ne peuvent être affectés que les matins"; };
-			if ($prestation_type -> {id_day_period} == 2 && $_REQUEST {half_start} == 1) { return "Les $$prestation_type{label_short} ne peuvent être affectés que les après-midis"; };		
+			if ($prestation_type -> {id_day_period} == 1 && $_REQUEST {half_start} == 2) { die "#_foo#:Les $$prestation_type{label_short} ne peuvent être affectés que les matins"; };
+			if ($prestation_type -> {id_day_period} == 2 && $_REQUEST {half_start} == 1) { die "#_foo#:Les $$prestation_type{label_short} ne peuvent être affectés que les après-midis"; };		
 		}				
 	
 		$prestation_type -> {ids_roles} =~ /\,$$user{id_role}\,/ or die "#_foo#:Désolé, mais $$user{label} ne peut pas assister aux prestations $$prestation_type{label_short}.";
