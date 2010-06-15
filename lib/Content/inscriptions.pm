@@ -468,6 +468,8 @@ EOS
 		}
 
 		$i -> {is_mandatory} or next;
+		
+		next if $i -> {id_field_type} == 6 and $item -> {"field_$i->{id}"};
 
 		my $vide = $i -> {id_field_type} == 1 ? '0' : '';
 		
