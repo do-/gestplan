@@ -42,7 +42,6 @@ sub recalculate_prestations {
 			table   => 'prestations_weeks',
 			root    => {id_prestation => $data -> {id}},
 			key     => 'year,week',	
-			delayed => 1,
 
 		});
 	
@@ -725,39 +724,69 @@ sub do_delete_prestations {
 
 ################################################################################
 
-sub validate_create_prestations {
+sub do_create_prestations {
 
-	if ($_REQUEST {id_user} > 0) {
+	my $prestation_type = sql_select_hash ('prestation_types', $_REQUEST {id_prestation_type});
 	
-		$_REQUEST {id} = sql_select_scalar (
-			'SELECT id FROM prestations WHERE fake = 0 AND (id_user = ? OR id_users LIKE ?) AND CONCAT(dt_start,half_start) <= ? AND CONCAT(dt_finish,half_finish) >= ?',
-			$_REQUEST {id_user},
-			'%,' . $_REQUEST{id_user} . ',%',
-			$_REQUEST {dt_start} . $_REQUEST {half_start},
-			$_REQUEST {dt_start} . $_REQUEST {half_start},
-		);	
+	my $user = sql_select_hash ($_REQUEST {id_user} > 0 ? 'users' : 'rooms', abs ($_REQUEST {id_user}));
 
-	}
-	elsif ($_REQUEST {id_user} < 0) {
-
-		$_REQUEST {id} = sql_select_scalar (<<EOS, -1 * $_REQUEST {id_user}, $_REQUEST {dt_start} . $_REQUEST {half_start}, $_REQUEST {dt_start} . $_REQUEST {half_start});
+	my ($w, $y) = Week_of_Year (dt_y_m_d ($_REQUEST {dt_start}));
+	
+	my $dh = $_REQUEST {dt_start} . $_REQUEST {half_start};
+	
+	my $sql = $_REQUEST {id_user} > 0 ? q {
+		
 			SELECT
-				prestations.id
+			MAX(prestations.id)
 			FROM
-				prestations_rooms
-				INNER JOIN prestations ON prestations_rooms.id_prestation = prestations.id
-			WHERE
-				prestations_rooms.id_room = ?
+			prestations_weeks
+			LEFT JOIN prestations ON (
+				prestations_weeks.id_prestation = prestations.id
 				AND prestations.fake = 0
+				AND CONCAT(prestations.dt_start,prestations.half_start)   <= ?
+				AND CONCAT(prestations.dt_finish,prestations.half_finish) >= ?
+				AND (prestations.id_user = ? OR prestations.id_users LIKE ?)
+			)
+			WHERE
+				prestations_weeks.id_organisation = ?
+				AND prestations_weeks.fake = 0
+				AND prestations_weeks.year = ?
+				AND prestations_weeks.week = ?
+	
+	} : q {
+	
+		SELECT
+			MAX(prestations.id)
+		FROM
+			prestations_weeks
+			LEFT JOIN prestations_rooms ON (
+				prestations_weeks.id_prestation = prestations_rooms.id_prestation
+				AND prestations_rooms.fake = 0
 				AND CONCAT(prestations_rooms.dt_start,prestations_rooms.half_start) <= ?
 				AND CONCAT(prestations_rooms.dt_finish,prestations_rooms.half_finish) >= ?
-EOS
+				AND (prestations_rooms.id_room = ?)
+			)
+			LEFT JOIN prestations ON (
+				prestations_rooms.id_prestation = prestations.id
+				AND prestations.fake = 0
+			)
+		WHERE
+				prestations_weeks.id_organisation = ?
+				AND prestations_weeks.fake = 0
+				AND prestations_weeks.year = ?
+				AND prestations_weeks.week = ?
 
-	}
+	};
 	
-	if (!$_REQUEST {id} && $_REQUEST {id_prestation_type} && $_REQUEST {id_user} > 0) {
+	my @p = $_REQUEST {id_user} > 0 ? ($_REQUEST {id_user}, '%,' . $_REQUEST {id_user} . ',%') : (-1 * $_REQUEST {id_user});
+
+	sql_do ('LOCK TABLES ' . (join ', ', map {"$_ WRITE"} qw (prestations prestations_weeks prestations_rooms prestation_types rooms sessions inscriptions)));
+	
+	eval {
 		
-		my $prestation_type = sql_select_hash ('prestation_types', $_REQUEST {id_prestation_type});
+	$_REQUEST {id} = sql_select_scalar ($sql, $dh, $dh, @p, $user -> {id_organisation}, $y, $w);
+
+	if (!$_REQUEST {id} && $_REQUEST {id_prestation_type} && $_REQUEST {id_user} > 0) {
 		
 		$_REQUEST {id_site} ||= $prestation_type -> {id_site};
 		
@@ -766,15 +795,13 @@ EOS
 			if ($prestation_type -> {id_day_period} == 2 && $_REQUEST {half_start} == 1) { return "Les $$prestation_type{label_short} ne peuvent être affectés que les après-midis"; };		
 		}				
 	
-		my $user = sql_select_hash ('users', $_REQUEST {id_user});
-			
-		$prestation_type -> {ids_roles} =~ /\,$$user{id_role}\,/ or return "Désolé, mais $$user{label} ne peut pas assister aux prestations $$prestation_type{label_short}.";		
+		$prestation_type -> {ids_roles} =~ /\,$$user{id_role}\,/ or die "#_foo#:Désolé, mais $$user{label} ne peut pas assister aux prestations $$prestation_type{label_short}.";
 
 		foreach my $id_room (grep {$_ > 0} split /\,/, $prestation_type -> {ids_rooms}) {
 		
 			my $room = sql_select_hash ('rooms', $id_room);
 
-			0 == sql_select_scalar (<<EOS, $id_room, $_REQUEST {dt_finish} . $_REQUEST {half_finish}, $_REQUEST {dt_start} . $_REQUEST {half_start}) or return "Désolé, mais la $$room{label} est occupée pendant cette période.";
+			0 == sql_select_scalar (<<EOS, $id_room, $_REQUEST {dt_finish} . $_REQUEST {half_finish}, $_REQUEST {dt_start} . $_REQUEST {half_start}) or die "#_foo#:Désolé, mais la $$room{label} est occupée pendant cette période.";
 				SELECT
 					prestations_rooms.id
 				FROM
@@ -817,8 +844,6 @@ EOS
 sub do_create_prestations {
 		
 	unless ($_REQUEST {id}) {
-	
-		my $prestation_type = sql_select_hash ('prestation_types', $_REQUEST {id_prestation_type});
 
 		my @ids_rooms = grep {$_ > 0} split /\,/, $prestation_type -> {ids_rooms};
 		push @ids_rooms, - $_REQUEST {id_user} if $_REQUEST {id_user} < 0;
@@ -866,25 +891,32 @@ sub do_create_prestations {
 			);
 			
 			$_REQUEST {_cnt} = 1;
-			
+
 			do_update_prestations ();
-			
+
 			recalculate_prestations ();
-			
-			esc ();	
+
+			esc ();
+
 				
 		}
-	
+
 	}	
+
+	};
+
+	sql_do ("UNLOCK TABLES");
 		
+	die $@ if $@;
+			
 }
 
 ################################################################################
 
 sub do_update_prestations {
 
-	my $lockfile = $r -> document_root . "/i/upload/images/$item->{id}.lock";
-	
+	my $lockfile = $r -> document_root . "/i/upload/images/$_REQUEST{id}.lock";
+
 	trylock ($lockfile) or return;
 
 	my $old_item = sql_select_hash ('prestations');
