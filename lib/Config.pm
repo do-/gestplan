@@ -448,7 +448,7 @@ sub send_refresh_messages {
 		
 				map {$_ -> {id}}
 				
-				@{sql (users => [[id_organisation => $id_organisation]])}
+				@{sql (users => [[id_organisation => $id_organisation], ['id <> ' => $_USER -> {id}]], '-sessions(id) ON users.id = sessions.id_user')}
 				
 			]
 				
@@ -459,7 +459,7 @@ sub send_refresh_messages {
 			
 				map {$_ -> {user} -> {id}}
 				
-				@{sql (organisations => [['ids_partners LIKE %?%' => ",$id_organisation,"]], ['users'])}
+				@{sql (organisations => [['ids_partners LIKE %?%' => ",$id_organisation,"]], ['users' => [fake => 0]], '-sessions(id) ON users.id = sessions.id_user')}
 				
 			],
 			
@@ -470,7 +470,7 @@ sub send_refresh_messages {
 			
 				map {$_ -> {user} -> {id}}
 				
-				@{sql (organisations => [[ id => [grep {/\d/} split /\,/, ($organisation -> {ids_partners} || -1) ]]], ['users'])}
+				@{sql (organisations => [[ id => [grep {/\d/} split /\,/, ($organisation -> {ids_partners} || -1) ]]], ['users' => [fake => 0]], '-sessions(id) ON users.id = sessions.id_user')}
 				
 			],
 			
