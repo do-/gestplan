@@ -334,7 +334,7 @@ sub draw_prestations {
 				
 				for (var i = 0; i < o.ids_users.length; i ++) {
 
-					var c = scrollable_rows [user2row [o.ids_users [i]]].cells [col];
+					var c = tableSlider.rows [user2row [o.ids_users [i]]].cells [col];
 
 					c.style.backgroundColor = o.color;
 					c.innerText             = o.label_short;

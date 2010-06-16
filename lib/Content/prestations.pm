@@ -13,7 +13,7 @@ sub recalculate_prestations {
 			prestations.id_organisation IS NULL
 	
 	});
-	
+
 	if ($_REQUEST {id}) {
 	
 		my $data = sql (prestations => $_REQUEST {id});
@@ -46,6 +46,8 @@ sub recalculate_prestations {
 		});
 	
 	}
+
+	send_refresh_messages ();
 
 }
 
@@ -319,14 +321,6 @@ sub do_clone_prestations { # duplication
 	$_REQUEST {id} = $data -> {id};
 
 	esc ();
-
-}
-
-################################################################################
-
-sub recalculate_prestations {
-
-	send_refresh_messages ();
 
 }
 
@@ -780,7 +774,7 @@ sub do_create_prestations {
 	
 	my @p = $_REQUEST {id_user} > 0 ? ($_REQUEST {id_user}, '%,' . $_REQUEST {id_user} . ',%') : (-1 * $_REQUEST {id_user});
 
-	sql_do ('LOCK TABLES ' . (join ', ', map {"$_ WRITE"} qw (prestations prestations_weeks prestations_rooms prestation_types rooms sessions inscriptions)));
+	sql_do ('LOCK TABLES ' . (join ', ', map {"$_ WRITE"} qw (prestations prestations_weeks prestations_rooms prestation_types users rooms sessions inscriptions organisations)));
 	
 	eval {
 		
@@ -834,14 +828,6 @@ EOS
 		}	
 	
 	}
-
-	return undef;
-	
-}
-
-################################################################################
-
-sub do_create_prestations {
 		
 	unless ($_REQUEST {id}) {
 
@@ -875,7 +861,7 @@ sub do_create_prestations {
 			&& !$prestation_type -> {is_multiday}
 			&& !$prestation_type -> {is_to_edit}
 			&&  $prestation_type -> {id_people_number} < 3
-			&&  $_REQUEST {id_site}
+#			&&  $_REQUEST {id_site}
 		) {
 		
 			sql_do ('UPDATE prestations SET id_prestation_type = 0 WHERE id = ?', $_REQUEST {id});
@@ -898,11 +884,11 @@ sub do_create_prestations {
 
 			out_script (set_cell => {
 			
-				dow         => 0 + Day_of_Week (dt_y_m_d ($_REQUEST {dt_start})),
-				half        => 0 + $_REQUEST {half_start},
+				dow         => 0 + Day_of_Week (dt_y_m_d ($_REQUEST {_dt_start})),
+				half        => 0 + $_REQUEST {_half_start},
 				label_short => $prestation_type -> {label_short},
 				color       => $prestation_type -> {prestation_type_group} -> {color},
-				ids_users   => [$_REQUEST {id_user}, map {-1 * $_} @ids_rooms],
+				ids_users   => [$_REQUEST {_id_user}, map {-1 * $_} @ids_rooms],
 			
 			});
 
