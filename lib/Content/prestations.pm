@@ -750,7 +750,7 @@ sub do_create_prestations {
 	
 	my @p = $_REQUEST {id_user} > 0 ? ($_REQUEST {id_user}, '%,' . $_REQUEST {id_user} . ',%') : (-1 * $_REQUEST {id_user});
 
-	sql_do ('LOCK TABLES ' . (join ', ', map {"$_ WRITE"} qw (prestations prestations_weeks prestations_rooms prestation_types rooms sessions inscriptions)));
+#	sql_do ('LOCK TABLES ' . (join ', ', map {"$_ WRITE"} qw (prestations prestations_weeks prestations_rooms prestation_types rooms sessions inscriptions)));
 	
 	eval {
 		
@@ -847,7 +847,7 @@ EOS
 
 	};
 
-	sql_do ("UNLOCK TABLES");
+#	sql_do ("UNLOCK TABLES");
 	
 	die $@ if $@;
 			
