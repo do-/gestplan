@@ -1664,7 +1664,7 @@ EOS
 				, IF(prestations.dt_finish > '$dt_finish', 2, prestations.half_finish) AS half_finish
 				, IFNULL(prestation_type_group_colors.color, prestation_type_groups.color) AS color
 				, IF(prestations.id_organisation = $_USER->{id_organisation}, 0, 1) AS is_alien
-				, organisations.label AS inscriptions
+				, IF(prestations.id_organisation = $_USER->{id_organisation}, '', organisations.label) AS inscriptions
 			FROM
 				prestations_weeks
 				INNER JOIN prestations ON (
