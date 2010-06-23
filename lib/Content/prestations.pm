@@ -833,7 +833,7 @@ EOS
 
 			out_script (set_cell => {
 			
-				dow         => 0 + Day_of_Week (dt_y_m_d ($_REQUEST {dt_start})),
+				dt_start    => $_REQUEST {dt_start},
 				half        => 0 + $_REQUEST {half_start},
 				label_short => $prestation_type -> {label_short},
 				color       => $prestation_type -> {prestation_type_group} -> {color},
@@ -1449,6 +1449,7 @@ EOS
 			label => $label,
 			date  => [@day],
 			create_href => $h_create -> {href},
+			half  => 1,
 		};
 		
 		$ix_days -> {$iso_dt . '-' . 1} = $days [-1];
@@ -1473,6 +1474,7 @@ EOS
 			label => $label,
 			date  => [@day],
 			create_href => $h_create -> {href},
+			half  => 2,
 		};
 				
 		$ix_days -> {$iso_dt . '-' . 2} = $days [-1];

@@ -267,8 +267,6 @@ sub draw_prestations {
 
 	my $shift = $data -> {menu} ? 128 : 111;
 	
-	js 'var user2row = {};';
-
 	my $off_period_divs = <<EOJS;
 		<script>
 		
@@ -277,8 +275,10 @@ sub draw_prestations {
 				var col = 2 * (o.dow - 1) + o.half;
 				
 				for (var i = 0; i < o.ids_users.length; i ++) {
+				
+					var id = o.dt_start + '-' + o.half + '-' + o.ids_users [i];
 
-					var c = scrollable_rows [user2row [o.ids_users [i]]].cells [col];
+					var c = document.getElementById (id);
 
 					c.style.backgroundColor = o.color;
 					c.innerText             = o.label_short;
@@ -603,7 +603,8 @@ EOH
 					$cell -> {attributes} = {
 						bgcolor => ($p -> {bgcolor} ||= 'white'),
 						align   => 'center',
-						colspan => $p -> {rowspan},							
+						colspan => $p -> {rowspan},	
+						id => "$day->{iso_dt}-$day->{half}-$i->{id}",
 					};
 					
 					if (
@@ -709,8 +710,6 @@ EOH
 
 				}
 				
-				js "user2row [$i->{id}] = $scrollable_row_id;";
-
 				return draw_cells ({}, \@cells);
 
 			},
