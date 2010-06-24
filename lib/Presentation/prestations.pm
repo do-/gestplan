@@ -267,8 +267,20 @@ sub draw_prestations {
 
 	my $shift = $data -> {menu} ? 128 : 111;
 	
+	my $h_create = {href => "/?type=prestations&id_prestation_type=$_REQUEST{id_prestation_type}"};
+	
+	check_href ($h_create);	
+
+	$h_create -> {href} .= $_REQUEST {id_prestation_to_clone} ? "&action=clone&id=$_REQUEST{id_prestation_to_clone}" : "&action=create";
+	
 	my $off_period_divs = <<EOJS;
 		<script>
+		
+			function c (dt, half, id_user) {
+			
+				nope ('$h_create->{href}&id_user=' + id_user + '&dt_start=' + dt + '&half_start=' + half + '&dt_finish=' + dt + '&half_finish=' + half + '&_salt=' + Math.random (), 'invisible');
+			
+			}
 		
 			function set_cell (o) {
 			
@@ -680,7 +692,7 @@ EOH
 						)
 					
 					) {
-						$cell -> {attributes} -> {onDblClick} = "nope(\"$$day{create_href}&id_user=$$i{id}\", \"invisible\")";
+						$cell -> {attributes} -> {onDblClick} = "c('$day->{iso_dt}', $day->{half}, $i->{id})";
 					}
 					
 					push @cells, $cell;	

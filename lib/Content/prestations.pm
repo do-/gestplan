@@ -1402,13 +1402,7 @@ EOS
 		$_REQUEST {year} ++;
 		$_REQUEST {week} = 1;
 	}	
-	
-#	if ($_REQUEST {week} == 1 && Week_Number_Shift ($_REQUEST {year})) {
-#	
-#		$_REQUEST {week} = 2;
-#	
-#	}
-	
+		
 	my @monday = Monday_of_Week ($_REQUEST {week}, $_REQUEST {year});
 
 	my $prev = [Week_of_Year (Add_Delta_Days (@monday, -7))];
@@ -1432,23 +1426,13 @@ EOS
 		my $fr_dt  = sprintf ('%02d/%02d/%04d', reverse @day);
 	
 		my $label = $day_names [$day_index] . '&nbsp;' . $day [2];
-		
-		my $h_create = {href => "/?type=prestations&action=create&dt_start=$iso_dt&half_start=1&dt_finish=$iso_dt&half_finish=1&id_prestation_type=$_REQUEST{id_prestation_type}"};
-		check_href ($h_create);
-
-		if ($_REQUEST {id_prestation_to_clone}) {
-
-			$h_create -> {href} =~ s{action=create}{action=clone&id=$_REQUEST{id_prestation_to_clone}};
-
-		}
-		
+				
 		push @days, {
 			id => 2 * ($i + 1),
 			iso_dt => $iso_dt,
 			fr_dt => $fr_dt,
 			label => $label,
 			date  => [@day],
-			create_href => $h_create -> {href},
 			half  => 1,
 		};
 		
@@ -1458,22 +1442,12 @@ EOS
 			$days [-2] -> {next} = $days [-1];
 		}
 
-		my $h_create = {href => "/?type=prestations&action=create&dt_start=$iso_dt&half_start=2&dt_finish=$iso_dt&half_finish=2&id_prestation_type=$_REQUEST{id_prestation_type}"};
-		check_href ($h_create);
-
-		if ($_REQUEST {id_prestation_to_clone}) {
-
-			$h_create -> {href} =~ s{action=create}{action=clone&id=$_REQUEST{id_prestation_to_clone}};
-
-		}
-
 		push @days, {
 			id => 2 * ($i + 1) + 1,
 			iso_dt => $iso_dt,
 			fr_dt => $fr_dt,
 			label => $label,
 			date  => [@day],
-			create_href => $h_create -> {href},
 			half  => 2,
 		};
 				
