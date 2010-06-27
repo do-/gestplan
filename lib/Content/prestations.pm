@@ -833,11 +833,16 @@ EOS
 
 			out_script (set_cell => {
 			
+				id_prestation_type    => $_REQUEST {id_prestation_type},
 				dt_start    => $_REQUEST {dt_start},
 				half        => 0 + $_REQUEST {half_start},
 				label_short => $prestation_type -> {label_short},
 				color       => $prestation_type -> {prestation_type_group} -> {color},
 				ids_users   => [$_REQUEST {id_user}, map {-1 * $_} @ids_rooms],
+				no_href     => (!$prestation_type -> {length} && $prestation_type -> {is_half_hour} != -1) || $_REQUEST {id_user} < 0,
+				id_user     => $_REQUEST {id_user},
+				__last_scrollable_table_row     => $_REQUEST {__last_scrollable_table_row},
+				__last_query_string => $_REQUEST {__last_query_string},
 			
 			});
 

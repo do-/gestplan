@@ -273,12 +273,21 @@ sub draw_prestations {
 
 	$h_create -> {href} .= $_REQUEST {id_prestation_to_clone} ? "&action=clone&id=$_REQUEST{id_prestation_to_clone}" : "&action=create";
 	
+	js "var u2r = {};";
+	
 	my $off_period_divs = <<EOJS;
 		<script>
 		
 			function c (dt, half, id_user) {
 			
-				nope ('$h_create->{href}&id_user=' + id_user + '&dt_start=' + dt + '&half_start=' + half + '&dt_finish=' + dt + '&half_finish=' + half + '&_salt=' + Math.random (), 'invisible');
+				nope ('$h_create->{href}&id_user=' + id_user
+					+ '&__last_scrollable_table_row='    + u2r [id_user]
+					+ '&dt_start='    + dt
+					+ '&half_start='  + half
+					+ '&dt_finish='   + dt
+					+ '&half_finish=' + half
+					+ '&_salt='       + Math.random ()
+				, 'invisible');
 			
 			}
 		
@@ -293,7 +302,27 @@ sub draw_prestations {
 					var c = document.getElementById (id);
 
 					c.style.backgroundColor = o.color;
-					c.innerText             = o.label_short;
+					
+					if (o.no_href) {
+
+						c.innerText = o.label_short;
+
+					}
+					else {
+					
+						var href = '/?type=inscriptions&sid=$_REQUEST{sid}&id_user=' + o.id_user
+							+ '&__last_query_string='         + $_REQUEST{__last_query_string}
+							+ '&id_prestation_type='          + o.id_prestation_type
+							+ '&__last_scrollable_table_row=' + o.__last_scrollable_table_row
+							+ '&id_day_period='               + o.half
+							+ '&dt='                          + o.dt_start.substring (8, 10)+ '/' + o.dt_start.substring (5, 7)+ '/' + o.dt_start.substring (0, 4)
+							+ '&_salt='                       + Math.random ()
+						;
+					
+						c.innerHTML = '<a onFocus="blur()" class=row-cell href="' + href + '">' + o.label_short + '</a>';
+					
+					}
+					
 
 				}
 
@@ -555,7 +584,7 @@ EOH
 			],
 
 			sub {
-				
+							
 				$i -> {id} or return draw_cells ({}, [
 					{
 						label => $i -> {label},
@@ -565,6 +594,8 @@ EOH
 					},
 				]);
 				
+				js "u2r [$i->{id}] = $scrollable_row_id";
+
 				my @cells = (
 					{
 						label      => $i -> {label},
@@ -610,7 +641,7 @@ EOH
 					
 					$is_virgin = 0 if $p -> {label};
 					
-					$cell -> {href} = "/?type=inscriptions&id_inscription_to_clone=$_REQUEST{id_inscription_to_clone}&id_user=$$i{id}&dt=$$day{fr_dt}&id_site=$_REQUEST{id_site}&aliens=$_REQUEST{aliens}&id_day_period=" . $p -> {half_start} if $p -> {label} && $i -> {id} >= 0 && !$p -> {no_href};
+					$cell -> {href} = "/?type=inscriptions&id_inscription_to_clone=$_REQUEST{id_inscription_to_clone}&id_user=$$i{id}&dt=$$day{fr_dt}&id_site=$_REQUEST{id_site}&aliens=$_REQUEST{aliens}&id_prestation_type=$_REQUEST{id_prestation_type}&id_day_period=" . $p -> {half_start} if $p -> {label} && $i -> {id} >= 0 && !$p -> {no_href};
 					
 					$cell -> {attributes} = {
 						bgcolor => ($p -> {bgcolor} ||= 'white'),

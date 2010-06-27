@@ -316,7 +316,7 @@ sub draw_inscriptions {
 						label        => 'retour (Echap)',
 						hotkey       => {code => Esc},
 						href         =>
-							$_REQUEST {id_inscription_to_clone} ? esc_href () : "/?type=prestations&week=$_REQUEST{_week}&year=$_REQUEST{_year}&id_site=$_REQUEST{id_site}&aliens=$_REQUEST{aliens}",
+							$_REQUEST {id_inscription_to_clone} ? esc_href () : "/?type=prestations&week=$_REQUEST{_week}&year=$_REQUEST{_year}&id_site=$_REQUEST{id_site}&aliens=$_REQUEST{aliens}&id_prestation_type=$_REQUEST{id_prestation_type}",
 					},
 					{
 						type         => 'input_select',
