@@ -124,7 +124,7 @@ sub validate_clone_prestations {
 		;
 
 		my @dt   = dt_y_m_d ($_REQUEST {dt_start});
-		my $half = $_REQUEST {half_start};
+		my $half 	 = $_REQUEST {half_start};
 		
 		if ($half == 2) {
 		
@@ -394,9 +394,11 @@ sub validate_add_models_prestations {
 	my $prestation_models = sql_select_all (<<EOS, $_USER -> {id_organisation}, $_REQUEST {week} % 2, {fake => 'prestation_models'});
 		SELECT
 			prestation_models.*
+			, prestation_types.is_collective
 		FROM
 			prestation_models
 			INNER JOIN users ON prestation_models.id_user = users.id
+			LEFT  JOIN prestation_types ON prestation_models.id_prestation_type = prestation_types.id
 		WHERE
 			users.id_organisation = ?
 			AND prestation_models.is_odd = ?
@@ -452,29 +454,35 @@ EOS
 			my $conflict = sql_select_hash (<<EOS, $dt, $dt, "${dt}$prestation_model->{half_finish}", "${dt}$prestation_model->{half_start}", $id_room);
 				SELECT 	
 					prestations_rooms.*
+					, prestations.id_prestation_type
 				FROM
 					prestations_rooms
+					LEFT JOIN prestations ON prestations_rooms.id_prestation = prestations.id
 				WHERE
-					fake = 0
-					AND dt_start  <= ?
-					AND dt_finish >= ?
-					AND CONCAT(dt_start,  half_start)  <= ?
-					AND CONCAT(dt_finish, half_finish) >= ?
-					AND id_room = ?
+					prestations_rooms.fake = 0
+					AND prestations_rooms.dt_start  <= ?
+					AND prestations_rooms.dt_finish >= ?
+					AND CONCAT(prestations_rooms.dt_start,  prestations_rooms.half_start)  <= ?
+					AND CONCAT(prestations_rooms.dt_finish, prestations_rooms.half_finish) >= ?
+					AND prestations_rooms.id_room = ?
 				LIMIT 1
 EOS
 	
-	        	if ($conflict -> {id}) {
-	        		
-				my $user = sql_select_hash ('users', $prestation_model -> {id_user});
-				my $room = sql_select_hash ('rooms', $id_room);
+	        $conflict -> {id} or next;
+	        
+	        !$prestation_model -> {is_collective}
+			
+				or $prestation_model -> {id_prestation_type} != $conflict -> {id_prestation_type}
 				
-				$dt = join '/', reverse split /-/, $dt;
-	        	
-	        		return "Désolé, mais la ressource nommée '$room->{label}' est occupé(e) le $dt_fr (conflit pour $user->{label})";
-	        	
-			}        		
+					or next;
 
+			my $user = sql_select_hash ('users', $prestation_model -> {id_user});
+			my $room = sql_select_hash ('rooms', $id_room);
+				
+			$dt = join '/', reverse split /-/, $dt;
+	        	
+	        	return "Désolé, mais la ressource nommée '$room->{label}' est occupé(e) le $dt_fr (conflit pour $user->{label})";
+	        	
 		}		
 
 	}
@@ -504,9 +512,11 @@ sub do_add_models_prestations {
 	my $prestation_models = sql_select_all (<<EOS, $_USER -> {id_organisation}, $_REQUEST {week} % 2, {fake => 'prestation_models'});
 		SELECT
 			prestation_models.*
+			, prestation_types.is_collective
 		FROM
 			prestation_models
 			INNER JOIN users ON prestation_models.id_user = users.id
+			LEFT  JOIN prestation_types ON prestation_models.id_prestation_type = prestation_types.id
 		WHERE
 			users.id_organisation = ?
 			AND prestation_models.is_odd = ?
@@ -517,12 +527,41 @@ EOS
 		$prestation_models = [grep {$_ -> {id_user} == $_REQUEST {id_user} or $_ -> {id_users} =~ /\b$_REQUEST{id_user}\b/} @$prestation_models];
 	
 	}
+	
+	my $collective_prestation_types = {-1 => 1};
+	
+	foreach my $prestation_model (@$prestation_models) {
+	
+		$prestation_model -> {is_collective} or next;
+		
+		$collective_prestation_types -> {$prestation_model -> {id_prestation_type}} = 1;
+	
+	}
+	
+	my $ids_collective_prestation_types = join ',', keys %$collective_prestation_types;
 
 	my $prestation_types = {};
 	
 	my $reserved_rooms = {};
 	
 	my $collective_prestations = {};
+		
+	sql_select_loop (qq {
+	
+		SELECT
+			prestations.*
+		FROM
+			prestations_weeks
+			LEFT JOIN prestations ON (
+				prestations_weeks.id_prestation = prestations.id
+				AND prestations.id_prestation_type IN ($ids_collective_prestation_types)
+			)
+		WHERE prestations_weeks.fake = 0
+			AND prestations_weeks.id_organisation = ?
+			AND prestations_weeks.year = ?
+			AND prestations_weeks.week = ?
+	
+	}, sub {$collective_prestations -> {1, $i -> {dt_start}, $i -> {half_start}} = $i}, $_USER -> {id_organisation}, $_REQUEST {year}, $_REQUEST {week});
 	
 	foreach my $prestation_model (@$prestation_models) {
 	
