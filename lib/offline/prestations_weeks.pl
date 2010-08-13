@@ -3,6 +3,8 @@ my $st = $db -> prepare ('INSERT INTO prestations_weeks (fake, year, week, id_or
 sql_select_loop ('SELECT * FROM prestations', sub {
 
 	sql_do ('DELETE FROM prestations_weeks WHERE id_prestation = ?', $i -> {id});
+	
+	next if $i -> {fake} == -1;
 
 	my ($w, $y) = Week_of_Year (dt_y_m_d ($i -> {dt_start}));
 
