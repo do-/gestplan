@@ -22,6 +22,7 @@ sub do_copy_from_inscriptions {
 	}
 	
 	sql_do ('DELETE FROM inscriptions WHERE id = ?', $item -> {id});
+	sql_do ('DELETE FROM ext_field_values WHERE id_inscription = ?', $item -> {id});
 	
 	sql_do_insert (inscriptions => $item_to_clone);
 	
