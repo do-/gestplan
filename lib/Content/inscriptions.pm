@@ -4,6 +4,7 @@
 sub do_copy_from_inscriptions {
 
 	my $item          = sql_select_hash (inscriptions);
+	$item -> {fake} or die "#_foo#:Pardon, cette inscription n'est pas libre";
 	my $item_to_clone = sql_select_hash (inscriptions => $_REQUEST {_id_inscription_to_clone});
 	
 	foreach (qw(

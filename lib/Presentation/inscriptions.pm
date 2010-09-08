@@ -380,6 +380,9 @@ sub draw_inscriptions {
 			    check_href ($mark_href);
 
 				draw_cells ({
+				
+					target => $_REQUEST {id_inscription_to_clone} ? 'invisible' : undef,
+				
 					href  =>
 
 						$data -> {prestation_1} -> {read_only} || (
@@ -546,6 +549,9 @@ qq {
 			    check_href ($mark_href);
 
 				draw_cells ({
+
+					target => $_REQUEST {id_inscription_to_clone} ? 'invisible' : undef,
+
 					href  =>
 						$data -> {prestation_2} -> {read_only} || (
 							$i -> {fake} && (
