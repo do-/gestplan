@@ -82,6 +82,11 @@ sub select_inscriptions_par_jour {
 	my ($id_users, $idx_users) = ids ($users);
 
 	$id_prestations = -1;
+	
+	my $id_prestations_table = 'id_prestations_' . $$;
+	
+	sql_do ("DROP   TEMPORARY TABLE IF     EXISTS $id_prestations_table");
+	sql_do ("CREATE TEMPORARY TABLE IF NOT EXISTS $id_prestations_table (id INT PRIMARY KEY)");
 
 	my $collect = sub {
 	
@@ -103,7 +108,9 @@ sub select_inscriptions_par_jour {
 		
 		$is_visible or return;
 		
-		$id_prestations .= ",$i->{id}";
+		sql_do ("REPLACE INTO $id_prestations_table (id) VALUES (?) ", $i -> {id});
+		
+#		$id_prestations .= ",$i->{id}";
 	
 	};
 	
@@ -130,9 +137,9 @@ EOS
 	 		INNER JOIN prestations ON inscriptions.id_prestation = prestations.id
 	 		INNER JOIN users ON prestations.id_user = users.id
 	 		INNER JOIN prestation_types ON prestations.id_prestation_type = prestation_types.id
+	 		INNER JOIN $id_prestations_table ON prestations.id = $id_prestations_table.id
 	 	WHERE
 	 		inscriptions.fake = 0
-	 		AND prestations.id IN ($id_prestations)
 	 		$site_filter
 EOS
 		
@@ -188,7 +195,16 @@ EOS
 			ext_fields.ord
 EOS
 
-	my $ids_inscriptions_par_conseiller = sql_select_ids (<<EOS, @params);
+	my $id_inscriptions_table = 'id_inscriptions_' . $$;
+	
+	sql_do ("DROP   TEMPORARY TABLE IF     EXISTS $id_inscriptions_table");
+	sql_do ("CREATE TEMPORARY TABLE IF NOT EXISTS $id_inscriptions_table (id INT PRIMARY KEY)");
+
+#	my $ids_inscriptions_par_conseiller = sql_select_ids (<<EOS, @params);
+
+	sql_do (<<EOS, @params);
+		REPLACE INTO
+			$id_inscriptions_table (id)
 		SELECT
 			inscriptions.id
 	 	FROM
@@ -196,17 +212,21 @@ EOS
 	 		INNER JOIN prestations ON inscriptions.id_prestation = prestations.id
 	 		INNER JOIN users ON prestations.id_user = users.id
 	 		INNER JOIN prestation_types ON prestations.id_prestation_type = prestation_types.id
+	 		INNER JOIN $id_prestations_table ON prestations.id = $id_prestations_table.id
 	 		$join
+	 		LEFT  JOIN inscriptions children ON children.parent = inscriptions.id
 	 	WHERE
 	 		inscriptions.fake = 0
-	 		AND prestations.id IN ($id_prestations)
+	 		AND children.id IS NULL
 	 		$site_filter
 	 		$filter
 EOS
 
-	$ids_inscriptions_par_conseiller = sql_select_ids ("SELECT id FROM inscriptions WHERE id IN ($ids_inscriptions_par_conseiller) AND IFNULL(parent, 0) NOT IN ($ids_inscriptions_par_conseiller)");	
+#	$ids_inscriptions_par_conseiller = sql_select_ids ("SELECT id FROM inscriptions WHERE id IN ($ids_inscriptions_par_conseiller) AND IFNULL(parent, 0) NOT IN ($ids_inscriptions_par_conseiller)");	
 
-	my $cnt = $ids_inscriptions_par_conseiller =~ y/,/,/;
+#	my $cnt = $ids_inscriptions_par_conseiller =~ y/,/,/;
+
+	my $cnt = sql_select_scalar ("SELECT COUNT(*) FROM $id_inscriptions_table");
 	
 	$_REQUEST {start} += 0;
 	
@@ -226,8 +246,9 @@ EOS
 	 		INNER JOIN users ON prestations.id_user = users.id
 	 		INNER JOIN prestation_types ON prestations.id_prestation_type = prestation_types.id
 	 		LEFT  JOIN users AS reception ON inscriptions.id_user = reception.id
-	 	WHERE
-	 		inscriptions.id IN ($ids_inscriptions_par_conseiller)
+	 		INNER JOIN $id_inscriptions_table ON $id_inscriptions_table.id = inscriptions.id
+#	 	WHERE
+#	 		inscriptions.id IN ($ids_inscriptions_par_conseiller)
 	 	ORDER BY
 	 		inscriptions.nom
 	 		, inscriptions.prenom
