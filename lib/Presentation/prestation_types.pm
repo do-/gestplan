@@ -259,7 +259,7 @@ sub draw_item_of_prestation_types {
 					items => [
 						{
 							name  => 'length',
-							size  => 2,
+							size  => 3,
 						},
 						{
 							name  => 'length_ext',
