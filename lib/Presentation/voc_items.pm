@@ -20,7 +20,8 @@ sub draw_item_of_voc_items {
 			{
 				name  => 'label',
 				label => 'Désignation',
-				size  => 40,
+				size  => 100,
+				max_len => 255,
 			},
 		],
 	);
