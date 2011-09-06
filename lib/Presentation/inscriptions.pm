@@ -140,6 +140,7 @@ sub draw_item_of_inscriptions {
 						undef,
 					height => @$values > 7 ? 150 : undef,
 					target => 'invisible',
+					max_len => 100,
 					label  => $_ -> {label},
 					name   => 'field_' . $_ -> {id},
 					size   => $_ -> {length},
