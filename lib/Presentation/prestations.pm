@@ -328,10 +328,15 @@ sub draw_prestations {
 
 			}
 			
+			var __st = document.getElementById (scrollable_table_ids [0]);
+			var __stop = __st.offsetParent;
+			var __stopsl = __stop.scrollLeft;
+			var __stopst = __stop.scrollTop;
+			
 			function coord (row, col, what) {
 
 
-				var tbody = document.getElementById ('scrollable_table').tBodies(0);
+				var tbody = __st.tBodies(0);
 				var _row = tbody.rows [row];
 			
 				if (!_row) {
@@ -351,7 +356,7 @@ sub draw_prestations {
 			}
 
 			function coord_h (row, col, what) {
-				var thead = document.getElementById ('scrollable_table').tHead;
+				var thead = __st.tHead;
 				var _row = thead.rows [row];
 
 				if (!_row) {
@@ -385,12 +390,13 @@ EOJS
 							background: #485F70;
 							left:expression(
 								coord_h (0, $i, 'Left')
-								- document.getElementById ('scrollable_table').offsetParent.scrollLeft
+								- __stopsl
 								- 1
 							);
-							height:44;
-							top:expression(document.getElementById ('scrollable_table').offsetParent.scrollTop);
+							height:46;
+							top:expression(__stopst) + 2;
 							width:2;
+							z-index:200;
 					"
 					><img src="/i/0.gif" width=1 height=1></div>
 EOH
@@ -406,8 +412,8 @@ EOH
 		
 		if ($from > -1) {
 						
-			my $top     = 44 + 22 * $from;
-			my $height  = 22 * ($j - $from);
+			my $top     = 48 + 23 * $from;
+			my $height  = 23 * ($j - $from);
 			my $height1 = $height + 1;
 			
 			$data -> {users} -> [$from] -> {span} = $j - $from;
@@ -422,7 +428,7 @@ EOH
 							background-color: #485F70;
 							left:expression(
 								coord_h (0, $i, 'Left')
-								- document.getElementById ('scrollable_table').offsetParent.scrollLeft
+								- __stopsl
 								- 1
 							);
 							height:$height;
@@ -454,9 +460,9 @@ EOH
 				border:solid black 1px;
 				position:absolute;
 				background-image: url(/i/stripes.gif);
-				display:expression(document.getElementById ('scrollable_table').offsetParent.scrollTop > coord ($$off_period{row}, $$off_period{col_start}, 'Top') - 45 ? 'none' : 'block');
+				display:expression(__stopst > coord ($$off_period{row}, $$off_period{col_start}, 'Top') - 45 ? 'none' : 'block');
 				top:expression(coord ($$off_period{row}, 0, 'Top'));
-				left:expression( 	coord_h (1, $$off_period{col_start} - 1, 'Left') - document.getElementById ('scrollable_table').offsetParent.scrollLeft);
+				left:expression( 	coord_h (1, $$off_period{col_start} - 1, 'Left') - __stopsl);
 				height:expression(	coord ($$off_period{row}, 0, 'Height'));
 				width:expression(
 									coord_h (1, $$off_period{col_finish} - 1, 'Width') -

@@ -126,6 +126,14 @@ our @month_names = qw(
 
 our @month_names_1 = ('', @month_names);
 
+sub get_skin_name {
+
+	$_REQUEST {__dump} ? 'Dumper' :
+	$_REQUEST {xls}    ? 'XL' :
+	'TurboMilk'
+	
+}
+
 sub user_menu {
 	
 	my ($item) = @_;
@@ -437,5 +445,12 @@ EOH
 
 }
 
+################################################################################
+
+sub draw_auth_toolbar {
+
+	j q {$('#body_table tr:first', top.document).hide ()};
+	
+};
 
 1;
