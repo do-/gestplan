@@ -333,6 +333,32 @@ sub draw_prestations {
 			var __stopsl = __stop.scrollLeft;
 			var __stopst = __stop.scrollTop;
 			
+			var rows = __st.rows;
+			
+			for (var i = 0; i < rows.length; i ++) {
+
+				var r = rows [i];
+
+				var cs = 0;
+				
+				var cells = r.cells;
+				
+				for (var j = cells.length - 1; j > -1 ; j --) {
+				
+					var c = cells [j];
+					
+					cs += c.colSpan;
+					
+					if (cs % 2 == 1) continue;
+					
+					var ps = c.previousSibling;
+					
+					if (ps) ps.style.borderRight = 'solid #202070 2px';
+				
+				}
+			
+			}
+			
 			function coord (row, col, what) {
 
 
@@ -380,73 +406,73 @@ EOJS
 
 	my $from = -1;
 
-	foreach my $i (1 .. @{$data -> {organisation} -> {days}}) {
-				
-				$off_period_divs .= <<EOH;
-					<div
-						style="
-							border:0px;
-							position:absolute;
-							background: #485F70;
-							left:expression(
-								coord_h (0, $i, 'Left')
-								- __stopsl
-								- 1
-							);
-							height:46;
-							top:expression(__stopst) + 2;
-							width:2;
-							z-index:200;
-					"
-					><img src="/i/0.gif" width=1 height=1></div>
-EOH
-	}
+#	foreach my $i (1 .. @{$data -> {organisation} -> {days}}) {
+#				
+#				$off_period_divs .= <<EOH;
+#					<div
+#						style="
+#							border:0px;
+#							position:absolute;
+#							background: #485F70;
+#							left:expression(
+#								coord_h (0, $i, 'Left')
+#								- __stopsl
+#								- 1
+#							);
+#							height:46;
+#							top:expression(__stopst) + 2;
+#							width:2;
+#							z-index:200;
+#					"
+#					><img src="/i/0.gif" width=1 height=1></div>
+#EOH
+#	}
 
 	push @{$data -> {users}}, {};
 
-	for (my $j = 0; $j < @{$data -> {users}}; $j++) {
-	
-		my $user = $data -> {users} -> [$j];
-		
-		next if $user -> {id};
-		
-		if ($from > -1) {
-						
-			my $top     = 48 + 23 * $from;
-			my $height  = 23 * ($j - $from);
-			my $height1 = $height + 1;
-			
-			$data -> {users} -> [$from] -> {span} = $j - $from;
-
-			foreach my $i (1 .. @{$data -> {organisation} -> {days}}) {
-				
-				$off_period_divs .= <<EOH;
-					<div
-						style="
-							border:0px;
-							position:absolute;
-							background-color: #485F70;
-							left:expression(
-								coord_h (0, $i, 'Left')
-								- __stopsl
-								- 1
-							);
-							height:$height;
-							top:$top;
-							width:2;
-					"
-					><img src="/i/0.gif" width=1 height=1></div>
-EOH
-
-				my $day = $data -> {days} -> [2 * $i - 1];
-
-			}
-
-		}
-			
-		$from = $j + 1;
-		
-	}
+#	for (my $j = 0; $j < @{$data -> {users}}; $j++) {
+#	
+#		my $user = $data -> {users} -> [$j];
+#		
+#		next if $user -> {id};
+#		
+#		if ($from > -1) {
+#						
+#			my $top     = 48 + 23 * $from;
+#			my $height  = 23 * ($j - $from);
+#			my $height1 = $height + 1;
+#			
+#			$data -> {users} -> [$from] -> {span} = $j - $from;
+#
+#			foreach my $i (1 .. @{$data -> {organisation} -> {days}}) {
+#				
+#				$off_period_divs .= <<EOH;
+#					<div
+#						style="
+#							border:0px;
+#							position:absolute;
+#							background-color: #485F70;
+#							left:expression(
+#								coord_h (0, $i, 'Left')
+#								- __stopsl
+#								- 1
+#							);
+#							height:$height;
+#							top:$top;
+#							width:2;
+#					"
+#					><img src="/i/0.gif" width=1 height=1></div>
+#EOH
+#
+#				my $day = $data -> {days} -> [2 * $i - 1];
+#
+#			}
+#
+#		}
+#			
+#		$from = $j + 1;
+#		
+#	}
 	
 	pop @{$data -> {users}};
 
