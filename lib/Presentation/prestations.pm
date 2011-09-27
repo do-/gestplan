@@ -273,10 +273,9 @@ sub draw_prestations {
 
 	$h_create -> {href} .= $_REQUEST {id_prestation_to_clone} ? "&action=clone&id=$_REQUEST{id_prestation_to_clone}" : "&action=create";
 	
-	js "var u2r = {};";
+	js qq {
 	
-	my $off_period_divs = <<EOJS;
-		<script>
+		var u2r = {};
 		
 			function c (dt, half, id_user) {
 			
@@ -327,38 +326,7 @@ sub draw_prestations {
 				}
 
 			}
-			
-			var __st = document.getElementById (scrollable_table_ids [0]);
-			var __stop = __st.offsetParent;
-			var __stopsl = __stop.scrollLeft;
-			var __stopst = __stop.scrollTop;
-			
-			var rows = __st.rows;
-			
-			for (var i = 0; i < rows.length; i ++) {
-
-				var r = rows [i];
-
-				var cs = 0;
-				
-				var cells = r.cells;
-				
-				for (var j = cells.length - 1; j > -1 ; j --) {
-				
-					var c = cells [j];
-					
-					cs += c.colSpan;
-					
-					if (cs % 2 == 1) continue;
-					
-					var ps = c.previousSibling;
-					
-					if (ps) ps.style.borderRight = 'solid #202070 2px';
-				
-				}
-			
-			}
-			
+						
 			function coord (row, col, what) {
 
 
@@ -399,10 +367,45 @@ sub draw_prestations {
 
 				return _cell ['offset' + what];			
 			}
-			
-		</script>
-EOJS
 
+	};
+	
+	j q {
+
+			var __st = document.getElementById (scrollable_table_ids [0]);
+			var __stop = __st.offsetParent;
+			var __stopsl = __stop.scrollLeft;
+			var __stopst = __stop.scrollTop;
+			
+			var rows = __st.rows;
+			
+			for (var i = 0; i < rows.length; i ++) {
+
+				var r = rows [i];
+
+				var cs = 0;
+				
+				var cells = r.cells;
+				
+				for (var j = cells.length - 1; j > -1 ; j --) {
+				
+					var c = cells [j];
+					
+					cs += c.colSpan;
+					
+					if (cs % 2 == 1) continue;
+					
+					var ps = c.previousSibling;
+					
+					if (ps) ps.style.borderRight = 'solid #202070 2px';
+				
+				}
+			
+			}
+
+	};
+	
+	my $off_period_divs = '';
 
 	my $from = -1;
 
@@ -616,6 +619,8 @@ EOH
 			],
 
 			sub {
+			
+				my $colspan = 0;
 							
 				$i -> {id} or return draw_cells ({}, [
 					{
@@ -681,7 +686,7 @@ EOH
 						colspan => $p -> {rowspan},	
 						id => "$day->{iso_dt}-$day->{half}-$i->{id}",
 					};
-					
+										
 					if (
 						(
 							
@@ -758,6 +763,11 @@ EOH
 						$cell -> {attributes} -> {onDblClick} = "c('$day->{iso_dt}', $day->{half}, $i->{id})";
 					}
 					
+
+#					$colspan += ($c -> {colspan} || 1);
+					
+#					$colspan % 2 and $cell -> {attributes} -> {style} = 'border-right:solid #222277 2px';
+
 					push @cells, $cell;	
 				
 				}
