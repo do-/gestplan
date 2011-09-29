@@ -275,6 +275,11 @@ sub draw_prestations {
 	
 	js qq {
 	
+		var __st;
+		var __stop;
+		var __stopsl;
+		var __stopst;
+		var __off = [];
 		var u2r = {};
 		
 			function c (dt, half, id_user) {
@@ -329,19 +334,17 @@ sub draw_prestations {
 						
 			function coord (row, col, what) {
 
+            	if (!__st) return 0;
 
-				var tbody = __st.tBodies(0);
-				var _row = tbody.rows [row];
+				var _row = __st.rows [row];
 			
 				if (!_row) {
-//					alert ('coord ('+row+', ' + col +', '+what+') : no row');
 					return 0;
 				}
 			
 				var _cell = _row.cells [col];
 
 				if (!_cell) {
-//					alert ('coord ('+row+', ' + col +', '+what+') : no cell');
 					return 0;
 				}
 			
@@ -349,58 +352,112 @@ sub draw_prestations {
 
 			}
 
-			function coord_h (row, col, what) {
+			function coord_h (col, what) {
+			
+            	if (!__st) return 0;
+			
 				var thead = __st.tHead;
-				var _row = thead.rows [row];
-
-				if (!_row) {
-//					alert ('coord_h ('+row+', ' + col +', '+what+') : no row');
-					return 0;
-				}
-
+				var _row = thead.rows [1];
+				if (!_row) return 0;
 				var _cell = _row.cells [col];
-
-				if (!_cell) {
-//					alert ('coord_h ('+row+', ' + col +', '+what+') : no cell');
-					return 0;
-				}
-
+				if (!_cell) return 0;
 				return _cell ['offset' + what];			
 			}
+
+			function draw_borders () {
+			
+				if (!__st) return;
+				
+				rows = __st.rows;
+
+				for (var i = 0; i < rows.length; i ++) {
+	
+					var r = rows [i];
+	
+					var cs = 0;
+					
+					var cells = r.cells;
+					
+					for (var j = cells.length - 1; j > -1 ; j --) {
+					
+						var c = cells [j];
+						
+						cs += c.colSpan;
+						
+						if (cs % 2 == 1) continue;
+						
+						var ps = c.previousSibling;
+						
+						if (ps) ps.style.borderRight = 'solid #202070 2px';
+					
+					}
+				
+				}
+
+			}
+
+			function redraw_off_divs () {
+
+				if (!__st) return;
+				__stop   = __st.offsetParent;
+				__stopsl = __stop.scrollLeft;
+				__stopst = __stop.scrollTop;
+				
+				var delta_top = 0;
+				
+				if (!browser_is_msie) {
+					delta_top = 106 + __stopst + __st.rows[0].offsetHeight + __st.rows[1].offsetHeight - __the_div[0].scrollTop;
+				}
+	
+			    for (var i = 0; i < __off.length; i ++) {
+			
+			    	o = __off [i];
+			    	s = document.getElementById (o.id).style;
+					s.top    = coord   (o.row, 0, 'Top') + delta_top;
+					s.left   = coord_h (o.col_start - 1, 'Left') - __stopsl - 1 - 1 * (1 - browser_is_msie);
+					s.height = coord   (o.row, 0, 'Height') - 1 * (1 - browser_is_msie);
+					s.width  = (
+							coord_h (o.col_finish - 1, 'Width') -
+							coord_h (o.col_start  - 1, 'Left') +
+							coord_h (o.col_finish - 1, 'Left')
+					);				
+			
+					if (browser_is_msie) {
+						s.display      = __stopst > coord (o.row, o.col_start, 'Top') - 45 ? 'none' : 'block';
+					}
+					else {
+						s.display      = __the_div[0].scrollTop > coord (o.row, o.col_start, 'Top') + 45 ? 'none' : 'block';
+					}
+
+				}
+
+			}
+			
+			var __off_div_timer;
+			var __the_div;
 
 	};
 	
 	j q {
 
-			var __st = document.getElementById (scrollable_table_ids [0]);
-			var __stop = __st.offsetParent;
-			var __stopsl = __stop.scrollLeft;
-			var __stopst = __stop.scrollTop;
+			__st = document.getElementById (scrollable_table_ids [0]);
 			
-			var rows = __st.rows;
-			
-			for (var i = 0; i < rows.length; i ++) {
+            draw_borders ();
 
-				var r = rows [i];
-
-				var cs = 0;
-				
-				var cells = r.cells;
-				
-				for (var j = cells.length - 1; j > -1 ; j --) {
-				
-					var c = cells [j];
-					
-					cs += c.colSpan;
-					
-					if (cs % 2 == 1) continue;
-					
-					var ps = c.previousSibling;
-					
-					if (ps) ps.style.borderRight = 'solid #202070 2px';
-				
-				}
+			__off_div_timer = setTimeout (redraw_off_divs, 100);
 			
+			$(window).resize (function () {
+			
+				if (__off_div_timer) clearTimeout (__off_div_timer);
+
+				__off_div_timer = setTimeout (redraw_off_divs, 100);
+				
+			});
+			
+			if (!browser_is_msie && __st) {
+				__stop = __st.offsetParent;
+				__the_div = $('div.table-container');
+				__the_div.scroll (redraw_off_divs);
 			}
 
 	};
@@ -409,96 +466,24 @@ sub draw_prestations {
 
 	my $from = -1;
 
-#	foreach my $i (1 .. @{$data -> {organisation} -> {days}}) {
-#				
-#				$off_period_divs .= <<EOH;
-#					<div
-#						style="
-#							border:0px;
-#							position:absolute;
-#							background: #485F70;
-#							left:expression(
-#								coord_h (0, $i, 'Left')
-#								- __stopsl
-#								- 1
-#							);
-#							height:46;
-#							top:expression(__stopst) + 2;
-#							width:2;
-#							z-index:200;
-#					"
-#					><img src="/i/0.gif" width=1 height=1></div>
-#EOH
-#	}
-
 	push @{$data -> {users}}, {};
-
-#	for (my $j = 0; $j < @{$data -> {users}}; $j++) {
-#	
-#		my $user = $data -> {users} -> [$j];
-#		
-#		next if $user -> {id};
-#		
-#		if ($from > -1) {
-#						
-#			my $top     = 48 + 23 * $from;
-#			my $height  = 23 * ($j - $from);
-#			my $height1 = $height + 1;
-#			
-#			$data -> {users} -> [$from] -> {span} = $j - $from;
-#
-#			foreach my $i (1 .. @{$data -> {organisation} -> {days}}) {
-#				
-#				$off_period_divs .= <<EOH;
-#					<div
-#						style="
-#							border:0px;
-#							position:absolute;
-#							background-color: #485F70;
-#							left:expression(
-#								coord_h (0, $i, 'Left')
-#								- __stopsl
-#								- 1
-#							);
-#							height:$height;
-#							top:$top;
-#							width:2;
-#					"
-#					><img src="/i/0.gif" width=1 height=1></div>
-#EOH
-#
-#				my $day = $data -> {days} -> [2 * $i - 1];
-#
-#			}
-#
-#		}
-#			
-#		$from = $j + 1;
-#		
-#	}
 	
 	pop @{$data -> {users}};
-
+		
 	foreach my $off_period (@{$data -> {off_periods}}) {
+	
+		$off_period -> {id} = '' . $off_period;
+		
+		my $j = $_JSON -> encode ($off_period);
+		
+		js qq {__off.push ($j);};
 	
 		$off_period_divs .= <<EOH;
 			<div
+				id="$$off_period{id}"
 				onMouseOver="this.style.display='none'"
 				onMouseOut="this.style.display='block'"
-				style="
-				border:solid black 1px;
-				position:absolute;
-				background-image: url(/i/stripes.gif);
-				display:expression(__stopst > coord ($$off_period{row}, $$off_period{col_start}, 'Top') - 45 ? 'none' : 'block');
-				top:expression(coord ($$off_period{row}, 0, 'Top'));
-				left:expression( 	coord_h (1, $$off_period{col_start} - 1, 'Left') - __stopsl);
-				height:expression(	coord ($$off_period{row}, 0, 'Height'));
-				width:expression(
-									coord_h (1, $$off_period{col_finish} - 1, 'Width') -
-									coord_h (1, $$off_period{col_start}  - 1, 'Left') +
-									coord_h (1, $$off_period{col_finish} - 1, 'Left')
-				);				
-			"
+				style="border:solid black 1px;position:absolute;background-image: url(/i/stripes.gif);"
 			>
 				&nbsp;
 			</div>
