@@ -852,7 +852,7 @@ EOS
 				id_room => $id_room,
 			});
 		}
-		
+
 		if (
 				$prestation_type -> {id}
 			&& !$prestation_type -> {is_multiday}
@@ -870,7 +870,7 @@ EOS
 
 			recalculate_prestations ();
 
-			out_script (set_cell => {
+			my $d = {
 			
 				id_prestation_type    => $_REQUEST {id_prestation_type},
 				dt_start    => $_REQUEST {dt_start},
@@ -883,7 +883,13 @@ EOS
 				__last_scrollable_table_row     => $_REQUEST {__last_scrollable_table_row},
 				__last_query_string => $_REQUEST {__last_query_string},
 			
-			});
+			};
+			
+			my $j = $_JSON -> encode ($d);
+			
+			my $s = "set_cell($j)";
+
+			out_html ({}, $s);
 
 		}
 
@@ -891,9 +897,20 @@ EOS
 
 	};
 
-#	sql_do ("UNLOCK TABLES");
+#	sql_do ("UNLOCK TABLES");	
 	
+	warn $@ if $@;
 	die $@ if $@;
+	
+	return if $_REQUEST {__response_sent};
+	
+	my $h = {href => {action => ''}};
+	
+	check_href ($h);
+
+	my $s = "nope('$h->{href}', '_self')";
+			
+	out_html ({}, $s);
 			
 }
 

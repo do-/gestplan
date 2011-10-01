@@ -281,17 +281,31 @@ sub draw_prestations {
 		var __stopst;
 		var __off = [];
 		var u2r = {};
+		var sem = {};
 		
 			function c (dt, half, id_user) {
 			
-				nope ('$h_create->{href}&id_user=' + id_user
+				var id = dt + '-' + half + '-' + id_user;
+				
+				if (sem [id]) return;
+				
+				sem [id] = true;				
+
+				\$.getScript ('$h_create->{href}&id_user=' + id_user
 					+ '&__last_scrollable_table_row='    + u2r [id_user]
 					+ '&dt_start='    + dt
 					+ '&half_start='  + half
 					+ '&dt_finish='   + dt
 					+ '&half_finish=' + half
 					+ '&_salt='       + Math.random ()
-				, 'invisible');
+				, function () {
+					sem [id] = setTimeout (function () {
+					    clearTimeout (sem [id]);
+					    sem [id] = false;
+					}, 100);
+				});
+				
+				return blockEvent ();
 			
 			}
 		
@@ -388,7 +402,7 @@ sub draw_prestations {
 						
 						var ps = c.previousSibling;
 						
-						if (ps) ps.style.borderRight = 'solid #202070 2px';
+						if (ps) ps.style.borderRight = 'solid #505080 2px';
 					
 					}
 				
@@ -403,7 +417,7 @@ sub draw_prestations {
 				__stopsl = __stop.scrollLeft;
 				__stopst = __stop.scrollTop;
 				
-				var delta_top = 0;
+				var delta_top = 46;
 				
 				if (!browser_is_msie) {
 					delta_top = 106 + __stopst + __st.rows[0].offsetHeight + __st.rows[1].offsetHeight - __the_div[0].scrollTop;
