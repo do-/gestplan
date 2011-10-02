@@ -117,7 +117,7 @@ sub select_menu_for_admin {
 	$_USER -> {id_site_group} += 0;
 
 
-	return darn [
+	return [
 
 		{
 			name  => 'prestations',
