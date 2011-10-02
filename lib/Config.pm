@@ -240,11 +240,11 @@ sub del {
 ################################################################################
 
 sub iframe_alerts {
-	
+
 	my $salt = rand * time;
 
 	return <<EOH;
-		<iframe style="display:none" name="alerts" src="/?sid=$_REQUEST{sid}&type=alerts&_salt=$salt">
+		<iframe style="display:none" name="alerts" src="$_REQUEST{__uri}?sid=$_REQUEST{sid}&type=alerts&_salt=$salt">
 		</iframe>
 EOH
 
