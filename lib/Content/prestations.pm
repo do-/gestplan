@@ -899,9 +899,16 @@ EOS
 
 #	sql_do ("UNLOCK TABLES");	
 	
-	warn $@ if $@;
-	die $@ if $@;
+	if ($@) {
 	
+		my $m = $@;
+		$m =~ s{^#.*?#:}{};
+		$m =~ / at /;
+		my $a = $_JSON -> encode ([$`]);
+		out_html ({}, "var a = $a; alert (a[0]);");
+	
+	}
+		
 	return if $_REQUEST {__response_sent};
 	
 	my $h = {href => {action => ''}};
