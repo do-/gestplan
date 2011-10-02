@@ -27,6 +27,13 @@ sub select_menu_for_superadmin {
 	
 		support_menu (),
 
+		{
+			label  => 'Déconnexion',
+			side   => 'right_items',
+			href   => {type => _logout},
+			target => '_top',
+		},
+
 	];
 
 }
@@ -110,7 +117,7 @@ sub select_menu_for_admin {
 	$_USER -> {id_site_group} += 0;
 
 
-	return [
+	return darn [
 
 		{
 			name  => 'prestations',
@@ -216,6 +223,13 @@ sub select_menu_for_admin {
 		
 		site_group_menu (),
 	
+		{
+			label  => 'Déconnexion',
+			side   => 'right_items',
+			href   => {type => _logout},
+			target => '_top',
+		},
+
 	];
 
 }
@@ -247,6 +261,13 @@ sub select_menu_for_conseiller {
 
 		site_group_menu (),
 
+		{
+			label  => 'Déconnexion',
+			side   => 'right_items',
+			href   => {type => _logout},
+			target => '_top',
+		},
+
 	];
 
 }
@@ -271,6 +292,13 @@ sub select_menu_for_accueil {
 		support_menu (),
 	
 		extra_menu (),
+
+		{
+			label  => 'Déconnexion',
+			side   => 'right_items',
+			href   => {type => _logout},
+			target => '_top',
+		},
 
 	];
 
