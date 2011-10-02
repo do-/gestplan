@@ -320,7 +320,7 @@ sub draw_prestations {
 					var c = document.getElementById (id);
 
 					c.style.backgroundColor = o.color;
-					
+
 					if (o.no_href) {
 
 						c.innerText = o.label_short;
@@ -328,7 +328,7 @@ sub draw_prestations {
 					}
 					else {
 					
-						var href = '/?type=inscriptions&sid=$_REQUEST{sid}&id_user=' + o.id_user
+						var href = '$_REQUEST{__uri}?type=inscriptions&sid=$_REQUEST{sid}&id_user=' + o.id_user
 							+ '&__last_query_string='         + $_REQUEST{__last_query_string}
 							+ '&id_prestation_type='          + o.id_prestation_type
 							+ '&__last_scrollable_table_row=' + o.__last_scrollable_table_row
@@ -336,8 +336,10 @@ sub draw_prestations {
 							+ '&dt='                          + o.dt_start.substring (8, 10)+ '/' + o.dt_start.substring (5, 7)+ '/' + o.dt_start.substring (0, 4)
 							+ '&_salt='                       + Math.random ()
 						;
-					
-						c.innerHTML = '<a onFocus="blur()" class=row-cell href="' + href + '">' + o.label_short + '</a>';
+
+						\$(c).html ('<a onFocus="blur()" class=row-cell href="' + href + '">' + o.label_short + '</a>');
+						
+						tableSlider.cell_off ();
 					
 					}
 					
