@@ -215,6 +215,8 @@ sub draw_item_of_inscriptions {
 		
 			title => {label => 'Participants'},
 			
+			no_scroll => 1,
+
 			off => !$_REQUEST {__read_only} || $data -> {prestation} -> {type} -> {is_half_hour} != -1,
 			
 			top_toolbar => [ {}, {
