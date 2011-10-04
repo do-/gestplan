@@ -323,7 +323,7 @@ sub draw_prestations {
 
 					if (o.no_href) {
 
-						c.innerText = o.label_short;
+						\$(c).text (o.label_short);
 
 					}
 					else {
