@@ -51,27 +51,18 @@ sub recalculate_prestations {
 
 ################################################################################
 
-sub validate_clone_prestations {
+sub _validate_clone_prestations {
 
 	my $id = sql ('prestations(id)' => ['id_user', 'dt_start', 'half_start', ['1 ']]);
 
 	if ($id) {
 	
-		redirect (
-			
-			check_href ({
-			
-				href => "/?type=prestations&id=$id",
-				
-			}),
-					
-			{
-				kind   => 'js',
-				target => '_parent',
-			}
-			
-		);
+		my $h = {href => "/?type=prestations&id=$id"};
 		
+		check_href ($h);
+		
+		out_html ({}, "nope ('$h->{href}', '_self')");
+
 		return undef;
 	
 	}
@@ -225,11 +216,18 @@ sub validate_clone_prestations {
 
 sub do_clone_prestations { # duplication
 
+	my $e = _validate_clone_prestations ();
+
+	if ($e) {	
+		my $a = $_JSON -> encode ([$e]);
+		out_html ({}, "var a = $a; alert (a[0]);");	
+	}
+
 	return if $_REQUEST {__response_sent};
 
 	my $data = sql (prestations => $_REQUEST {id});
 	
-	my $type = sql (prestation_types => $data -> {id_prestation_type});
+	my $type = sql (prestation_types => $data -> {id_prestation_type}, 'prestation_type_groups');
 	
 	$_REQUEST {fake} = '0,-1';
 	
@@ -279,10 +277,14 @@ sub do_clone_prestations { # duplication
 		})
 	
 	}
+	
+	my @ids_users = ($_REQUEST {id_user});
 
 	sql (prestations_rooms => [[id_prestation => $_REQUEST {id}]], sub {
 	
 		delete $i -> {id};
+		
+		push @ids_users, -1 * $i -> {id_room};
 		
 		$i -> {id_prestation} = $data -> {id};
 		
@@ -294,7 +296,33 @@ sub do_clone_prestations { # duplication
 	
 	$_REQUEST {id} = $data -> {id};
 	
-	esc ();
+	if (
+			$type -> {id}
+		&& !$type -> {is_multiday}
+		&& !$type -> {is_to_edit}
+		&&  $type -> {id_people_number} < 3
+	) {
+		
+		$data -> {half}                 	   = $data -> {half_start};
+		$data -> {label_short}                 = $type -> {label_short};
+		$data -> {color}                       = $type -> {prestation_type_group} -> {color};
+		$data -> {no_href}                     = (!$type -> {length} && $type -> {is_half_hour} != -1) || $_REQUEST {id_user} < 0;
+		$data -> {id_user}                     = $_REQUEST {id_user};
+		$data -> {ids_users}                   = \@ids_users;
+		$data -> {__last_scrollable_table_row} = $_REQUEST {__last_scrollable_table_row};
+		$data -> {__last_query_string}         = $_REQUEST {__last_query_string};
+
+		my $j = $_JSON -> encode ($data);
+				
+		my $s = "set_cell($j)";
+	
+		out_html ({}, $s);
+
+	}
+				
+	my $h = esc_href ();
+	
+	out_html ({}, "nope ('$h', '_self')");	
 
 }
 

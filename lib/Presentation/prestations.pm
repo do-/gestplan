@@ -318,6 +318,8 @@ sub draw_prestations {
 					var id = o.dt_start + '-' + o.half + '-' + o.ids_users [i];
 
 					var c = document.getElementById (id);
+					
+					if (!c) continue;
 
 					c.style.backgroundColor = o.color;
 
