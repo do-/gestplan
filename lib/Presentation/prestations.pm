@@ -265,7 +265,7 @@ sub draw_prestations {
 	
 	my ($data) = @_;
 
-	my $shift = $data -> {menu} ? 128 : 111;
+	my $shift = $data -> {menu} ? 106 : 66;
 	
 	my $h_create = {href => "/?type=prestations&id_prestation_type=$_REQUEST{id_prestation_type}"};
 	
@@ -424,7 +424,7 @@ sub draw_prestations {
 				var delta_top = 46;
 				
 				if (!browser_is_msie) {
-					delta_top = 106 + __stopst + __st.rows[0].offsetHeight + __st.rows[1].offsetHeight - __the_div[0].scrollTop;
+					delta_top = $shift + __stopst + __st.rows[0].offsetHeight + __st.rows[1].offsetHeight - __the_div[0].scrollTop;
 				}
 	
 			    for (var i = 0; i < __off.length; i ++) {
@@ -441,7 +441,7 @@ sub draw_prestations {
 					);				
 			
 					if (browser_is_msie) {
-						s.display      = __stopst > coord (o.row, o.col_start, 'Top') - 45 ? 'none' : 'block';
+//						s.display      = __stopst > coord (o.row, o.col_start, 'Top') - 45 ? 'none' : 'block';
 					}
 					else {
 						s.display      = __the_div[0].scrollTop > coord (o.row, o.col_start, 'Top') + 45 ? 'none' : 'block';
@@ -539,6 +539,7 @@ EOH
 
 				push @h2, {
 					label => ($day -> {id} % 2 ? 'Après-midi' : 'Matin'),
+					attributes => {width => '8%'},
 				};
 
 			}
