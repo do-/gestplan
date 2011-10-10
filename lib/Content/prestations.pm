@@ -1995,7 +1995,9 @@ EOS
 	}
 #$time = __log_profilinig ($time, '      12');
 	
-	my $off_periods = sql_select_all (<<EOS, $_USER -> {id_organisation});
+	my $id_users = join ',', (-1, grep {$_ > 0} map {$_ -> {id}} @$users);
+	
+	my $off_periods = sql_select_all (<<EOS);
 		SELECT
 			off_periods.id
 			, off_periods.id_user
@@ -2005,13 +2007,11 @@ EOS
 			, IF(off_periods.dt_finish > '$dt_finish', 2,            off_periods.half_finish) AS half_finish
 		FROM
 			off_periods
-			INNER JOIN users ON off_periods.id_user = users.id
 		WHERE
 			off_periods.fake = 0
 			AND off_periods.dt_start  <= '$dt_finish'
 			AND off_periods.dt_finish >= '$dt_start'
-			AND users.id_organisation = ?
-			$site_filter
+			AND off_periods.id_user IN ($id_users)
 EOS
 #$time = __log_profilinig ($time, '      13');
 
