@@ -4,6 +4,8 @@ sub draw_item_of_inscriptions {
 	
 	my ($data) = @_;
 
+    $_REQUEST {__read_only} or j q {$('form').find('input[type=text],textarea,select').filter(':visible:first').focus()};
+
 	draw_form ({
 	
 		max_len => 1000,
