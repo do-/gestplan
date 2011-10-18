@@ -280,6 +280,8 @@ sub draw_inscriptions {
 	
 	my ($data) = @_;
 	
+	js q {var noDblClick = false};
+	
 	my $title_1 = '';
 	
 	if ($data -> {prestation_1} -> {id} > 0 && $data -> {prestation_1} -> {id} == $data -> {prestation_2} -> {id}) {
@@ -416,7 +418,7 @@ sub draw_inscriptions {
 						off   => !$i -> {hour},
 						
 						attributes => {						
-						    ondblclick => $i -> {hour} || $i -> {fake} ? '' : "if (confirm (\"$$i{prenom} $$i{nom} est arrivé(e) ?\")) {nope (\"$$mark_href{href}\", \"invisible\"); nop ();}"	
+						    ondblclick => $i -> {hour} || $i -> {fake} ? '' : "if (!noDblClick && confirm (\"$$i{prenom} $$i{nom} est arrivé(e) ?\")) {noDblClick = true; nope (\"$$mark_href{href}\", \"invisible\"); nop ();}"	
 						},
 						
 					},
