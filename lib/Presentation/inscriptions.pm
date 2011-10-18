@@ -257,6 +257,8 @@ sub draw_item_of_inscriptions {
 			
 			title => {label => 'Documents'},
 			
+			no_scroll => 1,
+			
 			off   =>
 				!$_REQUEST{__read_only}
 				|| 0 == @{$data -> {prestation_type_files}},

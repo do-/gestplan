@@ -469,6 +469,8 @@ sub draw_item_of_prestation_types {
 			off   => !$_REQUEST{__read_only},
 			
 			name  => 't1',
+
+			no_scroll => 1,
 						
 			top_toolbar => [{
 				keep_params => ['type', 'id'],
