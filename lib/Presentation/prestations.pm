@@ -485,6 +485,22 @@ sub draw_prestations {
 	my $from = -1;
 
 	push @{$data -> {users}}, {};
+		
+	for (my $j = 0; $j < @{$data -> {users}}; $j++) {
+	
+		my $user = $data -> {users} -> [$j];
+		
+		next if $user -> {id};
+		
+		if ($from > -1) {
+									
+			$data -> {users} -> [$from] -> {span} = $j - $from;
+
+		}
+			
+		$from = $j + 1;
+		
+	}
 	
 	pop @{$data -> {users}};
 		
@@ -508,16 +524,6 @@ sub draw_prestations {
 EOH
 		
 	}
-
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	
 		my @h2 = ();
 		
@@ -655,9 +661,9 @@ EOH
 				foreach my $day (@{$data -> {days}}) {
 
 					my $p = $day -> {by_user} -> {$i -> {id}};
-					
+
 					if ($data -> {holydays} -> {$day -> {iso_dt}}) {
-	
+
 						next if !$i -> {span} || $day -> {id} % 2;
 						
 						push @cells, {
