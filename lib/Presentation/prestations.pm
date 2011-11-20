@@ -924,6 +924,19 @@ EOH
 						,
 					},
 
+					{
+						icon    => 'options',
+						label   => 'Liste',
+						href       => $i -> {id} < 0 ? undef : {
+							type => 'inscriptions_par_jour',
+							dt_from => $data -> {days} -> [0] -> {fr_dt},
+							dt_to => $data -> {days} -> [-1] -> {fr_dt},
+						},
+						off     =>
+							$data -> {week_status_type} -> {id} == 1
+						,
+					},
+
 				],
 
 			}
