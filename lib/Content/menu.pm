@@ -193,6 +193,10 @@ sub select_menu_for_admin {
 					name  => 'rooms',
 					label => "Ressources",
 				},
+				{
+					name  => 'models',
+					label => "Semaines modèles",
+				},
 			],
 		},
 			

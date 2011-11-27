@@ -149,7 +149,7 @@ sub user_menu {
 		},
 		{
 			type   => 'users_model',
-			label  => 'Semaine modèle (F3)',
+			label  => 'Semaines modèles (F3)',
 			hotkey => {code => F3},
 		},
 		

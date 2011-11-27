@@ -419,7 +419,7 @@ sub validate_add_models_prestations {
 
 	my @monday = Monday_of_Week ($_REQUEST {week}, $_REQUEST {year});
 	
-	my $prestation_models = sql_select_all (<<EOS, $_USER -> {id_organisation}, $_REQUEST {week} % 2, {fake => 'prestation_models'});
+	my $prestation_models = sql_select_all (<<EOS, $_REQUEST {id_model}, {fake => 'prestation_models'});
 		SELECT
 			prestation_models.*
 			, prestation_types.is_collective
@@ -428,8 +428,7 @@ sub validate_add_models_prestations {
 			INNER JOIN users ON prestation_models.id_user = users.id
 			LEFT  JOIN prestation_types ON prestation_models.id_prestation_type = prestation_types.id
 		WHERE
-			users.id_organisation = ?
-			AND prestation_models.is_odd = ?
+			prestation_models.id_model = ?
 EOS
 
 	if ($_REQUEST {id_user}) {
@@ -537,7 +536,7 @@ sub do_add_models_prestations {
 	
 	}
 	
-	my $prestation_models = sql_select_all (<<EOS, $_USER -> {id_organisation}, $_REQUEST {week} % 2, {fake => 'prestation_models'});
+	my $prestation_models = sql_select_all (<<EOS, $_REQUEST {id_model}, {fake => 'prestation_models'});
 		SELECT
 			prestation_models.*
 			, prestation_types.is_collective
@@ -546,8 +545,7 @@ sub do_add_models_prestations {
 			INNER JOIN users ON prestation_models.id_user = users.id
 			LEFT  JOIN prestation_types ON prestation_models.id_prestation_type = prestation_types.id
 		WHERE
-			users.id_organisation = ?
-			AND prestation_models.is_odd = ?
+			prestation_models.id_model = ?
 EOS
 
 	if ($_REQUEST {id_user}) {
@@ -2170,7 +2168,20 @@ EOS
 			
 	};
 	
-#$time = __log_profilinig ($time, '      17');
+	if (	
+		$_USER -> {role} eq 'admin'
+		&& !$_REQUEST {id_inscription_to_clone}
+		&& !$_REQUEST {id_prestation_to_clone}
+	) {
+		
+		sql ($data, models => [
+			
+			[id_organisation => $organisation -> {id}],
+			[is_odd          => [-1, $_REQUEST {week} % 2]],
+			
+		]);
+		
+	}
 
 	return $data;
 

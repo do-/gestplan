@@ -21,6 +21,10 @@ sub validate_create_prestation_models {
 	
 	$_REQUEST {id_prestation_type} or return "Vouz avez oublié de choisir le type de prestation";
 
+	my $model = sql (models => $_REQUEST {id_model});
+
+	$_REQUEST {is_odd} = $model -> {is_odd};
+
 	my $type = sql_select_hash ('prestation_types', $_REQUEST {id_prestation_type});
 	
 	my @ids_rooms = grep {$_ > 0} split /\,/, $type -> {ids_rooms};
@@ -34,8 +38,8 @@ sub validate_create_prestation_models {
 		$filter .= " AND id <> $_REQUEST{id_prestation_type}" if $type -> {is_collective};
 		
 		my $ids_conflicting_types = sql_select_ids ("SELECT id FROM prestation_types WHERE fake = 0 AND $filter");
-		
-		my $conflict = sql_select_hash (<<EOS, $_REQUEST {id_user}, $_REQUEST {day_start}, $_REQUEST {half_start}, $_REQUEST {is_odd});
+
+		my $conflict = sql_select_hash (<<EOS, $_REQUEST {id_user}, $_REQUEST {day_start}, $_REQUEST {half_start}, $_REQUEST {id_model});
 			SELECT
 				prestation_models.*
 				, users.label
@@ -48,7 +52,7 @@ sub validate_create_prestation_models {
 				prestation_models.id_user <> ?
 				AND prestation_models.day_start = ?
 				AND prestation_models.half_start = ?
-				AND prestation_models.is_odd = ?
+				AND prestation_models.id_model = ?
 				AND prestation_models.id_prestation_type IN ($ids_conflicting_types)
 			LIMIT 1
 EOS
@@ -79,26 +83,6 @@ EOS
     	$_REQUEST {_fake} = 0;
 
 	return undef;
-	
-}
-
-################################################################################
-
-sub get_item_of_prestation_models {
-	
-
-	my $item = sql_select_hash ('prestation_models');
-
-	$_REQUEST {__read_only} ||= !($_REQUEST {__edit} || $item -> {fake} > 0);
-
-#	add_vocabularies ($item, '???', '???', {order => "id", filter => "id=$$data{id_prestation_models}"} ...);
-
-	$item -> {path} = [
-		{type => 'prestation_models', name => '???'},
-		{type => 'prestation_models', name => $item -> {label}, id => $item -> {id}},
-	];
-	
-	return $item;
 	
 }
 

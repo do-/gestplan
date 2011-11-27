@@ -784,15 +784,16 @@ EOH
 
                 if ($_USER -> {role} eq 'admin' && $i -> {id} > 0) {
                 
-					push @cells, $is_virgin ? {
+					push @cells, $is_virgin ? (map {{
 						icon    => 'create',
-						label   => "Appliquer la semaine modèle pour $i->{label}",
-						confirm => "Appliquer la semaine modèle pour $i->{label}, vous êtes sûr?",
+						label   => "Appliquer la \"$_->{label}\" pour $i->{label}",
+						confirm => "Appliquer la \"$_->{label}\" pour $i->{label}, vous êtes sûr?",
 						href    => {
 							action => 'add_models',
 							id_user  => $i -> {id},
+							id_model => $_ -> {id},
 						},
-					} :					
+					}} @{$data -> {models}}) :
 					{
 						icon    => 'delete',
 						label   => "Effacer la semaine pour $i->{label}",
@@ -897,19 +898,19 @@ EOH
 						,
 					},
 			
-					{
-						icon    => 'create',
-						label   => 'Modèles',
-						href    => {action => 'add_models'},
-						target  => 'invisible',
-						off     =>
-							$data -> {have_models}
-							|| $_USER -> {role} ne 'admin'
-							|| $data -> {week_status_type} -> {id} != 1
-							|| $_REQUEST {id_inscription_to_clone}
-							|| $_REQUEST {id_prestation_to_clone}
-						,
-					},
+#					{
+#						icon    => 'create',
+#						label   => 'Modèles',
+#						href    => {action => 'add_models'},
+#						target  => 'invisible',
+#						off     =>
+#							$data -> {have_models}
+#							|| $_USER -> {role} ne 'admin'
+#							|| $data -> {week_status_type} -> {id} != 1
+#							|| $_REQUEST {id_inscription_to_clone}
+#							|| $_REQUEST {id_prestation_to_clone}
+#						,
+#					},
 					
 					{
 						icon    => 'delete',
@@ -923,6 +924,16 @@ EOH
 							|| $_REQUEST {id_prestation_to_clone}
 						,
 					},
+
+					(map {{
+						icon    => 'create',
+						label   => "Appliquer la \"$_->{label}\"",
+						href    => {action => 'add_models', id_model => $_ -> {id}},
+						target  => 'invisible',
+						off     =>
+							$data -> {have_models}
+							|| $data -> {week_status_type} -> {id} != 1
+					}} @{$data -> {models}}),
 
 					{
 						icon    => 'options',

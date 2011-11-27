@@ -4,6 +4,8 @@ sub draw_item_of_users_model {
 	
 	my ($data) = @_;
 	
+	js q {var isBlocked = false};
+	
 	draw_form ({
 
 		no_edit => 1,
@@ -94,8 +96,10 @@ sub draw_item_of_users_model {
 	   	[
 	   		'Jour',
 	   		' ',
-	   		'Semaine impaire (1, 3...)',
-	   		'Semaine paire (2, 4...)',
+	   		map {{
+			   	label => $_ -> {label},
+			   	href  => "/?type=models&id=$_->{id}",
+			}} @{$data -> {models}},
 		],
 		
 		sub {
@@ -119,16 +123,18 @@ sub draw_item_of_users_model {
 					bold    => 1,
 					bgcolor => '#efefef',
 				},
-				{
-					label => $i -> {by_mod2} -> [1] -> {prestation_model_label},
-					bgcolor => $i -> {by_mod2} -> [1] -> {color},
-					attributes => {onDblClick => "nope (\"$i->{by_mod2}->[1]->{href}\", \"invisible\")"},
-				},
-				{
-					label => $i -> {by_mod2} -> [0] -> {prestation_model_label},
-					bgcolor => $i -> {by_mod2} -> [0] -> {color},
-					attributes => {onDblClick => "nope (\"$i->{by_mod2}->[0]->{href}\", \"invisible\")"},
-				},
+				map {
+				
+					my $d = $i -> {by_model} -> {$_ -> {id}};
+				
+					{
+						label => $d -> {prestation_model_label},
+						bgcolor => $d -> {color},
+						attributes => {onDblClick => "if (!isBlocked) {isBlocked = true; nope (\"$d->{href}\", \"invisible\")}"},
+					},
+
+				} @{$data -> {models}}
+
 			])		
 		
 		},

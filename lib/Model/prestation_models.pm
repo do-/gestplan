@@ -1,4 +1,6 @@
-columns => {				
+columns => {		
+
+	id_model    => '(models)',		
 
 	day_start   => {TYPE_NAME => 'int'},
 	half_start  => {TYPE_NAME => 'tinyint'},
