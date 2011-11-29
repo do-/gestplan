@@ -1,4 +1,4 @@
-label => 'Parites',
+label => 'Parite/s',
 
 columns => {
 	label   => 'string',

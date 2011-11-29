@@ -927,7 +927,7 @@ EOH
 
 					(map {{
 						icon    => 'create',
-						label   => "Appliquer la \"$_->{label}\"",
+						label   => "$_->{label}",
 						href    => {action => 'add_models', id_model => $_ -> {id}},
 						target  => 'invisible',
 						off     =>

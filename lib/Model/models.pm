@@ -1,4 +1,4 @@
-label => 'Semaines modeles',
+label => 'Semaines mode\les',
 
 columns => {
 
