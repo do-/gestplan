@@ -168,6 +168,7 @@ sub draw_item_of_tasks {
 			
 #			off   => !$_REQUEST{__read_only} || @{$data -> {clones}} < 2,
 			off   => $data -> {fake} > 0,
+			no_scroll => 1,
 			
 			name  => 't1',
 #						
