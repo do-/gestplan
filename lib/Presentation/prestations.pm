@@ -267,7 +267,7 @@ sub draw_prestations {
 
 	my $shift = $data -> {menu} ? 106 : 66;
 	
-	my $h_create = {href => "/?type=prestations&id_prestation_type=$_REQUEST{id_prestation_type}"};
+	my $h_create = {href => "/?type=prestations&id_prestation_type=$_REQUEST{id_prestation_type}&id_site=$_REQUEST{id_site}"};
 	
 	check_href ($h_create);	
 
@@ -332,6 +332,7 @@ sub draw_prestations {
 					
 						var href = '$_REQUEST{__uri}?type=inscriptions&sid=$_REQUEST{sid}&id_user=' + o.id_user
 							+ '&__last_query_string='         + $_REQUEST{__last_query_string}
+							+ '&id_site='                     + $_REQUEST{id_site}
 							+ '&id_prestation_type='          + o.id_prestation_type
 							+ '&__last_scrollable_table_row=' + o.__last_scrollable_table_row
 							+ '&id_day_period='               + o.half
