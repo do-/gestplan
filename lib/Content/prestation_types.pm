@@ -14,6 +14,7 @@ sub do_update_prestation_types {
 	
 	sql_do_update ('prestation_types', [qw(
 		label
+		label_3
 		label_short
 		length
 		is_half_hour
@@ -46,6 +47,7 @@ sub do_update_prestation_types {
 		ids_partners
 		id_site
 		is_anonymous
+		is_rh
 	)]);
 	
 	sql_do ('DELETE FROM prestation_types_ext_fields WHERE id_prestation_type = ?', $_REQUEST {id});
@@ -70,6 +72,7 @@ sub validate_update_prestation_types {
 	
 	$_REQUEST {_label} or return "#_label#:Vous avez oublié d'indiquer la désignation";
 	$_REQUEST {_label_short} or return "#_label_short#:Vous avez oublié d'indiquer l'abréviation";
+	$_REQUEST {_label_3} ||= substr $_REQUEST {_label_short}, 0, 3;
 
 	$_REQUEST {_id_day_period} = 0;
 	foreach (get_ids ('_id_day_period')) {$_REQUEST {_id_day_period} += $_};	

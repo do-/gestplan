@@ -122,6 +122,12 @@ sub select_menu_for_admin {
 		{
 			name  => 'prestations',
 			label => 'Planning activités',
+			items => [
+				{
+					name  => 'prestations_month',
+					label => 'Vue mensuelle',
+				},
+			],				
 		},
 		{
 			name  => 'inscriptions',
@@ -251,6 +257,12 @@ sub select_menu_for_conseiller {
 		{
 			name  => 'prestations',
 			label => 'Planning activités',
+			items => [
+				{
+					name  => 'prestations_month',
+					label => 'Vue mensuelle',
+				},
+			],				
 		},
 		{			
 			name  => 'user_options',
@@ -285,6 +297,12 @@ sub select_menu_for_accueil {
 		{
 			name  => 'prestations',
 			label => 'Planning activités',
+			items => [
+				{
+					name  => 'prestations_month',
+					label => 'Vue mensuelle',
+				},
+			],				
 		},
 		{			
 			name  => 'user_options',

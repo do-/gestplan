@@ -105,6 +105,11 @@ sub draw_item_of_users {
 				off    => 0 == @{$data -> {groups}},
 			},
 			{
+				name   => 'is_person',
+				label  => 'Personne',
+				type   => 'checkbox',
+			},
+			{
 				name   => 'id_site',
 				label  => 'Onglet',
 				type   => 'select',

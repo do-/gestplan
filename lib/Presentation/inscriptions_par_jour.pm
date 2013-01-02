@@ -145,7 +145,7 @@ sub draw_inscriptions_par_jour {
 						icon		 => 'cancel',
 						label        => 'retour (Esc)',
 						hotkey       => {code => Esc},
-						href         => "/?type=prestations&week=$_REQUEST{week}&year=$_REQUEST{year}&id_site=$_REQUEST{id_site}",
+						href         => ($_REQUEST {week} ? "/?type=prestations&week=$_REQUEST{week}" : "/?type=prestations_month&month=$_REQUEST{month}") . "&year=$_REQUEST{year}&id_site=$_REQUEST{id_site}",
 					},
 					
 					@{$data -> {ext_fields}},

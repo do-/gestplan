@@ -13,7 +13,9 @@ sub select_stats_prestations {
 
 	$_REQUEST {month} = 0 if $_REQUEST {id_user};
 	
-	my $prestation_types = sql_select_all ("SELECT * FROM prestation_types WHERE fake = 0 AND id_organisation = ? AND IFNULL(no_stats, 0) = 0 ORDER BY label_short", $_USER -> {id_organisation});
+	my $rh_filter = $_REQUEST {is_rh} == 1 ? ' AND is_rh = 1 ' : $_REQUEST {is_rh} == -1 ? ' AND (is_rh = 0 OR is_rh IS NULL) ' : '';
+	
+	my $prestation_types = sql_select_all ("SELECT * FROM prestation_types WHERE fake = 0 AND id_organisation = ? AND IFNULL(no_stats, 0) = 0 $rh_filter ORDER BY label_short", $_USER -> {id_organisation});
 	my @ids = map {$_ -> {id}} @$prestation_types;
 	my $ids = join ',', (-1, @ids);
 	

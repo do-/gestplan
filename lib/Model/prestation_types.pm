@@ -1,5 +1,6 @@
 columns => {				
 	label                      => {TYPE_NAME => 'varchar', COLUMN_SIZE  => 255},
+	label_3                    => {TYPE_NAME => 'char', COLUMN_SIZE  => 3},
 	label_short                => {TYPE_NAME => 'varchar', COLUMN_SIZE  => 255},
 	id_prestation_type_group   => {TYPE_NAME => 'int'},
 	length                     => {TYPE_NAME => 'int'},
@@ -33,6 +34,7 @@ columns => {
 	half_2_to_m                => {TYPE_NAME => 'tinyint'},
 	ids_partners => {TYPE_NAME => 'varchar', COLUMN_SIZE  => 255},
 	is_anonymous               => {TYPE_NAME => 'tinyint'},
+	is_rh                      => {TYPE_NAME => 'tinyint'},
 },
 
 keys => {

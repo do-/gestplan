@@ -20,3 +20,6 @@ docroot/index.pl
 run.pl
 snapshots/
 docroot/i/_mbox/
+docs
+fcgi.pl
+sql

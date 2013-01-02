@@ -15,6 +15,7 @@ columns => {
 	id_site         => {TYPE_NAME => 'int'},
 	id_group        => {TYPE_NAME => 'int'},
 	no_popup        => {TYPE_NAME => 'tinyint', NULLABLE => 0, COLUMN_DEFAULT => 0},
+	is_person       => {TYPE_NAME => 'tinyint', NULLABLE => 0, COLUMN_DEF => 1}, # Personne
 	
 	options => {TYPE_NAME => 'text'},
 
@@ -27,4 +28,3 @@ keys => {
 	id_organisation => 'id_organisation',
 
 },
-

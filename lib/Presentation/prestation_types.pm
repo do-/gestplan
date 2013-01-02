@@ -10,6 +10,7 @@ sub draw_prestation_types {
 			
 			[
 				'Abréviation',
+				'Trigramme',
 				'Couleur',
 				'Demi-jour(s)',
 				'Nom',
@@ -21,6 +22,7 @@ sub draw_prestation_types {
 					href  => "/?type=prestation_types&id=$$i{id}",
 				}, [
 					$i -> {label_short},
+					$i -> {label_3},
 					{
 						label   => $i -> {prestation_type_group_label},
 						bgcolor => $i -> {color},
@@ -125,11 +127,18 @@ sub draw_item_of_prestation_types {
 				values => $data -> {prestation_type_groups},
 				empty  => '',
 			},
+			[
 			{
 				name  => 'label_short',
 				label => 'Abréviation',
 				size  => 10,
 			},
+			{
+				name  => 'label_3',
+				label => 'Trigramme',
+				size  => 3,
+			},
+			],
 			{
 				name  => 'label',
 				label => 'Nom',
@@ -418,6 +427,11 @@ sub draw_item_of_prestation_types {
 				type  => 'checkbox',
 			},
 			],
+			{
+				name  => 'is_rh',
+				label => 'RH',
+				type  => 'checkbox',
+			},
 			{
 				name   => 'id_site',
 				label  => 'Onglet',

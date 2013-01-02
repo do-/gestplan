@@ -74,6 +74,15 @@ sub draw_stats_prestations {
 						values => $data -> {users},
 						empty  => '[Tous]',
 					},
+					{
+						type   => 'input_select',
+						name   => 'is_rh',
+						values => [
+							{id => +1, label => 'Seulement les RH'},
+							{id => -1, label => 'Sauf les RH'},
+						],
+						empty  => '[RH autant que non RH]',
+					},
 
 				],
 			}
