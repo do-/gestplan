@@ -1,6 +1,6 @@
 columns => {				
 	label                      => {TYPE_NAME => 'varchar', COLUMN_SIZE  => 255},
-	label_3                    => {TYPE_NAME => 'char', COLUMN_SIZE  => 3},
+	label_3                    => {TYPE_NAME => 'varchar', COLUMN_SIZE  => 255},
 	label_short                => {TYPE_NAME => 'varchar', COLUMN_SIZE  => 255},
 	id_prestation_type_group   => {TYPE_NAME => 'int'},
 	length                     => {TYPE_NAME => 'int'},
@@ -50,4 +50,3 @@ data => [
 		is_multiday => 1,
 	},
 ],
-
