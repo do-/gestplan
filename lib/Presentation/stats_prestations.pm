@@ -78,10 +78,15 @@ sub draw_stats_prestations {
 						type   => 'input_select',
 						name   => 'is_rh',
 						values => [
-							{id => +1, label => 'Seulement les RH'},
-							{id => -1, label => 'Sauf les RH'},
+							{id => +1, label => 'RH'},
+							{id => -1, label => 'Non RH'},
 						],
-						empty  => '[RH autant que non RH]',
+						empty  => '[Toutes prestations]',
+					},
+					{
+						type   => 'input_checkbox',
+						label  => 'Seulement des personnes',
+						name   => 'only_persons',
 					},
 
 				],

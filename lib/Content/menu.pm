@@ -121,17 +121,17 @@ sub select_menu_for_admin {
 
 		{
 			name  => 'prestations',
-			label => 'Planning activités',
+			label => 'Planning',
 			items => [
 				{
 					name  => 'prestations_month',
-					label => 'Vue mensuelle',
+					label => 'Mensuel',
 				},
 			],				
 		},
 		{
 			name  => 'inscriptions',
-			label => "Aujourd'hui",
+			label => "Agenda",
 		},
 		{
 			name  => 'users',
@@ -252,15 +252,15 @@ sub select_menu_for_conseiller {
 
 		{
 			name  => 'inscriptions',
-			label => "Aujourd'hui",
+			label => "Agenda",
 		},
 		{
 			name  => 'prestations',
-			label => 'Planning activités',
+			label => 'Planning',
 			items => [
 				{
 					name  => 'prestations_month',
-					label => 'Vue mensuelle',
+					label => 'Mensuel',
 				},
 			],				
 		},
@@ -296,11 +296,11 @@ sub select_menu_for_accueil {
 
 		{
 			name  => 'prestations',
-			label => 'Planning activités',
+			label => 'Planning',
 			items => [
 				{
 					name  => 'prestations_month',
-					label => 'Vue mensuelle',
+					label => 'Mensuel',
 				},
 			],				
 		},

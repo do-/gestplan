@@ -67,6 +67,10 @@ EOS
 	my $filter =
 		$_REQUEST {id_site} ? " AND id_site = $_REQUEST{id_site} " :
 		'';
+		
+	if ($_REQUEST {only_persons}) {
+		$filter .= ' AND is_person = 1';	
+	}
 	
 	my $users = sql_select_all (<<EOS, $_USER -> {id_organisation}, $to, $to, $from, $from);
 		SELECT
