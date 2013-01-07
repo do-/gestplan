@@ -143,8 +143,11 @@ EOS
 
 	}
 	
-	my ($week_from) = Week_of_Year ($y, $m, 1);
-	my ($week_to)   = Week_of_Year ($y, $m, $days_in_month);
+	my ($week_from, $year_from) = Week_of_Year ($y, $m, 1);
+	$year_from == $y or $week_from = 1;
+	
+	my ($week_to,   $year_to)   = Week_of_Year ($y, $m, $days_in_month);	
+	$year_to   == $y or $week_to   = 53;
 
 	my $holydays = {};
 		
@@ -595,54 +598,53 @@ EOS
 	
 	my $id_users = join ',', (-1, grep {$_ > 0} map {$_ -> {id}} @$users);
 	
-	my $off_periods = sql_select_all (<<EOS);
-		SELECT
-			off_periods.id
-			, off_periods.id_user
-			, IF(off_periods.dt_start  < '$dt_start',  '$dt_start',  off_periods.dt_start)    AS dt_start
-			, IF(off_periods.dt_start  < '$dt_start',  1,            off_periods.half_start)  AS half_start
-			, IF(off_periods.dt_finish > '$dt_finish', '$dt_finish', off_periods.dt_finish)   AS dt_finish
-			, IF(off_periods.dt_finish > '$dt_finish', 2,            off_periods.half_finish) AS half_finish
-		FROM
-			off_periods
-		WHERE
-			off_periods.fake = 0
-			AND off_periods.dt_start  <= '$dt_finish'
-			AND off_periods.dt_finish >= '$dt_start'
-			AND off_periods.id_user IN ($id_users)
-EOS
-#$time = __log_profilinig ($time, '      13');
+#	my $off_periods = sql_select_all (<<EOS);
+#		SELECT
+#			off_periods.id
+#			, off_periods.id_user
+#			, IF(off_periods.dt_start  < '$dt_start',  '$dt_start',  off_periods.dt_start)    AS dt_start
+#			, IF(off_periods.dt_start  < '$dt_start',  1,            off_periods.half_start)  AS half_start
+#			, IF(off_periods.dt_finish > '$dt_finish', '$dt_finish', off_periods.dt_finish)   AS dt_finish
+#			, IF(off_periods.dt_finish > '$dt_finish', 2,            off_periods.half_finish) AS half_finish
+#		FROM
+#			off_periods
+#		WHERE
+#			off_periods.fake = 0
+#			AND off_periods.dt_start  <= '$dt_finish'
+#			AND off_periods.dt_finish >= '$dt_start'
+#			AND off_periods.id_user IN ($id_users)
+#EOS
+#
+#	foreach my $user (@$users) {
+#	
+#		if ($user -> {dt_start} && $user -> {dt_start} ge $days [0] -> {iso_dt}) {
+#		
+#			push @$off_periods, {
+#				id => -1,
+#				id_user => $user -> {id},
+#				dt_start => $days [0] -> {iso_dt},
+#				dt_finish => $user -> {dt_start},
+#				half_start => 1,
+#				half_finish => 2,
+#			};
+#
+#		}
+#
+#		if ($user -> {dt_finish} && $user -> {dt_finish} le $days [-1] -> {iso_dt}) {
+#		
+#			push @$off_periods, {
+#				id => -1,
+#				id_user => $user -> {id},
+#				dt_start => $user -> {dt_finish},
+#				dt_finish => $days [-1] -> {iso_dt},
+#				half_start => 1,
+#				half_finish => 2,
+#			};
+#			
+#		}
+#		
+#	}
 
-	foreach my $user (@$users) {
-	
-		if ($user -> {dt_start} && $user -> {dt_start} ge $days [0] -> {iso_dt}) {
-		
-			push @$off_periods, {
-				id => -1,
-				id_user => $user -> {id},
-				dt_start => $days [0] -> {iso_dt},
-				dt_finish => $user -> {dt_start},
-				half_start => 1,
-				half_finish => 2,
-			};
-
-		}
-
-		if ($user -> {dt_finish} && $user -> {dt_finish} le $days [-1] -> {iso_dt}) {
-		
-			push @$off_periods, {
-				id => -1,
-				id_user => $user -> {id},
-				dt_start => $user -> {dt_finish},
-				dt_finish => $days [-1] -> {iso_dt},
-				half_start => 1,
-				half_finish => 2,
-			};
-			
-		}
-		
-	}
-#$time = __log_profilinig ($time, '      14');
 	if (@$off_periods) {
 	
 		my $user2ord = {};	
