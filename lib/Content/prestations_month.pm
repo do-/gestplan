@@ -298,6 +298,7 @@ EOS
 				prestations_weeks.year = $_REQUEST{year}
 				AND (prestations_weeks.week BETWEEN $week_from AND $week_to)
 				AND prestations_weeks.id_organisation IN ($ids_partners)
+				@{[$_REQUEST{only_rh} ? ' AND prestation_types.is_rh = 1 ' : '']}
 EOS
 
 	my @alien_id_users = (-1);	

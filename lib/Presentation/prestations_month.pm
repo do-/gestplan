@@ -548,6 +548,11 @@ EOH
 						label  => 'Seulement des personnes',
 						name   => 'only_persons',
 					},
+					{
+						type   => 'input_checkbox',
+						label  => 'RH',
+						name   => 'only_rh',
+					},
 
 				],
 
