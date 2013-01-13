@@ -286,6 +286,8 @@ EOS
 							AND prestations.id_prestation_type IN ($ids_alien_types)
 						)
 					)
+					AND prestations.dt_start <= '$dt_finish'
+					AND prestations.dt_finish >= '$dt_start'
 				)
 				LEFT  JOIN prestation_types       ON prestations.id_prestation_type = prestation_types.id
 				LEFT  JOIN prestation_type_groups ON prestation_types.id_prestation_type_group = prestation_type_groups.id
@@ -295,8 +297,10 @@ EOS
 				)
 				LEFT JOIN organisations ON prestation_types.id_organisation = organisations.id
 			WHERE
-				prestations_weeks.year = $_REQUEST{year}
-				AND (prestations_weeks.week BETWEEN $week_from AND $week_to)
+				((prestations_weeks.year = $_REQUEST{year}
+				AND (prestations_weeks.week BETWEEN $week_from AND $week_to))
+				OR (prestations_weeks.year = $_REQUEST{year}+1 AND prestations_weeks.week = 1)
+				)
 				AND prestations_weeks.id_organisation IN ($ids_partners)
 				@{[$_REQUEST{only_rh} ? ' AND prestation_types.is_rh = 1 ' : '']}
 EOS
