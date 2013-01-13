@@ -4,6 +4,8 @@
 sub draw_prestations_month {
 
 	my ($data) = @_;
+	
+	$_REQUEST {__scrollable_table_row} ||= 1;
 
 	my $shift = $data -> {menu} ? 106 : 66;
 	
