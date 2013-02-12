@@ -9,6 +9,8 @@ sub draw_item_of_inscriptions {
 	draw_form ({
 	
 		max_len => 1000,
+
+		no_path_href => 1,
 		
 		additional_buttons => [
 		
