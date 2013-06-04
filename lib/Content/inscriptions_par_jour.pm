@@ -22,8 +22,8 @@ sub select_inscriptions_par_jour {
 	
 	my $menu = @$sites == 0 ? undef : [map {{
 		label     => $_ -> {label},
-		href      => {id_site => $_ -> {id}},
-		is_active => $_REQUEST {id_site} == $_ -> {id},
+		href      => {id_site => $_ -> {id}, aliens => ''},
+		is_active => ($_REQUEST {id_site} == $_ -> {id} and !$_REQUEST {aliens}),
 	}} ({label => $_USER -> {id_site_group} ? sql_select_scalar ('SELECT label FROM site_groups WHERE id = ?', $_USER -> {id_site_group}) : 'Tous sites'}, @$sites)];
 	
 		
@@ -33,6 +33,11 @@ sub select_inscriptions_par_jour {
 		
 		$site_filter = " AND IFNULL(users.id_site, 0) IN ($_REQUEST{id_site}, 0) ";
 		
+	}
+	elsif ($_REQUEST {aliens}) {
+		
+		$site_filter = " AND prestations.id_organisation <> $_USER->{id_organisation} ";
+
 	}
 	elsif ($_USER -> {id_site_group}) {
 	
@@ -89,8 +94,8 @@ sub select_inscriptions_par_jour {
 	sql_do ("CREATE TEMPORARY TABLE IF NOT EXISTS $id_prestations_table (id INT PRIMARY KEY)");
 
 	my $collect = sub {
-	
-		my $is_visible = $idx_users -> {$i -> {id_user}};
+
+		my $is_visible = $idx_users -> {$i -> {id_user}} || ($i -> {id_organisation} != $_USER -> {id_organisation});
 
 		if (!$is_visible && $i -> {id_users}) {
 		
@@ -105,15 +110,73 @@ sub select_inscriptions_par_jour {
 			}
 		
 		}
-		
+
 		$is_visible or return;
-		
+
 		sql_do ("REPLACE INTO $id_prestations_table (id) VALUES (?) ", $i -> {id});
-		
-#		$id_prestations .= ",$i->{id}";
-	
+			
 	};
+
+	my $organisation = sql_select_hash (organisations => $_USER -> {id_organisation});
+	my $ids_partners = $organisation -> {ids_partners} || '-1';
+	my $ids_alien_types = -1;
+	my $ids_alien_partnerships = -1;
 	
+	if ($ids_partners ne '-1') {
+
+		push @$menu, {
+			label     => 'Partenaires',
+			href      => {id_site => '', aliens => 1},
+			is_active => $_REQUEST {aliens},
+		};
+
+		$ids_partners = sql_select_ids (<<EOS, $_REQUEST {year}, $_REQUEST {week});
+			SELECT
+				week_status.id_organisation
+			FROM
+				week_status
+			WHERE
+				week_status.id_organisation IN ($$organisation{ids_partners})
+				AND week_status.id_week_status_type = 2
+				AND week_status.year = ?
+				AND week_status.week = ?
+EOS
+
+		$ids_alien_types = sql_select_ids (<<EOS, '%,' . $organisation -> {id} . ',%');
+			SELECT
+				id
+			FROM
+				prestation_types
+			WHERE
+				id_organisation IN ($ids_partners)
+				AND (
+					is_open = 1
+					OR (
+						is_open = 2
+						AND ids_partners LIKE ?
+					)
+				)
+EOS
+#$time = __log_profilinig ($time, '      2');
+
+		$ids_alien_partnerships = sql_select_ids (<<EOS, '%,' . $organisation -> {id} . ',%');
+			SELECT
+				id
+			FROM
+				prestation_partnerships
+			WHERE
+				id_organisation IN ($ids_partners)
+				AND (
+					is_open = 1
+					OR (
+						is_open = 2
+						AND ids_partners LIKE ?
+					)
+				)
+EOS
+
+	}
+		
 	sql_select_loop (<<EOS, $collect, $dt_to, $dt_from);
 		SELECT
 			*
@@ -123,7 +186,14 @@ sub select_inscriptions_par_jour {
 			fake = 0
 			AND dt_start  <= ?
 			AND dt_finish >= ?
-			AND id_prestation_type IN ($id_prestation_types)
+			AND (
+				(id_prestation_type IN ($id_prestation_types))
+				OR prestations.id_prestation_partnership IN ($ids_alien_partnerships)
+				OR (
+					prestations.id_prestation_partnership IS NULL
+					AND prestations.id_prestation_type IN ($ids_alien_types)
+				)				
+			)
 			$filter
 EOS
 	
@@ -184,13 +254,14 @@ EOS
 				
 	};
 
-	sql_select_loop (<<EOS, $collect);
+	sql_select_loop (<<EOS, $collect, $_USER -> {id_organisation});
 		SELECT
 			ext_fields.*
 		FROM
 			ext_fields
 		WHERE
 			ext_fields.id IN ($ids_ext_fields)
+			AND ext_fields.id_organisation = ?
 		ORDER BY
 			ext_fields.ord
 EOS
@@ -202,7 +273,7 @@ EOS
 
 #	my $ids_inscriptions_par_conseiller = sql_select_ids (<<EOS, @params);
 
-	sql_do (<<EOS, @params);
+	sql_do (<<EOS, $_USER -> {id_organisation}, @params);
 		REPLACE INTO
 			$id_inscriptions_table (id)
 		SELECT
@@ -211,6 +282,7 @@ EOS
 	 		inscriptions
 	 		INNER JOIN prestations ON inscriptions.id_prestation = prestations.id
 	 		INNER JOIN users ON prestations.id_user = users.id
+	 		INNER JOIN users AS authors ON inscriptions.id_author = authors.id
 	 		INNER JOIN prestation_types ON prestations.id_prestation_type = prestation_types.id
 	 		INNER JOIN $id_prestations_table ON prestations.id = $id_prestations_table.id
 	 		$join
@@ -218,13 +290,10 @@ EOS
 	 	WHERE
 	 		inscriptions.fake = 0
 	 		AND children.id IS NULL
+			AND authors.id_organisation = ?
 	 		$site_filter
 	 		$filter
 EOS
-
-#	$ids_inscriptions_par_conseiller = sql_select_ids ("SELECT id FROM inscriptions WHERE id IN ($ids_inscriptions_par_conseiller) AND IFNULL(parent, 0) NOT IN ($ids_inscriptions_par_conseiller)");	
-
-#	my $cnt = $ids_inscriptions_par_conseiller =~ y/,/,/;
 
 	my $cnt = sql_select_scalar ("SELECT COUNT(*) FROM $id_inscriptions_table");
 	
